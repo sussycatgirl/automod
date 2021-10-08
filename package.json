@@ -1,0 +1,24 @@
+{
+  "name": "revolt-automod",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "start": "node dist/index",
+    "dev": "yarn build && yarn start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/monk": "^6.0.0",
+    "dotenv": "^10.0.0",
+    "log75": "2.0.1",
+    "monk": "^7.3.4",
+    "revolt.js": "^5.1.0-alpha.6"
+  },
+  "devDependencies": {
+    "typescript": "^4.4.3"
+  }
+}
