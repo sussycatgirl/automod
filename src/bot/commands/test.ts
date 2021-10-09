@@ -1,5 +1,4 @@
 import Command from "../../struct/Command";
-import { client } from "../..";
 import { Message } from "revolt.js/dist/maps/Messages";
 
 export default {

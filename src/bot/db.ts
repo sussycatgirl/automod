@@ -20,9 +20,9 @@ function getDBUrl() {
 
     // mongodb://username:password@hostname:port/dbname
     let dburl = 'mongodb://';
-    dburl += env['DB_USERNAME'] ?? 'root';
-    if (env['DB_PASSWORD']) dburl += `:${env['DB_PASSWORD']}`;
-    dburl += `@${env['DB_HOST']}`; // DB_HOST is assumed to contain the port
+    if (env['DB_USERNAME']) dburl += env['DB_USERNAME'];
+    if (env['DB_PASS']) dburl += `:${env['DB_PASS']}`;
+    dburl += `${process.env['DB_USERNAME'] ? '@' : ''}${env['DB_HOST']}`; // DB_HOST is assumed to contain the port
     dburl += `/${env['DB_NAME'] ?? 'automod'}`;
 
     return dburl;
