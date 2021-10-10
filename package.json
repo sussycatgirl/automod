@@ -13,10 +13,12 @@
   "license": "ISC",
   "dependencies": {
     "@types/monk": "^6.0.0",
+    "axios": "^0.22.0",
     "dotenv": "^10.0.0",
     "log75": "2.0.1",
     "monk": "^7.3.4",
-    "revolt.js": "^5.1.0-alpha.6"
+    "revolt.js": "^5.1.0-alpha.6",
+    "ulid": "^2.3.0"
   },
   "devDependencies": {
     "typescript": "^4.4.3"

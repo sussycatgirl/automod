@@ -3,7 +3,7 @@ import { Message } from "revolt.js/dist/maps/Messages";
 import { client } from "../..";
 import ServerConfig from "../../struct/ServerConfig";
 import { DEFAULT_PREFIX } from "../modules/command_handler";
-import { hasPerm } from "../util";
+import { hasPerm, isBotManager, NO_MANAGER_MSG } from "../util";
 
 const SYNTAX = '/prefix set [new prefix]; /prefix get; prefix clear';
 const MENTION_TEXT = 'You can also @mention me instead of using the prefix.';
@@ -16,9 +16,10 @@ export default {
     serverOnly: true,
     run: async (message: Message, args: string[]) => {
         let config: ServerConfig = (await client.db.get('servers').findOne({ id: message.channel?.server_id })) ?? {};
+        
         switch(args[0]?.toLowerCase()) {
             case 'set':
-                if (!hasPerm(message.member!, 'ManageServer')) return message.reply('You need ManageServer permission for this.');
+                if (!await isBotManager(message.member!)) return message.reply(NO_MANAGER_MSG);
 
                 args.shift();
                 if (args.length == 0) return message.reply('You need to specify a prefix.');
@@ -41,7 +42,7 @@ export default {
             break;
             case 'clear':
             case 'reset':
-                if (!hasPerm(message.member!, 'ManageServer')) return message.reply('You need ManageServer permission for this.');
+                if (!await isBotManager(message.member!)) return message.reply(NO_MANAGER_MSG);
                 
                 if (config.prefix != null) {
                     await client.db.get('servers').update({ 'id': message.channel?.server_id }, { $set: { 'prefix': null } });
