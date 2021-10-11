@@ -6,7 +6,10 @@ import path from 'path';
 import ServerConfig from "../../struct/ServerConfig";
 import { antispam } from "./antispam";
 
-const DEFAULT_PREFIX = process.env['PREFIX'] ?? '/';
+const DEFAULT_PREFIX = process.env['PREFIX']
+                    ?? process.env['BOT_PREFIX']
+                    ?? process.env['COMMAND_PREFIX']
+                    ?? '/';
 
 let commands: Command[] = fs.readdirSync(path.join(__dirname, '..', 'commands'))
     .filter(file => file.endsWith('.js'))
@@ -14,7 +17,10 @@ let commands: Command[] = fs.readdirSync(path.join(__dirname, '..', 'commands'))
 
 client.on('message', async message => {
     logger.debug(`Message -> ${message.content}`);
-    if (typeof message.content != 'string' || message.author_id == client.user?._id || !message.channel) return;
+
+    if (typeof message.content != 'string' ||
+        message.author_id == client.user?._id ||
+        !message.channel?.server) return;
 
     // Send message through anti spam check
     if (!antispam(message)) return;
@@ -49,10 +55,6 @@ client.on('message', async message => {
 
     // Create document for server in DB, if not already present
     if (JSON.stringify(config) == '{}') await client.db.get('servers').insert({ id: message.channel?.server_id });
-
-    if (cmd.serverOnly && !message.channel?.server) {
-        return message.reply('This command is not available in direct messages.');
-    }
 
     if (cmd.removeEmptyArgs !== false) {
         args = args.filter(a => a.length > 0);

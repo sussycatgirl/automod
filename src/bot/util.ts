@@ -48,8 +48,10 @@ async function parseUser(text: string): Promise<User|null> {
         if (user) return user;
     }
 
-    if (uid) return await client.users.fetch(uid) || null;
-    else return null;
+    try {
+        if (uid) return await client.users.fetch(uid) || null;
+        else return null;
+    } catch(e) { return null; }
 }
 
 async function isBotManager(member: Member) {

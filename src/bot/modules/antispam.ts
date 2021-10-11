@@ -3,6 +3,7 @@ import { client } from "../..";
 import ModerationAction from "../../struct/antispam/ModerationAction";
 import ServerConfig from "../../struct/ServerConfig";
 import logger from "../logger";
+import { isBotManager } from "../util";
 
 let msgCountStore: Map<string, { users: any }> = new Map();
 
@@ -22,6 +23,10 @@ async function antispam(message: Message): Promise<boolean> {
             msgCountStore.set(rule.id, { users: {} });
         }
 
+        if (message.author?.bot != null) break;
+        if (serverRules.whitelist?.users?.includes(message.author_id)) break;
+        if (message.member?.roles?.filter(r => serverRules.whitelist?.roles?.includes(r)).length) break;
+        if (serverRules.whitelist?.managers !== false && isBotManager(message.member!)) break;
         if (rule.channels?.indexOf(message.channel_id) == -1) break;
 
         let store = msgCountStore.get(rule.id)!;

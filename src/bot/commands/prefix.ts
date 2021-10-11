@@ -13,7 +13,6 @@ export default {
     aliases: null,
     description: 'modify prefix',
     syntax: SYNTAX,
-    serverOnly: true,
     run: async (message: Message, args: string[]) => {
         let config: ServerConfig = (await client.db.get('servers').findOne({ id: message.channel?.server_id })) ?? {};
         

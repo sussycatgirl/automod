@@ -6,7 +6,6 @@ export default {
     name: 'ping',
     aliases: null,
     description: 'ping pong',
-    serverOnly: false,
     run: async (message: Message, args: string[]) => {
         let now = Date.now();
         message.reply(`Measuring...`)

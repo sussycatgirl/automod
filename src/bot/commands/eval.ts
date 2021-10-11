@@ -8,7 +8,6 @@ export default {
     description: 'Evaluate JS code',
     restrict: 'BOTOWNER',
     removeEmptyArgs: false,
-    serverOnly: false,
     run: async (message: Message, args: string[]) => {
         let cmd = `let { client } = require("../..");`
                 + `let axios = require("axios").default;`

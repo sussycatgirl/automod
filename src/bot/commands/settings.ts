@@ -11,7 +11,6 @@ export default {
     name: 'settings',
     aliases: [ 'setting' ],
     description: 'change antispam settings',
-    serverOnly: false,
     run: async (message: Message, args: string[]) => {
         if (!isBotManager(message.member!)) return message.reply(NO_MANAGER_MSG);
 
@@ -22,12 +21,21 @@ export default {
                     max_msg: 5,
                     timeframe: 3,
                     action: ModerationAction.Delete,
-                    channels: [ '01FHJD5D2PBRTEVPNFM1FRY85J' ],
+                    channels: null,
+                } as AntispamRule,
+                {
+                    id: ulid(),
+                    max_msg: 4,
+                    timeframe: 3,
+                    action: ModerationAction.Warn,
+                    channels: null,
                 } as AntispamRule
             ]
         } as AutomodSettings;
 
         client.db.get('servers')
             .update({ id: message.channel?.server_id }, { $set: { automodSettings: settings } });
+
+        message.reply('Default config restored');
     }
 } as Command;
