@@ -37,7 +37,7 @@ client.on('message', async message => {
     } else if (cmdName.startsWith(guildPrefix)) {
         cmdName = cmdName.substr(guildPrefix.length);
         if (config.spaceAfterPrefix && !cmdName) cmdName = args.shift() ?? '';
-    }
+    } else return;
 
     if (!cmdName) return;
 
