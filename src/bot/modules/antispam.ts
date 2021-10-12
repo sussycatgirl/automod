@@ -1,5 +1,6 @@
 import { Message } from "revolt.js/dist/maps/Messages";
 import { client } from "../..";
+import AntispamRule from "../../struct/antispam/AntispamRule";
 import ModerationAction from "../../struct/antispam/ModerationAction";
 import ServerConfig from "../../struct/ServerConfig";
 import logger from "../logger";
@@ -26,7 +27,7 @@ async function antispam(message: Message): Promise<boolean> {
         if (message.author?.bot != null) break;
         if (serverRules.whitelist?.users?.includes(message.author_id)) break;
         if (message.member?.roles?.filter(r => serverRules.whitelist?.roles?.includes(r)).length) break;
-        if (serverRules.whitelist?.managers !== false && isBotManager(message.member!)) break;
+        if (serverRules.whitelist?.managers !== false && await isBotManager(message.member!)) break;
         if (rule.channels?.indexOf(message.channel_id) == -1) break;
 
         let store = msgCountStore.get(rule.id)!;
@@ -51,7 +52,7 @@ async function antispam(message: Message): Promise<boolean> {
                     if (!userStore.warnTriggered) {
                         userStore.warnTriggered = true;
                         setTimeout(() => userStore.warnTriggered = false, 5000);
-                        message.channel?.sendMessage(`<@${message.author_id}>, stop spamming (placeholder warn message)`);
+                        message.channel?.sendMessage(getWarnMsg(rule, message));
                     }
                 break;
                 case ModerationAction.Kick:
@@ -65,6 +66,13 @@ async function antispam(message: Message): Promise<boolean> {
     }
     
     return !ruleTriggered;
+}
+
+function getWarnMsg(rule: AntispamRule, message: Message) {
+    if (rule.message != null) {
+        return rule.message
+            .replace(new RegExp('{{userid}}', 'gi'), message.author_id);
+    } else return `<@${message.author_id}>, please stop spamming.`;
 }
 
 export { antispam }

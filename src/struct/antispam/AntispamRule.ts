@@ -7,6 +7,9 @@ import ModerationAction from "./ModerationAction";
  * and will delete any additional messages.
  * 
  * `channels` optionally limits the rule to specific channels.
+ * 
+ * `message` is an optional custom message sent during punishment.
+ * '{{userid}}' will be replaced with the user's ID.
  */
 class AntispamRule {
     id: string;
@@ -14,6 +17,7 @@ class AntispamRule {
     timeframe: number;
     action: ModerationAction;
     channels: string[] | null;
+    message: string | null;
 }
 
 export default AntispamRule;
