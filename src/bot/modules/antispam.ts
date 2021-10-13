@@ -67,8 +67,7 @@ async function antispam(message: Message): Promise<boolean> {
                             _id: ulid(),
                             createdBy: null,
                             date: Date.now(),
-                            reason: `Automatic moderation rule triggered: More than ${rule.max_msg} messages per ${rule.timeframe} seconds.`
-                                + (rule.message ?? ''),
+                            reason: `Automatic moderation rule triggered: More than ${rule.max_msg} messages per ${rule.timeframe} seconds.`,
                             server: message.channel?.server_id,
                             type: InfractionType.Automatic,
                             user: message.author_id,
