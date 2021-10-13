@@ -37,7 +37,7 @@ export default {
                 inf = inf.sort((a, b) => b.date - a.date);
                 msg += `**${await fetchUsername(inf[0].user)}** (${inf[0].user}): **${inf.length}** infractions\n`;
                 msg += `\u200b \u200b \u200b \u200b \u200b ↳ Most recent warning: \`${inf[0].reason}\` `
-                    + `${inf[0].type == InfractionType.Manual && `(${await fetchUsername(inf[0].createdBy ?? '')})`}\n`;
+                    + `${inf[0].type == InfractionType.Manual ? `(${await fetchUsername(inf[0].createdBy ?? '')})` : ''}\n`;
             };
 
             message.reply(msg.substr(0, 1999));
