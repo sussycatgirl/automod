@@ -1,8 +1,9 @@
 enum ModerationAction {
     Delete = 0,
-    Warn = 1,
-    Kick = 2,
-    Ban = 3,
+    Message = 1,
+    Warn = 2,
+    Kick = 3,
+    Ban = 4,
 }
 
 export default ModerationAction;

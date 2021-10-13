@@ -1,6 +1,5 @@
 import Command from "../../struct/Command";
 import { Message } from "revolt.js/dist/maps/Messages";
-import { hasPerm } from "../util";
 
 export default {
     name: 'debug',

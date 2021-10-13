@@ -6,6 +6,7 @@ class ServerConfig {
     spaceAfterPrefix: boolean | undefined;
     automodSettings: AutomodSettings | undefined;
     botManagers: string[] | undefined;
+    moderators: string[] | undefined;
     whitelist: {
         users: string[] | undefined,
         roles: string[] | undefined,

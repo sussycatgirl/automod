@@ -1,6 +1,7 @@
 import { Member } from "revolt.js/dist/maps/Members";
 import { User } from "revolt.js/dist/maps/Users";
 import { client } from "..";
+import Infraction from "../struct/antispam/Infraction";
 import ServerConfig from "../struct/ServerConfig";
 
 let ServerPermissions = {
@@ -54,6 +55,12 @@ async function parseUser(text: string): Promise<User|null> {
     } catch(e) { return null; }
 }
 
+async function isModerator(member: Member) {
+    return hasPerm(member, 'KickMembers')
+        || await isBotManager(member)
+        || (((await client.db.get('servers').findOne({ id: member.server?._id }) || {}) as ServerConfig)
+        .moderators?.indexOf(member.user?._id!) ?? -1) > -1;
+}
 async function isBotManager(member: Member) {
     return hasPerm(member, 'ManageServer')
         || (((await client.db.get('servers').findOne({ id: member.server?._id }) || {}) as ServerConfig)
@@ -73,11 +80,29 @@ function hasPerm(member: Member, perm:  'View'|'ManageRoles'|'ManageChannels'|'M
     return !!(userPerm & p);
 }
 
+async function storeInfraction(infraction: Infraction): Promise<{ userWarnCount: number }> {
+    let collection = client.db.get('infractions');
+    let p = [
+        collection.insert(infraction, { castIds: false }),
+        collection.find({
+            server: infraction.server,
+            user: infraction.user,
+            _id: { $not: { $eq: infraction._id } } },
+        ),
+    ];
+
+    let r = await Promise.all(p);
+
+    return { userWarnCount: (r[1].length ?? 0) + 1 }
+}
+
 export {
     hasPerm,
+    isModerator,
     isBotManager,
     parseUser,
+    storeInfraction,
     NO_MANAGER_MSG,
     USER_MENTION_REGEX,
-    CHANNEL_MENTION_REGEX
+    CHANNEL_MENTION_REGEX,
 }

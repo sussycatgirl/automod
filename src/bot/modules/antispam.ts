@@ -1,10 +1,13 @@
 import { Message } from "revolt.js/dist/maps/Messages";
+import { ulid } from "ulid";
 import { client } from "../..";
 import AntispamRule from "../../struct/antispam/AntispamRule";
+import Infraction from "../../struct/antispam/Infraction";
+import InfractionType from "../../struct/antispam/InfractionType";
 import ModerationAction from "../../struct/antispam/ModerationAction";
 import ServerConfig from "../../struct/ServerConfig";
 import logger from "../logger";
-import { isBotManager } from "../util";
+import { isBotManager, isModerator, storeInfraction } from "../util";
 
 let msgCountStore: Map<string, { users: any }> = new Map();
 
@@ -27,7 +30,7 @@ async function antispam(message: Message): Promise<boolean> {
         if (message.author?.bot != null) break;
         if (serverRules.whitelist?.users?.includes(message.author_id)) break;
         if (message.member?.roles?.filter(r => serverRules.whitelist?.roles?.includes(r)).length) break;
-        if (serverRules.whitelist?.managers !== false && await isBotManager(message.member!)) break;
+        if (serverRules.whitelist?.managers !== false && await isModerator(message.member!)) break;
         if (rule.channels?.indexOf(message.channel_id) == -1) break;
 
         let store = msgCountStore.get(rule.id)!;
@@ -48,11 +51,32 @@ async function antispam(message: Message): Promise<boolean> {
                     message.delete()
                         .catch(() => logger.warn('Antispam: Failed to delete message') );
                 break;
-                case ModerationAction.Warn:
+                case ModerationAction.Message:
                     if (!userStore.warnTriggered) {
                         userStore.warnTriggered = true;
                         setTimeout(() => userStore.warnTriggered = false, 5000);
                         message.channel?.sendMessage(getWarnMsg(rule, message));
+                    }
+                break;
+                case ModerationAction.Warn:
+                    if (!userStore.warnTriggered) {
+                        userStore.warnTriggered = true;
+                        setTimeout(() => userStore.warnTriggered = false, 5000);
+                        
+                        let inf = {
+                            _id: ulid(),
+                            createdBy: null,
+                            date: Date.now(),
+                            reason: `Automatic moderation rule triggered: More than ${rule.max_msg} messages per ${rule.timeframe} seconds.`
+                                + (rule.message ?? ''),
+                            server: message.channel?.server_id,
+                            type: InfractionType.Automatic,
+                            user: message.author_id,
+                        } as Infraction;
+
+                        let m = message.channel?.sendMessage('## User has been warned.\n\u200b\n' + getWarnMsg(rule, message));
+
+                        await storeInfraction(inf);
                     }
                 break;
                 case ModerationAction.Kick:
