@@ -1,6 +1,7 @@
 import Command from "../../struct/Command";
 import { Message } from "revolt.js/dist/maps/Messages";
 import { inspect } from 'util';
+import { client } from "../..";
 
 export default {
     name: 'eval',
@@ -23,19 +24,31 @@ export default {
                 await m?.edit({ content: `## **Promise**<pending>` });
                 e.then((res) => {
                     m?.edit({
-                        content: `## **Promise**<resolved>\n\`\`\`js\n${`${inspect(res)}`.substr(0, 1960)}\n\`\`\``
+                        content: `## **Promise**<resolved>\n\`\`\`js\n${render(res)}\n\`\`\``
                     });
                 })
                 .catch((res) => {
                     m?.edit({
-                        content: `## **Promise**<rejected>\n\`\`\`js\n${`${inspect(res)}`.substr(0, 1960)}\n\`\`\``
+                        content: `## **Promise**<rejected>\n\`\`\`js\n${render(res)}\n\`\`\``
                     });
                 });
             } else {
-                message.channel?.sendMessage(`\`\`\`js\n${inspect(e).substr(0, 1980)}\n\`\`\``);
+                message.channel?.sendMessage(`\`\`\`js\n${render(e)}\n\`\`\``);
             }
         } catch(e) {
-            m?.edit({ content: `## Execution failed\n\`\`\`js\n${inspect(e).substr(0, 1960)}\n\`\`\`` });
+            m?.edit({ content: `## Execution failed\n\`\`\`js\n${render(e)}\n\`\`\`` });
         }
     }
 } as Command;
+
+function removeSecrets(input: string): string {
+    if (process.env['DB_PASS']) input = input.replace(new RegExp(process.env['DB_PASS']!, 'gi'), '[Secret redacted]');
+    if (process.env['DB_URL']) input = input.replace(new RegExp(process.env['DB_URL']!, 'gi'), '[Secret redacted]');
+    input = input.replace(new RegExp(process.env['BOT_TOKEN']!, 'gi'), '[Secret redacted]');
+        
+    return input;
+}
+
+function render(input: any): string {
+    return removeSecrets(inspect(input)).substr(0, 1960);
+}

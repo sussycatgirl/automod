@@ -3,7 +3,7 @@ import { Message } from "revolt.js/dist/maps/Messages";
 import { client } from "../..";
 import Infraction from "../../struct/antispam/Infraction";
 import InfractionType from "../../struct/antispam/InfractionType";
-import { isModerator, parseUser } from "../util";
+import { isModerator, NO_MANAGER_MSG, parseUser } from "../util";
 import Day from 'dayjs';
 import RelativeTime from 'dayjs/plugin/relativeTime';
 import Xlsx from 'xlsx';
@@ -18,7 +18,7 @@ export default {
     description: 'Show all user infractions',
     syntax: '/warns; /warns @username; /warns @username export-csv',
     run: async (message: Message, args: string[]) => {
-        if (!await isModerator(message.member!)) return;
+        if (!await isModerator(message.member!)) return message.reply(NO_MANAGER_MSG);
 
         let collection = client.db.get('infractions');
         let infractions: Array<Infraction> = await collection.find({
