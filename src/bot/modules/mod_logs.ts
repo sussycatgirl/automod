@@ -1,3 +1,5 @@
+import { Member } from "revolt.js/dist/maps/Members";
+import { User } from "revolt.js/dist/maps/Users";
 import { client } from "../..";
 import ServerConfig from "../../struct/ServerConfig";
 import logger from "../logger";
@@ -111,3 +113,34 @@ client.on('packet', async (packet) => {
         }
     }
 });
+
+async function logModAction(type: 'warn'|'kick'|'ban', mod: Member, target: User, reason: string|null, extraText?: string|null): Promise<void> {
+    try {
+        let config: ServerConfig = await client.db.get('servers').findOne({ id: mod.server?._id }) ?? {};
+        let logChannelID = config.logs?.modAction;
+        if (!logChannelID) return;
+        let logChannel = client.channels.get(logChannelID);
+
+        let aType = type == 'ban' ? 'banned' : type + 'ed';
+        let msg = `User ${aType}\n`
+                + `\`@${mod.user?.username}\` **${aType}** \`@`
+                    + `${target.username}\`${type == 'warn' ? '.' : ` from ${mod.server?.name}.`}\n`
+                + `**Reason**: \`${reason ? reason : 'No reason provided.'}\`\n`
+                + (extraText ?? '');
+        
+        logChannel?.sendMessage(msg)
+            .catch(() => logger.warn('Failed to send log message'));
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+
+let fetchUsername = async (id: string) => {
+    try {
+        let u = await client.users.fetch(id);
+        return `@${u.username}`;
+    } catch(e) { return 'Unknown user' }
+}
+
+export { fetchUsername, logModAction }

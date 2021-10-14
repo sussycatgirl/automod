@@ -4,6 +4,7 @@ import { isModerator, NO_MANAGER_MSG, parseUser, storeInfraction } from "../util
 import Infraction from "../../struct/antispam/Infraction";
 import { ulid } from "ulid";
 import InfractionType from "../../struct/antispam/InfractionType";
+import { logModAction } from "../modules/mod_logs";
 
 export default {
     name: 'warn',
@@ -34,10 +35,13 @@ export default {
 
         let { userWarnCount } = await storeInfraction(infraction);
 
-        await message.reply(`## User warned.\n`
+        await Promise.all([
+            message.reply(`## User warned.\n`
                           + `This is ${userWarnCount == 1 ? '**the first warn**' : `warn number **${userWarnCount}**`}`
                             + ` for ${user.username ?? 'this user'}.\n`
                           + `**Infraction ID:** \`${infraction._id}\`\n`
-                          + `**Reason:** \`${infraction.reason}\``);
+                          + `**Reason:** \`${infraction.reason}\``),
+            logModAction('warn', message.member!, user, reason, `This is warn number **${userWarnCount}** for this user.`),
+        ]);
     }
 } as Command;

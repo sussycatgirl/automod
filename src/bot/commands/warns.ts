@@ -9,6 +9,7 @@ import RelativeTime from 'dayjs/plugin/relativeTime';
 import Xlsx from 'xlsx';
 import FormData from 'form-data';
 import axios from "axios";
+import { fetchUsername } from "../modules/mod_logs";
 
 Day.extend(RelativeTime);
 
@@ -122,10 +123,3 @@ export default {
         }
     }
 } as Command;
-
-let fetchUsername = async (id: string) => {
-    try {
-        let u = await client.users.fetch(id);
-        return `@${u.username}`;
-    } catch(e) { return 'Unknown user' }
-}
