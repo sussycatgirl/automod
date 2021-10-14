@@ -3,7 +3,7 @@ import { Message } from "revolt.js/dist/maps/Messages";
 import { client } from "../..";
 import Infraction from "../../struct/antispam/Infraction";
 import InfractionType from "../../struct/antispam/InfractionType";
-import { isModerator, NO_MANAGER_MSG, parseUser } from "../util";
+import { isModerator, NO_MANAGER_MSG, parseUser, uploadFile } from "../util";
 import Day from 'dayjs';
 import RelativeTime from 'dayjs/plugin/relativeTime';
 import Xlsx from 'xlsx';
@@ -108,17 +108,9 @@ export default {
                                 }
 
                                 let sheet = Xlsx.utils.aoa_to_sheet(csv_data);
-
                                 let csv = Xlsx.utils.sheet_to_csv(sheet);
 
-                                let apiConfig: any = (await axios.get(client.apiURL)).data;
-                                let autumnURL = apiConfig.features.autumn.url;
-
-                                let data = new FormData();
-                                data.append("file", csv, { filename: `${user._id}.csv` });
-
-                                let req = await axios.post(autumnURL + '/attachments', data, { headers: data.getHeaders() });
-                                message.reply({ content: msg, attachments: [ (req.data as any)['id'] as string ] });
+                                message.reply({ content: msg, attachments: [ await uploadFile(csv, `${user._id}.csv`) ] });
                             } catch(e) {
                                 console.error(e);
                                 message.reply(msg);

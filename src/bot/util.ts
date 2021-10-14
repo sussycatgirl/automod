@@ -3,6 +3,8 @@ import { User } from "revolt.js/dist/maps/Users";
 import { client } from "..";
 import Infraction from "../struct/antispam/Infraction";
 import ServerConfig from "../struct/ServerConfig";
+import FormData from 'form-data';
+import axios from 'axios';
 
 let ServerPermissions = {
     ['View' as string]: 1 << 0,
@@ -20,6 +22,14 @@ let ServerPermissions = {
 const NO_MANAGER_MSG = '🔒 Missing permission';
 const USER_MENTION_REGEX = /^<@[0-9A-HJ-KM-NP-TV-Z]{26}>$/i;
 const CHANNEL_MENTION_REGEX = /^<#[0-9A-HJ-KM-NP-TV-Z]{26}>$/i;
+let autumn_url: string|null = null;
+let apiConfig: any = axios.get(client.apiURL).then(res => {
+    autumn_url = (res.data as any).features.autumn.url;
+});
+
+async function getAutumnURL() {
+    return autumn_url || ((await axios.get(client.apiURL)).data as any).features.autumn.url;
+}
 
 /**
  * Parses user input and returns an user object.
@@ -96,12 +106,61 @@ async function storeInfraction(infraction: Infraction): Promise<{ userWarnCount:
     return { userWarnCount: (r[1].length ?? 0) + 1 }
 }
 
+async function uploadFile(file: any, filename: string): Promise<string> {
+    let data = new FormData();
+    data.append("file", file, { filename: filename });
+
+    let req = await axios.post(await getAutumnURL() + '/attachments', data, { headers: data.getHeaders() });
+    return (req.data as any)['id'] as string;
+}
+
+/**
+ * Attempts to escape a message's markdown content (qoutes, headers, **bold** / *italic*, etc)
+ */
+function sanitizeMessageContent(msg: string): string {
+    let str = '';
+    for (let line of msg.split('\n')) {
+
+        line = line.trim();
+
+        if (line.startsWith('#')  || // headers
+            line.startsWith('>')  || // quotes
+            line.startsWith('|')  || // tables
+            line.startsWith('*')  || // unordered lists
+            line.startsWith('-')  || // ^
+            line.startsWith('+')     // ^
+        ) {
+            line = `\\${line}`;
+        }
+
+        // Ordered lists can't be escaped using `\`,
+        // so we just put an invisible character \u200b
+        if (/^[0-9]+[)\.].*/gi.test(line)) {
+            line = `\u200b${line}`;
+        }
+
+        for (const char of ['_', '!!', '~', '`', '*', '^', '$']) {
+            line = line.replace(new RegExp(`(?<!\\\\)\\${char}`, 'g'), `\\${char}`);
+        }
+
+        // Mentions
+        line = line.replace(/<@/g, `<\\@`);
+
+        str += line + '\n';
+    }
+
+    return str;
+}
+
 export {
+    getAutumnURL,
     hasPerm,
     isModerator,
     isBotManager,
     parseUser,
     storeInfraction,
+    uploadFile,
+    sanitizeMessageContent,
     NO_MANAGER_MSG,
     USER_MENTION_REGEX,
     CHANNEL_MENTION_REGEX,
