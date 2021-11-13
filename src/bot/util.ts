@@ -84,9 +84,9 @@ function hasPerm(member: Member, perm:  'View'|'ManageRoles'|'ManageChannels'|'M
     if (member.server?.owner == member.user?._id) return true;
 
     // this should work but im not 100% certain
-    let userPerm = member.roles?.map(id => member.server?.roles?.[id])
-        .reduce((sum: number, cur: any) => sum | cur.permissions[0], member.server?.default_permissions[0]) ?? 0;
-    
+    let userPerm = member.roles?.map(id => member.server?.roles?.[id]?.permissions?.[0])
+        .reduce((sum?: number, cur?: number) => sum! | cur!, member.server?.default_permissions[0]) ?? 0;
+
     return !!(userPerm & p);
 }
 
