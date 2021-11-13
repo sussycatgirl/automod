@@ -19,7 +19,7 @@
     "form-data": "^4.0.0",
     "log75": "2.0.1",
     "monk": "^7.3.4",
-    "revolt.js": "^5.1.0-alpha.6",
+    "revolt.js": "^5.1.0-alpha.9",
     "ulid": "^2.3.0",
     "xlsx": "^0.17.3"
   },

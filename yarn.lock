@@ -379,10 +379,15 @@ require-at@^1.0.6:
   resolved "https://registry.yarnpkg.com/require-at/-/require-at-1.0.6.tgz#9eb7e3c5e00727f5a4744070a7f560d4de4f6e6a"
   integrity sha512-7i1auJbMUrXEAZCOQ0VNJgmcT2VOKPRl2YGJwgpHpC9CE91Mv4/4UYIUm4chGJaI381ZDq1JUicFii64Hapd8g==
 
-revolt.js@^5.1.0-alpha.6:
-  version "5.1.0-alpha.6"
-  resolved "https://registry.yarnpkg.com/revolt.js/-/revolt.js-5.1.0-alpha.6.tgz#bdd1c9f3bdd7e0f45e309a3e1fa5239138e1cb1a"
-  integrity sha512-XqdP24tGc+En9M8ccWkk74z/v2DBtH7OboTbFQBQTjWIT4fLMP/ox+GLdDVWSF7Zg6M/xPrMbg4oL/nP+xqZHQ==
+revolt-api@^0.5.3-alpha.8-patch.0:
+  version "0.5.3-alpha.8-patch.0"
+  resolved "https://registry.yarnpkg.com/revolt-api/-/revolt-api-0.5.3-alpha.8-patch.0.tgz#3c9f981f8100a89aec1299bc110453cf01c51f89"
+  integrity sha512-ghupcB1nJS7fCiD41L4u+QudFoBWGE381uW4s8cuHsQS3bFXgzAH1lgtjYNoFgrVUekqQAcHWote8Kn2sOABAQ==
+
+revolt.js@^5.1.0-alpha.9:
+  version "5.1.0-alpha.9"
+  resolved "https://registry.yarnpkg.com/revolt.js/-/revolt.js-5.1.0-alpha.9.tgz#ce3bff9eb0778160270f8af68c7a64b790cac095"
+  integrity sha512-tBrKvyStA2Q1LTMgyqrOMjAdTYRucE6ZFEZtt5BW6MJ3r7MEMZkqXorU6L/3PE233jqQbHTFDqz8IhyPCfUA3A==
   dependencies:
     axios "^0.21.4"
     eventemitter3 "^4.0.7"
@@ -391,6 +396,7 @@ revolt.js@^5.1.0-alpha.6:
     lodash.defaultsdeep "^4.6.1"
     lodash.isequal "^4.5.0"
     mobx "^6.3.2"
+    revolt-api "^0.5.3-alpha.8-patch.0"
     ulid "^2.3.0"
     ws "^8.2.2"
 
