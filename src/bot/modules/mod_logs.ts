@@ -1,5 +1,5 @@
-import { Member } from "revolt.js/dist/maps/Members";
-import { User } from "revolt.js/dist/maps/Users";
+import { Member } from "@janderedev/revolt.js/dist/maps/Members";
+import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { client } from "../..";
 import ServerConfig from "../../struct/ServerConfig";
 import logger from "../logger";

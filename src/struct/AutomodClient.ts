@@ -1,4 +1,4 @@
-import * as Revolt from 'revolt.js';
+import * as Revolt from "@janderedev/revolt.js";
 import { IMonkManager } from 'monk';
 import logger from '../bot/logger';
 

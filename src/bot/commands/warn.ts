@@ -1,5 +1,5 @@
 import Command from "../../struct/Command";
-import { Message } from "revolt.js/dist/maps/Messages";
+import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { isModerator, NO_MANAGER_MSG, parseUser, storeInfraction } from "../util";
 import Infraction from "../../struct/antispam/Infraction";
 import { ulid } from "ulid";

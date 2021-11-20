@@ -1,5 +1,5 @@
 import Command from "../../struct/Command";
-import { Message } from "revolt.js/dist/maps/Messages";
+import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { client } from "../..";
 import Infraction from "../../struct/antispam/Infraction";
 import InfractionType from "../../struct/antispam/InfractionType";
