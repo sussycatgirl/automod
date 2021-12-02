@@ -36,7 +36,7 @@ export default {
         let { userWarnCount } = await storeInfraction(infraction);
 
         await Promise.all([
-            message.reply(`## User warned.\n`
+            message.reply(`### User warned.\n`
                           + `This is ${userWarnCount == 1 ? '**the first warn**' : `warn number **${userWarnCount}**`}`
                             + ` for ${user.username ?? 'this user'}.\n`
                           + `**Infraction ID:** \`${infraction._id}\`\n`
