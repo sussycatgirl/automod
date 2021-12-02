@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import ServerConfig from "../../struct/ServerConfig";
 import { antispam } from "./antispam";
+import checkCustomRules from "./custom_rules/custom_rules";
 
 const DEFAULT_PREFIX = process.env['PREFIX']
                     ?? process.env['BOT_PREFIX']
@@ -22,8 +23,9 @@ client.on('message', async message => {
         message.author_id == client.user?._id ||
         !message.channel?.server) return;
 
-    // Send message through anti spam check
+    // Send message through anti spam check and custom rules
     if (!antispam(message)) return;
+    checkCustomRules(message);
 
     let config: ServerConfig = (await client.db.get('servers').findOne({ 'id': message.channel?.server_id })) ?? {};
     let guildPrefix = config.prefix ?? DEFAULT_PREFIX;
