@@ -4,6 +4,7 @@ import { hasPerm, parseUser } from "../util";
 import ServerConfig from "../../struct/ServerConfig";
 import { client } from "../..";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
+import MessageCommandContext from "../../struct/MessageCommandContext";
 
 const SYNTAX = '/admin add @user; /admin remove @user; /admin list';
 
@@ -12,11 +13,11 @@ export default {
     aliases: [ 'admins', 'manager', 'managers' ],
     description: 'Allow users to control the bot\'s configuration',
     syntax: SYNTAX,
-    run: async (message: Message, args: string[]) => {
+    run: async (message: MessageCommandContext, args: string[]) => {
         if (!hasPerm(message.member!, 'ManageServer'))
             return message.reply('You need **ManageServer** permission to use this command.');
 
-        let config: ServerConfig = (await client.db.get('servers').findOne({ id: message.channel?.server_id })) ?? {};
+        let config: ServerConfig = (await client.db.get('servers').findOne({ id: message.serverContext._id })) ?? {};
         let admins = config.botManagers ?? [];
         let user: User|null;
 
@@ -30,7 +31,7 @@ export default {
                 if (admins.indexOf(user._id) > -1) return message.reply('This user is already added as bot admin.');
 
                 admins.push(user._id);
-                await client.db.get('servers').update({ id: message.channel?.server_id }, { $set: { botManagers: admins } });
+                await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { botManagers: admins } });
 
                 message.reply(`✅ Added \`@${user.username}\` to bot admins.`);
             break;
@@ -45,7 +46,7 @@ export default {
                 if (admins.indexOf(user._id) == -1) return message.reply('This user is not added as bot admin.');
 
                 admins = admins.filter(a => a != user?._id);
-                await client.db.get('servers').update({ id: message.channel?.server_id }, { $set: { botManagers: admins } });
+                await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { botManagers: admins } });
 
                 message.reply(`✅ Removed \`@${user.username}\` from bot admins.`);
             break;

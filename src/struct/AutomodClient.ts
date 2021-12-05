@@ -13,7 +13,7 @@ class AutomodClient extends Revolt.Client {
 }
 
 let login = (client: Revolt.Client): Promise<void> => new Promise((resolve, reject) => {
-    logger.info('Logging in...');
+    logger.info('Bot logging in...');
     let env = process.env;
 
     if (!env['BOT_TOKEN']) {
@@ -24,7 +24,7 @@ let login = (client: Revolt.Client): Promise<void> => new Promise((resolve, reje
     client.loginBot(env['BOT_TOKEN']);
 
     client.once('ready', () => {
-        logger.done('Logged in!');
+        logger.done('Bot logged in!');
         resolve();
     });
 });

@@ -5,6 +5,7 @@ import Infraction from "../struct/antispam/Infraction";
 import ServerConfig from "../struct/ServerConfig";
 import FormData from 'form-data';
 import axios from 'axios';
+import { Server } from "@janderedev/revolt.js/dist/maps/Servers";
 
 let ServerPermissions = {
     ['View' as string]: 1 << 0,
@@ -65,15 +66,15 @@ async function parseUser(text: string): Promise<User|null> {
     } catch(e) { return null; }
 }
 
-async function isModerator(member: Member) {
+async function isModerator(member: Member, server: Server) {
     return hasPerm(member, 'KickMembers')
-        || await isBotManager(member)
-        || (((await client.db.get('servers').findOne({ id: member.server?._id }) || {}) as ServerConfig)
+        || await isBotManager(member, server)
+        || (((await client.db.get('servers').findOne({ id: server._id }) || {}) as ServerConfig)
         .moderators?.indexOf(member.user?._id!) ?? -1) > -1;
 }
-async function isBotManager(member: Member) {
+async function isBotManager(member: Member, server: Server) {
     return hasPerm(member, 'ManageServer')
-        || (((await client.db.get('servers').findOne({ id: member.server?._id }) || {}) as ServerConfig)
+        || (((await client.db.get('servers').findOne({ id: server._id }) || {}) as ServerConfig)
         .botManagers?.indexOf(member.user?._id!) ?? -1) > -1;
 }
 

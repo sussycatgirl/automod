@@ -7,6 +7,7 @@ class ServerConfig {
     automodSettings: AutomodSettings | undefined;
     botManagers: string[] | undefined;
     moderators: string[] | undefined;
+    linkedServer: string | undefined;
     whitelist: {
         users: string[] | undefined,
         roles: string[] | undefined,

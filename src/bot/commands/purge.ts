@@ -13,7 +13,7 @@ export default {
     syntax: SYNTAX,
     run: async (message: Message, args: string[]) => {
         try {
-            if (!message.member || !await isModerator(message.member!)) return message.reply('🔒 Access denied');
+            if (!message.member || !await isModerator(message.member!, message.channel?.server!)) return message.reply('🔒 Access denied');
 
             let messages: Array<Message> = [];
             // X amount of messages from bottom

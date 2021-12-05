@@ -7,7 +7,7 @@ import InfractionType from "../../struct/antispam/InfractionType";
 import ModerationAction from "../../struct/antispam/ModerationAction";
 import ServerConfig from "../../struct/ServerConfig";
 import logger from "../logger";
-import { isBotManager, isModerator, storeInfraction } from "../util";
+import { isModerator, storeInfraction } from "../util";
 
 let msgCountStore: Map<string, { users: any }> = new Map();
 
@@ -30,7 +30,7 @@ async function antispam(message: Message): Promise<boolean> {
         if (message.author?.bot != null) break;
         if (serverRules.whitelist?.users?.includes(message.author_id)) break;
         if (message.member?.roles?.filter(r => serverRules.whitelist?.roles?.includes(r)).length) break;
-        if (serverRules.whitelist?.managers !== false && await isModerator(message.member!)) break;
+        if (serverRules.whitelist?.managers !== false && await isModerator(message.member!, message.channel?.server!)) break;
         if (rule.channels?.indexOf(message.channel_id) == -1) break;
 
         let store = msgCountStore.get(rule.id)!;

@@ -4,6 +4,7 @@ import { isBotManager, NO_MANAGER_MSG, parseUser } from "../util";
 import ServerConfig from "../../struct/ServerConfig";
 import { client } from "../..";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
+import MessageCommandContext from "../../struct/MessageCommandContext";
 
 const SYNTAX = '/mod add @user; /mod remove @user; /mod list';
 
@@ -14,10 +15,10 @@ export default {
     aliases: [ 'moderators', 'mod', 'mods' ],
     description: 'Allow users to moderate other users',
     syntax: SYNTAX,
-    run: async (message: Message, args: string[]) => {
-        if (!await isBotManager(message.member!)) return message.reply(NO_MANAGER_MSG);
+    run: async (message: MessageCommandContext, args: string[]) => {
+        if (!await isBotManager(message.member!, message.channel?.server!)) return message.reply(NO_MANAGER_MSG);
 
-        let config: ServerConfig = (await client.db.get('servers').findOne({ id: message.channel?.server_id })) ?? {};
+        let config: ServerConfig = (await client.db.get('servers').findOne({ id: message.serverContext._id })) ?? {};
         let mods = config.moderators ?? [];
         let user: User|null;
 
@@ -31,7 +32,7 @@ export default {
                 if (mods.indexOf(user._id) > -1) return message.reply('This user is already added as moderator.');
 
                 mods.push(user._id);
-                await client.db.get('servers').update({ id: message.channel?.server_id }, { $set: { moderators: mods } });
+                await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { moderators: mods } });
 
                 message.reply(`✅ Added \`@${user.username}\` to moderators.`);
             break;
@@ -46,7 +47,7 @@ export default {
                 if (mods.indexOf(user._id) == -1) return message.reply('This user is not added as moderator.');
 
                 mods = mods.filter(a => a != user?._id);
-                await client.db.get('servers').update({ id: message.channel?.server_id }, { $set: { moderators: mods } });
+                await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { moderators: mods } });
 
                 message.reply(`✅ Removed \`@${user.username}\` from moderators.`);
             break;

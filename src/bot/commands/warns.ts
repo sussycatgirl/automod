@@ -10,6 +10,7 @@ import Xlsx from 'xlsx';
 import FormData from 'form-data';
 import axios from "axios";
 import { fetchUsername } from "../modules/mod_logs";
+import MessageCommandContext from "../../struct/MessageCommandContext";
 
 Day.extend(RelativeTime);
 
@@ -18,12 +19,12 @@ export default {
     aliases: [ 'warnings', 'infractions', 'infraction' ],
     description: 'Show all user infractions',
     syntax: '/warns; /warns @username ["export-csv"]; /warns rm [ID]',
-    run: async (message: Message, args: string[]) => {
-        if (!await isModerator(message.member!)) return message.reply(NO_MANAGER_MSG);
+    run: async (message: MessageCommandContext, args: string[]) => {
+        if (!await isModerator(message.member!, message.serverContext)) return message.reply(NO_MANAGER_MSG);
 
         let collection = client.db.get('infractions');
         let infractions: Array<Infraction> = await collection.find({
-            server: message.channel?.server_id,
+            server: message.serverContext._id,
         });
         let userInfractions: Map<string, Infraction[]> = new Map();
         infractions.forEach(i => {
@@ -33,7 +34,7 @@ export default {
 
         if (!args[0]) {
             // Show top most warned users
-            let msg = `## Most warned users in ${message.channel?.server?.name ?? 'this server'}\n\u200b\n`;
+            let msg = `## Most warned users in ${message.serverContext.name}\n\u200b\n`;
             for (let inf of Array.from(userInfractions.values()).sort((a, b) => b.length - a.length).slice(0, 9)) {
                 inf = inf.sort((a, b) => b.date - a.date);
                 msg += `**${await fetchUsername(inf[0].user)}** (${inf[0].user}): **${inf.length}** infractions\n`;
@@ -52,7 +53,7 @@ export default {
                     if (!id) return message.reply('No infraction ID provided.');
                     let inf: Infraction|null = await client.db.get('infractions').findOneAndDelete({
                         _id: { $eq: id.toUpperCase() },
-                        server: message.channel?.server_id
+                        server: message.serverContext._id
                     });
 
                     if (!inf) return message.reply('I can\'t find that ID.');

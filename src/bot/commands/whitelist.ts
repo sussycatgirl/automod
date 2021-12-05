@@ -2,6 +2,7 @@ import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { client } from "../..";
 import Command from "../../struct/Command";
+import MessageCommandContext from "../../struct/MessageCommandContext";
 import ServerConfig from "../../struct/ServerConfig";
 import { isBotManager, NO_MANAGER_MSG, parseUser } from "../util";
 
@@ -12,11 +13,11 @@ export default {
     aliases: [],
     description: 'Allow users or roles to bypass moderation rules',
     syntax: SYNTAX,
-    run: async (message: Message, args: string[]) => {
-        let config: ServerConfig = await client.db.get('servers').findOne({ id: message.channel?.server_id }) || {}
+    run: async (message: MessageCommandContext, args: string[]) => {
+        let config: ServerConfig = await client.db.get('servers').findOne({ id: message.serverContext._id }) || {}
         if (!config.whitelist) config.whitelist = { users: [], roles: [], managers: true }
 
-        if (!isBotManager(message.member!)) return message.reply(NO_MANAGER_MSG);
+        if (!isBotManager(message.member!, message.serverContext)) return message.reply(NO_MANAGER_MSG);
 
         let user: User|null, role: string|undefined;
         switch(args[0]?.toLowerCase()) {
@@ -24,7 +25,7 @@ export default {
             case 'set':
                 if (!args[1]) return message.reply('You need to spefify a user or role name.');
 
-                role = Object.entries(message.channel?.server?.roles ?? {})
+                role = Object.entries(message.serverContext.roles ?? {})
                 .find((r) => r[1].name?.toLowerCase() == args[1].toLowerCase()
                     || r[0] == args[1].toUpperCase())
                 ?.[0];
@@ -34,7 +35,7 @@ export default {
                         return message.reply('That role is already whitelisted.');
 
                     config.whitelist!.roles = [role, ...(config.whitelist!.roles ?? [])];
-                    await client.db.get('servers').update({ id: message.channel?.server_id }, { $set: { whitelist: config.whitelist } });
+                    await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
                     return message.reply(`Added role to whitelist!`);
                 }
 
@@ -45,7 +46,7 @@ export default {
                     return message.reply('That user is already whitelisted.');
 
                 config.whitelist!.users = [user._id, ...(config.whitelist!.users ?? [])];
-                await client.db.get('servers').update({ id: message.channel?.server_id }, { $set: { whitelist: config.whitelist } });
+                await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
                 return message.reply('Added user to whitelist!');
             break;
             case 'rm':
@@ -54,7 +55,7 @@ export default {
             case 'delete':
                 if (!args[1]) return message.reply('You need to spefify a user or role name.');
 
-                role = Object.entries(message.channel?.server?.roles ?? {})
+                role = Object.entries(message.serverContext.roles ?? {})
                 .find((r) => r[1].name?.toLowerCase() == args[1].toLowerCase()
                     || r[0] == args[1].toUpperCase())
                 ?.[0];
@@ -64,7 +65,7 @@ export default {
                         return message.reply('That role is not whitelisted.');
 
                     config.whitelist!.roles = config.whitelist!.roles.filter(r => r != role);
-                    await client.db.get('servers').update({ id: message.channel?.server_id }, { $set: { whitelist: config.whitelist } });
+                    await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
                     return message.reply(`Removed role from whitelist!`);
                 }
 
@@ -74,7 +75,7 @@ export default {
                     return message.reply('That user is not whitelisted.');
 
                 config.whitelist!.users = config.whitelist!.users.filter(u => u != user?._id);
-                await client.db.get('servers').update({ id: message.channel?.server_id }, { $set: { whitelist: config.whitelist } });
+                await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
                 return message.reply('Removed user from whitelist!');
             break;
             case 'l':
@@ -95,7 +96,7 @@ export default {
 
                 if (config.whitelist.roles?.length) {
                     config.whitelist.roles
-                        ?.map(r => message.channel?.server?.roles?.[r]?.name || `Unknown role (${r})`)
+                        ?.map(r => message.serverContext.roles?.[r]?.name || `Unknown role (${r})`)
                         .forEach((r, index) => {
                         if (index < 15) str += `* ${r}\n`;
                         if (index == 15) str += `**${config.whitelist!.roles!.length - 15} more role${config.whitelist?.roles?.length == 16 ? '' : 's'}**\n`;

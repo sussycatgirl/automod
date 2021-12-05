@@ -5,14 +5,15 @@ import Infraction from "../../struct/antispam/Infraction";
 import { ulid } from "ulid";
 import InfractionType from "../../struct/antispam/InfractionType";
 import { logModAction } from "../modules/mod_logs";
+import MessageCommandContext from "../../struct/MessageCommandContext";
 
 export default {
     name: 'warn',
     aliases: null,
     removeEmptyArgs: false,
     description: 'add an infraction to an user\'s record',
-    run: async (message: Message, args: string[]) => {
-        if (!await isModerator(message.member!)) return message.reply(NO_MANAGER_MSG);
+    run: async (message: MessageCommandContext, args: string[]) => {
+        if (!await isModerator(message.member!, message.serverContext)) return message.reply(NO_MANAGER_MSG);
         let user = await parseUser(args.shift() ?? '');
         if (!user) return message.reply('I can\'t find that user.');
         if (user.bot != null) return message.reply('You cannot warn bots.');
@@ -28,7 +29,7 @@ export default {
             createdBy: message.author_id,
             user: user._id,
             reason: reason,
-            server: message.channel?.server_id!,
+            server: message.serverContext._id,
             type: InfractionType.Manual,
             date: Date.now(),
         } as Infraction;
@@ -36,7 +37,8 @@ export default {
         let { userWarnCount } = await storeInfraction(infraction);
 
         await Promise.all([
-            message.reply(`### User warned.\n`
+            message.reply(`### User warned`
+                + `${message.serverContext._id != message.channel?.server_id ? ` in **${message.serverContext.name}**` : ''}.\n`
                           + `This is ${userWarnCount == 1 ? '**the first warn**' : `warn number **${userWarnCount}**`}`
                             + ` for ${user.username ?? 'this user'}.\n`
                           + `**Infraction ID:** \`${infraction._id}\`\n`

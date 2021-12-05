@@ -6,13 +6,16 @@ import AntispamRule from "../../struct/antispam/AntispamRule";
 import ModerationAction from "../../struct/antispam/ModerationAction";
 import { isBotManager, NO_MANAGER_MSG } from "../util";
 import { ulid } from 'ulid';
+import MessageCommandContext from "../../struct/MessageCommandContext";
 
 export default {
     name: 'settings',
     aliases: [ 'setting' ],
     description: 'change antispam settings',
-    run: async (message: Message, args: string[]) => {
-        if (!isBotManager(message.member!)) return message.reply(NO_MANAGER_MSG);
+    run: async (message: MessageCommandContext, args: string[]) => {
+        if (!isBotManager(message.member!, message.serverContext)) return message.reply(NO_MANAGER_MSG);
+
+        return 'command is disabled for now';
 
         let settings = {
             spam: [

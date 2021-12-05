@@ -6,6 +6,7 @@ import path from 'path';
 import ServerConfig from "../../struct/ServerConfig";
 import { antispam } from "./antispam";
 import checkCustomRules from "./custom_rules/custom_rules";
+import MessageCommandContext from "../../struct/MessageCommandContext";
 
 const DEFAULT_PREFIX = process.env['PREFIX']
                     ?? process.env['BOT_PREFIX']
@@ -16,22 +17,22 @@ let commands: Command[] = fs.readdirSync(path.join(__dirname, '..', 'commands'))
     .filter(file => file.endsWith('.js'))
     .map(file => require(path.join(__dirname, '..', 'commands', file)).default as Command);
 
-client.on('message', async message => {
-    logger.debug(`Message -> ${message.content}`);
+client.on('message', async msg => {
+    logger.debug(`Message -> ${msg.content}`);
 
-    if (typeof message.content != 'string' ||
-        message.author_id == client.user?._id ||
-        !message.channel?.server) return;
+    if (typeof msg.content != 'string' ||
+        msg.author_id == client.user?._id ||
+        !msg.channel?.server) return;
 
     // Send message through anti spam check and custom rules
-    if (!await antispam(message)) return;
-    checkCustomRules(message);
+    if (!await antispam(msg)) return;
+    checkCustomRules(msg);
 
-    let config: ServerConfig = (await client.db.get('servers').findOne({ 'id': message.channel?.server_id })) ?? {};
-    let guildPrefix = config.prefix ?? DEFAULT_PREFIX;
-
-    let args = message.content.split(' ');
+    let args = msg.content.split(' ');
     let cmdName = args.shift() ?? '';
+    
+    let config: ServerConfig = (await client.db.get('servers').findOne({ 'id': msg.channel?.server_id })) ?? {};
+    let guildPrefix = config.prefix ?? DEFAULT_PREFIX;
 
     if (cmdName.startsWith(`<@${client.user?._id}>`)) {
         cmdName = cmdName.substr(`<@${client.user?._id}>`.length);
@@ -47,11 +48,27 @@ client.on('message', async message => {
     if (!cmd) return;
 
     let ownerIDs = process.env['BOT_OWNERS'] ? process.env['BOT_OWNERS'].split(',') : [];
-    if (cmd.restrict == 'BOTOWNER' && ownerIDs.indexOf(message.author_id) == -1) {
-        logger.warn(`User ${message.author?.username} tried to run owner-only command: ${cmdName}`);
-        message.reply('🔒 Access denied');
+    if (cmd.restrict == 'BOTOWNER' && ownerIDs.indexOf(msg.author_id) == -1) {
+        logger.warn(`User ${msg.author?.username} tried to run owner-only command: ${cmdName}`);
+        msg.reply('🔒 Access denied');
         return;
     }
+
+    let serverCtx = msg.channel?.server;
+
+    if (config.linkedServer) {
+        try {
+            serverCtx = client.servers.get(config.linkedServer)
+                || await client.servers.fetch(config.linkedServer);
+        } catch(e) {
+            msg.reply(`# Error\n` +
+                      `Failed to fetch linked server. This command will be executed in the context of this server.\n\n` +
+                      `Error: \`\`\`js\n${e}\n\`\`\``);
+        }
+    }
+
+    let message: MessageCommandContext = msg as MessageCommandContext;
+    message.serverContext = serverCtx;
 
     logger.info(`Command: ${message.author?.username} in ${message.channel?.server?.name}: ${message.content}`);
 
