@@ -12,6 +12,13 @@ login(client);
 
 export { client }
 
-// Load modules
-import('./bot/modules/command_handler');
-import('./bot/modules/mod_logs');
+(async () => {
+    // Wait for a database query to succeed before loading the rest
+    logger.info('Connecting to database...');
+    await db.get('servers').findOne({});
+    logger.done('DB ready!');
+
+    // Load modules
+    import('./bot/modules/command_handler');
+    import('./bot/modules/mod_logs');
+})();
