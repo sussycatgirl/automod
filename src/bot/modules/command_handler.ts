@@ -24,7 +24,7 @@ client.on('message', async message => {
         !message.channel?.server) return;
 
     // Send message through anti spam check and custom rules
-    if (!antispam(message)) return;
+    if (!await antispam(message)) return;
     checkCustomRules(message);
 
     let config: ServerConfig = (await client.db.get('servers').findOne({ 'id': message.channel?.server_id })) ?? {};
