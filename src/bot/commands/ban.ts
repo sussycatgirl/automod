@@ -60,11 +60,6 @@ export default {
         let reason = args.join(' ') || 'No reason provided';
 
         if (banDuration == 0) {
-            message.serverContext.banUser(targetUser._id, {
-                reason: reason + ` (by ${await fetchUsername(message.author_id)} ${message.author_id})`
-            })
-            .catch(e => message.reply(`Failed to ban user: \`${e}\``));
-
             let infId = ulid();
             let { userWarnCount } = await storeInfraction({
                 _id: infId,
@@ -77,14 +72,14 @@ export default {
                 actionType: 'ban',
             } as Infraction);
 
-            message.reply(`### @${targetUser.username} has been banned.\n`
-                        + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`);
-        } else {
             message.serverContext.banUser(targetUser._id, {
-                reason: reason + ` (by ${await fetchUsername(message.author_id)} ${message.author_id}) (${durationStr})`
+                reason: reason + ` (by ${await fetchUsername(message.author_id)} ${message.author_id})`
             })
             .catch(e => message.reply(`Failed to ban user: \`${e}\``));
 
+            message.reply(`### @${targetUser.username} has been banned.\n`
+                        + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`);
+        } else {
             let banUntil = Date.now() + banDuration;
             let infId = ulid();
             let { userWarnCount } = await storeInfraction({
@@ -97,6 +92,11 @@ export default {
                 user: targetUser._id,
                 actionType: 'ban',
             } as Infraction);
+
+            message.serverContext.banUser(targetUser._id, {
+                reason: reason + ` (by ${await fetchUsername(message.author_id)} ${message.author_id}) (${durationStr})`
+            })
+            .catch(e => message.reply(`Failed to ban user: \`${e}\``));
 
             await storeTempBan({
                 id: infId,

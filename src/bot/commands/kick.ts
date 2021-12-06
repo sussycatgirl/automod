@@ -40,12 +40,6 @@ export default {
             return message.reply(`Failed to fetch member: \`${e}\``);
         }
 
-        try {
-            await targetMember.kick();
-        } catch(e) {
-            return message.reply(`Failed to kick user: \`${e}\``);
-        }
-
         let infId = ulid();
         let { userWarnCount } = await storeInfraction({
             _id: infId,
@@ -57,6 +51,12 @@ export default {
             user: targetUser._id,
             actionType: 'kick',
         } as Infraction);
+
+        try {
+            await targetMember.kick();
+        } catch(e) {
+            return message.reply(`Failed to kick user: \`${e}\``);
+        }
 
         message.reply(`### @${targetUser.username} has been ${Math.random() > 0.8 ? 'ejected' : 'kicked'}.\n`
                     + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`);
