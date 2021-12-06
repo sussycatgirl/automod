@@ -21,4 +21,6 @@ export { client }
     // Load modules
     import('./bot/modules/command_handler');
     import('./bot/modules/mod_logs');
+    import('./bot/modules/event_handler');
+    import('./bot/modules/tempbans');
 })();

@@ -38,7 +38,7 @@ export default {
             for (let inf of Array.from(userInfractions.values()).sort((a, b) => b.length - a.length).slice(0, 9)) {
                 inf = inf.sort((a, b) => b.date - a.date);
                 msg += `**${await fetchUsername(inf[0].user)}** (${inf[0].user}): **${inf.length}** infractions\n`;
-                msg += `\u200b \u200b \u200b \u200b \u200b ↳ Most recent warning: \`${inf[0].reason}\` `
+                msg += `\u200b \u200b \u200b \u200b \u200b ↳ Most recent infraction: ${getInfEmoji(inf[0])}\`${inf[0].reason}\` `
                     + `${inf[0].type == InfractionType.Manual ? `(${await fetchUsername(inf[0].createdBy ?? '')})` : ''}\n`;
             };
 
@@ -60,7 +60,7 @@ export default {
 
                     message.reply(`## Infraction deleted\n\u200b\n`
                                 + `ID: \`${inf._id}\`\n`
-                                + `Reason: \`${inf.reason}\` `
+                                + `Reason: ${getInfEmoji(inf)}\`${inf.reason}\` `
                                     + `(${inf.type == InfractionType.Manual ? await fetchUsername(inf.createdBy ?? '') : 'System'})\n`
                                 + `Created ${Day(inf.date).fromNow()}`);
                 break;
@@ -73,10 +73,10 @@ export default {
                     else {
                         let msg = `## ${infs.length} infractions stored for @${user.username}\n\u200b\n`;
                         let attachSpreadsheet = false;
-                        for (const i in infs) { console.log(i)
+                        for (const i in infs) {
                             let inf = infs[i];
                             let toAdd = '';
-                            toAdd += `#${Number(i)+1}: \`${inf.reason}\` (${inf.type == InfractionType.Manual ? await fetchUsername(inf.createdBy!) : 'System'})\n`;
+                            toAdd += `#${Number(i)+1}: ${getInfEmoji(inf)} \`${inf.reason}\` (${inf.type == InfractionType.Manual ? await fetchUsername(inf.createdBy!) : 'System'})\n`;
                             toAdd += `\u200b \u200b \u200b \u200b \u200b ↳ ${Day(inf.date).fromNow()} (Infraction ID: \`${inf._id}\`)\n`;
 
                             if ((msg + toAdd).length > 1900 || Number(i) > 5) {
@@ -96,7 +96,7 @@ export default {
                                 let csv_data = [
                                     [`Warns for @${user.username} (${user._id}) - ${Day().toString()}`],
                                     [],
-                                    ['Date', 'Reason', 'Created By', 'Type', 'ID'],
+                                    ['Date', 'Reason', 'Created By', 'Type', 'Action Type', 'ID'],
                                 ];
 
                                 for (const inf of infs) {
@@ -105,6 +105,7 @@ export default {
                                         inf.reason,
                                         inf.type == InfractionType.Manual ? `${await fetchUsername(inf.createdBy!)} (${inf.createdBy})` : 'SYSTEM',
                                         inf.type == InfractionType.Automatic ? 'Automatic' : 'Manual',
+                                        inf.actionType || 'warn',
                                         inf._id,
                                     ]);
                                 }
@@ -124,3 +125,11 @@ export default {
         }
     }
 } as Command;
+
+function getInfEmoji(inf: Infraction) {
+    switch(inf.actionType) {
+        case 'kick': return ':mans_shoe: ';
+        case 'ban': return ':hammer: ';
+        default: return '';
+    }
+}
