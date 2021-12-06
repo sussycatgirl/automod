@@ -77,7 +77,7 @@ export default {
                 actionType: 'ban',
             } as Infraction);
 
-            message.reply(`### @${targetUser.username} has bee banned.\n`
+            message.reply(`### @${targetUser.username} has been banned.\n`
                         + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`);
         } else {
             message.serverContext.banUser(targetUser._id, {
