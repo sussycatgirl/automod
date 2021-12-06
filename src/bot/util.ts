@@ -21,6 +21,7 @@ let ServerPermissions = {
 }
 
 const NO_MANAGER_MSG = '🔒 Missing permission';
+const ULID_REGEX = /^[0-9A-HJ-KM-NP-TV-Z]{26}$/i;
 const USER_MENTION_REGEX = /^<@[0-9A-HJ-KM-NP-TV-Z]{26}>$/i;
 const CHANNEL_MENTION_REGEX = /^<#[0-9A-HJ-KM-NP-TV-Z]{26}>$/i;
 let autumn_url: string|null = null;
@@ -163,6 +164,7 @@ export {
     uploadFile,
     sanitizeMessageContent,
     NO_MANAGER_MSG,
+    ULID_REGEX,
     USER_MENTION_REGEX,
     CHANNEL_MENTION_REGEX,
 }
