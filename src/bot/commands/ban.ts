@@ -61,7 +61,7 @@ export default {
 
         if (banDuration == 0) {
             message.serverContext.banUser(targetUser._id, {
-                reason: reason + ` (by @${await fetchUsername(message.author_id)} ${message.author_id})`
+                reason: reason + ` (by ${await fetchUsername(message.author_id)} ${message.author_id})`
             })
             .catch(e => message.reply(`Failed to ban user: \`${e}\``));
 
@@ -81,7 +81,7 @@ export default {
                         + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`);
         } else {
             message.serverContext.banUser(targetUser._id, {
-                reason: reason + ` (by @${await fetchUsername(message.author_id)} ${message.author_id}) (${durationStr})`
+                reason: reason + ` (by ${await fetchUsername(message.author_id)} ${message.author_id}) (${durationStr})`
             })
             .catch(e => message.reply(`Failed to ban user: \`${e}\``));
 
