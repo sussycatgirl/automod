@@ -200,3 +200,5 @@ new Promise((res: (value: void) => void) => client.user ? res() : client.once('r
         } catch(e) { console.error(e) }
     });
 });
+
+export { scanServer };
