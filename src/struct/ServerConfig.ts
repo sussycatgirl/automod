@@ -19,6 +19,11 @@ class ServerConfig {
         modAction: string | undefined,      // User warned, kicked or banned
         userUpdate: string | undefined,     // Username/nickname/avatar changes
     } | undefined;
+    userScan: {
+        enable?: boolean;
+        logChannel?: string;
+        discordWebhook?: string;
+    } | undefined;
 }
 
 export default ServerConfig;

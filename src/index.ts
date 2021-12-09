@@ -23,4 +23,5 @@ export { client }
     import('./bot/modules/mod_logs');
     import('./bot/modules/event_handler');
     import('./bot/modules/tempbans');
+    import('./bot/modules/user_scan');
 })();
