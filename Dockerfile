@@ -5,7 +5,7 @@ RUN yarn install --frozen-lockfile
 COPY . .
 RUN yarn build
 
-FROM node:14 as prod
+FROM node:16 as prod
 WORKDIR /app/
 COPY --from=build /build/package.json /build/yarn.lock ./
 COPY --from=build /build/dist ./dist
