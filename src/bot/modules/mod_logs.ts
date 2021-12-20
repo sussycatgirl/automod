@@ -1,4 +1,5 @@
 import { Member } from "@janderedev/revolt.js/dist/maps/Members";
+import { Server } from "@janderedev/revolt.js/dist/maps/Servers";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { client } from "../..";
 import ServerConfig from "../../struct/ServerConfig";
@@ -114,9 +115,9 @@ client.on('packet', async (packet) => {
     }
 });
 
-async function logModAction(type: 'warn'|'kick'|'ban', mod: Member, target: User, reason: string|null, extraText?: string|null): Promise<void> {
+async function logModAction(type: 'warn'|'kick'|'ban', server: Server, mod: Member, target: User, reason: string|null, extraText?: string|null): Promise<void> {
     try {
-        let config: ServerConfig = await client.db.get('servers').findOne({ id: mod.server?._id }) ?? {};
+        let config: ServerConfig = await client.db.get('servers').findOne({ id: server._id }) ?? {};
         let logChannelID = config.logs?.modAction;
         if (!logChannelID) return;
         let logChannel = client.channels.get(logChannelID);
@@ -124,7 +125,7 @@ async function logModAction(type: 'warn'|'kick'|'ban', mod: Member, target: User
         let aType = type == 'ban' ? 'banned' : type + 'ed';
         let msg = `User ${aType}\n`
                 + `\`@${mod.user?.username}\` **${aType}** \`@`
-                    + `${target.username}\`${type == 'warn' ? '.' : ` from ${mod.server?.name}.`}\n`
+                    + `${target.username}\`${type == 'warn' ? '.' : ` from ${server.name}.`}\n`
                 + `**Reason**: \`${reason ? reason : 'No reason provided.'}\`\n`
                 + (extraText ?? '');
         
@@ -138,7 +139,7 @@ async function logModAction(type: 'warn'|'kick'|'ban', mod: Member, target: User
 
 let fetchUsername = async (id: string) => {
     try {
-        let u = await client.users.fetch(id);
+        let u = client.users.get(id) || await client.users.fetch(id);
         return `@${u.username}`;
     } catch(e) { return 'Unknown user' }
 }
