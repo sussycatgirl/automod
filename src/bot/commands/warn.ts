@@ -1,5 +1,4 @@
 import Command from "../../struct/Command";
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { isModerator, NO_MANAGER_MSG, parseUser, storeInfraction } from "../util";
 import Infraction from "../../struct/antispam/Infraction";
 import { ulid } from "ulid";
@@ -43,7 +42,7 @@ export default {
                             + ` for ${user.username ?? 'this user'}.\n`
                           + `**Infraction ID:** \`${infraction._id}\`\n`
                           + `**Reason:** \`${infraction.reason}\``),
-            logModAction('warn', message.member!, user, reason, `This is warn number **${userWarnCount}** for this user.`),
+            logModAction('warn', message.serverContext, message.member!, user, reason, `This is warn number **${userWarnCount}** for this user.`),
         ]);
     }
 } as Command;
