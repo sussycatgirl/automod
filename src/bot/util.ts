@@ -67,6 +67,17 @@ async function parseUser(text: string): Promise<User|null> {
     } catch(e) { return null; }
 }
 
+/**
+ * Does the exact same as `parseUser`, but returns only `_id` instead
+ * of null if the user was not found and the input is also an ID
+ */
+async function parseUserOrId(text: string): Promise<User|{_id: string}|null> {
+    let parsed = await parseUser(text);
+    if (parsed) return parsed;
+    if (ULID_REGEX.test(text)) return { _id: text.toUpperCase() };
+    return null;
+}
+
 async function isModerator(member: Member, server: Server) {
     return hasPerm(member, 'KickMembers')
         || await isBotManager(member, server)
@@ -160,6 +171,7 @@ export {
     isModerator,
     isBotManager,
     parseUser,
+    parseUserOrId,
     storeInfraction,
     uploadFile,
     sanitizeMessageContent,

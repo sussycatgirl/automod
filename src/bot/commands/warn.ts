@@ -1,9 +1,9 @@
 import Command from "../../struct/Command";
-import { isModerator, NO_MANAGER_MSG, parseUser, storeInfraction } from "../util";
+import { isModerator, NO_MANAGER_MSG, parseUserOrId, storeInfraction } from "../util";
 import Infraction from "../../struct/antispam/Infraction";
 import { ulid } from "ulid";
 import InfractionType from "../../struct/antispam/InfractionType";
-import { logModAction } from "../modules/mod_logs";
+import { fetchUsername, logModAction } from "../modules/mod_logs";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 
 export default {
@@ -13,9 +13,9 @@ export default {
     description: 'add an infraction to an user\'s record',
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message.member!, message.serverContext)) return message.reply(NO_MANAGER_MSG);
-        let user = await parseUser(args.shift() ?? '');
+        let user = await parseUserOrId(args.shift() ?? '');
         if (!user) return message.reply('I can\'t find that user.');
-        if (user.bot != null) return message.reply('You cannot warn bots.');
+        if ((user as any)?.bot != null) return message.reply('You cannot warn bots.');
 
         let reason: string = args.join(' ')
             ?.replace(new RegExp('`', 'g'), '\'')
@@ -39,10 +39,10 @@ export default {
             message.reply(`### User warned`
                 + `${message.serverContext._id != message.channel?.server_id ? ` in **${message.serverContext.name}**` : ''}.\n`
                           + `This is ${userWarnCount == 1 ? '**the first warn**' : `warn number **${userWarnCount}**`}`
-                            + ` for ${user.username ?? 'this user'}.\n`
+                            + ` for ${await fetchUsername(user._id)}.\n`
                           + `**Infraction ID:** \`${infraction._id}\`\n`
                           + `**Reason:** \`${infraction.reason}\``),
-            logModAction('warn', message.serverContext, message.member!, user, reason, `This is warn number **${userWarnCount}** for this user.`),
+            logModAction('warn', message.serverContext, message.member!, user._id, reason, `This is warn number **${userWarnCount}** for this user.`),
         ]);
     }
 } as Command;

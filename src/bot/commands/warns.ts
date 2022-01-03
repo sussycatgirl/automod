@@ -1,14 +1,11 @@
 import Command from "../../struct/Command";
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { client } from "../..";
 import Infraction from "../../struct/antispam/Infraction";
 import InfractionType from "../../struct/antispam/InfractionType";
-import { isModerator, NO_MANAGER_MSG, parseUser, uploadFile } from "../util";
+import { isModerator, NO_MANAGER_MSG, parseUserOrId, uploadFile } from "../util";
 import Day from 'dayjs';
 import RelativeTime from 'dayjs/plugin/relativeTime';
 import Xlsx from 'xlsx';
-import FormData from 'form-data';
-import axios from "axios";
 import { fetchUsername } from "../modules/mod_logs";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 
@@ -65,13 +62,13 @@ export default {
                                 + `Created ${Day(inf.date).fromNow()}`);
                 break;
                 default:
-                    let user = await parseUser(args[0]);
-                    if (!user) return message.reply('Unknown user');
+                    let user = await parseUserOrId(args[0]);
+                    if (!user?._id) return message.reply('I can\'t find this user.');
 
                     let infs = userInfractions.get(user._id);
-                    if (!infs) return message.reply(`There are no infractions stored for \`@${user.username}\`.`);
+                    if (!infs) return message.reply(`There are no infractions stored for \`${await fetchUsername(user._id)}\`.`);
                     else {
-                        let msg = `## ${infs.length} infractions stored for @${user.username}\n\u200b\n`;
+                        let msg = `## ${infs.length} infractions stored for ${await fetchUsername(user._id)}\n\u200b\n`;
                         let attachSpreadsheet = false;
                         for (const i in infs) {
                             let inf = infs[i];
@@ -94,7 +91,7 @@ export default {
                         if (attachSpreadsheet) {
                             try {
                                 let csv_data = [
-                                    [`Warns for @${user.username} (${user._id}) - ${Day().toString()}`],
+                                    [`Warns for ${await fetchUsername(user._id)} (${user._id}) - ${Day().toString()}`],
                                     [],
                                     ['Date', 'Reason', 'Created By', 'Type', 'Action Type', 'ID'],
                                 ];

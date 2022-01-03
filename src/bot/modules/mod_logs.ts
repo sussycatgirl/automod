@@ -1,6 +1,5 @@
 import { Member } from "@janderedev/revolt.js/dist/maps/Members";
 import { Server } from "@janderedev/revolt.js/dist/maps/Servers";
-import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { client } from "../..";
 import ServerConfig from "../../struct/ServerConfig";
 import logger from "../logger";
@@ -115,7 +114,7 @@ client.on('packet', async (packet) => {
     }
 });
 
-async function logModAction(type: 'warn'|'kick'|'ban', server: Server, mod: Member, target: User, reason: string|null, extraText?: string|null): Promise<void> {
+async function logModAction(type: 'warn'|'kick'|'ban', server: Server, mod: Member, target: string, reason: string|null, extraText?: string|null): Promise<void> {
     try {
         let config: ServerConfig = await client.db.get('servers').findOne({ id: server._id }) ?? {};
         let logChannelID = config.logs?.modAction;
@@ -125,7 +124,7 @@ async function logModAction(type: 'warn'|'kick'|'ban', server: Server, mod: Memb
         let aType = type == 'ban' ? 'banned' : type + 'ed';
         let msg = `User ${aType}\n`
                 + `\`@${mod.user?.username}\` **${aType}** \`@`
-                    + `${target.username}\`${type == 'warn' ? '.' : ` from ${server.name}.`}\n`
+                    + `${await fetchUsername(target)}\`${type == 'warn' ? '.' : ` from ${server.name}.`}\n`
                 + `**Reason**: \`${reason ? reason : 'No reason provided.'}\`\n`
                 + (extraText ?? '');
         
