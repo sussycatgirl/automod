@@ -24,7 +24,7 @@ let login = (client: Revolt.Client): Promise<void> => new Promise((resolve, reje
     client.loginBot(env['BOT_TOKEN']);
 
     client.once('ready', () => {
-        logger.done('Bot logged in!');
+        logger.done(`Bot logged in as ${client.user?.username}!`);
         resolve();
     });
 });
