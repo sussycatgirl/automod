@@ -1,6 +1,7 @@
 import * as Revolt from "@janderedev/revolt.js";
 import { IMonkManager } from 'monk';
 import logger from '../bot/logger';
+import { adminBotLog } from "../bot/logging";
 
 class AutomodClient extends Revolt.Client {
     db: IMonkManager;
@@ -25,6 +26,7 @@ let login = (client: Revolt.Client): Promise<void> => new Promise((resolve, reje
 
     client.once('ready', () => {
         logger.done(`Bot logged in as ${client.user?.username}!`);
+        adminBotLog({ message: 'Bot logged in', type: 'INFO' });
         resolve();
     });
 });
