@@ -5,6 +5,7 @@ import Infraction from "../../struct/antispam/Infraction";
 import InfractionType from "../../struct/antispam/InfractionType";
 import Command from "../../struct/Command";
 import MessageCommandContext from "../../struct/MessageCommandContext";
+import { logModAction } from "../modules/mod_logs";
 import { isModerator, NO_MANAGER_MSG, parseUser, storeInfraction } from "../util";
 
 export default {
@@ -41,7 +42,7 @@ export default {
         }
 
         let infId = ulid();
-        let { userWarnCount } = await storeInfraction({
+        let infraction: Infraction = {
             _id: infId,
             createdBy: message.author_id,
             date: Date.now(),
@@ -50,7 +51,8 @@ export default {
             type: InfractionType.Manual,
             user: targetUser._id,
             actionType: 'kick',
-        } as Infraction);
+        }
+        let { userWarnCount } = await storeInfraction(infraction);
 
         try {
             await targetMember.kick();
@@ -58,7 +60,10 @@ export default {
             return message.reply(`Failed to kick user: \`${e}\``);
         }
 
-        message.reply(`### @${targetUser.username} has been ${Math.random() > 0.8 ? 'ejected' : 'kicked'}.\n`
-                    + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`);
+        await Promise.all([
+            message.reply(`### @${targetUser.username} has been ${Math.random() > 0.8 ? 'ejected' : 'kicked'}.\n`
+                    + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`),
+            logModAction('kick', message.serverContext, message.member!, targetUser._id, reason, infraction),
+        ]);
     }
 } as Command;

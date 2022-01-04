@@ -1,4 +1,5 @@
 import AutomodSettings from "./antispam/AutomodSettings";
+import LogConfig from "./LogConfig";
 
 class ServerConfig {
     id: string | undefined;
@@ -14,16 +15,11 @@ class ServerConfig {
         managers: boolean | undefined,
     } | undefined;
     logs: {
-        automod: string | undefined,        // automod rule triggered
-        messageUpdate: string | undefined,  // Message edited or deleted
-        modAction: string | undefined,      // User warned, kicked or banned
-        userUpdate: string | undefined,     // Username/nickname/avatar changes
+        messageUpdate?: LogConfig,  // Message edited or deleted
+        modAction?: LogConfig,      // User warned, kicked or banned
+        userScan?: LogConfig        // User profile matched word list
     } | undefined;
-    userScan: {
-        enable?: boolean;
-        logChannel?: string;
-        discordWebhook?: string;
-    } | undefined;
+    enableUserScan?: boolean;
 }
 
 export default ServerConfig;

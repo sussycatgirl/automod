@@ -21,7 +21,7 @@ export default {
                 try {
                     let serverConf: FindOneResult<ServerConfig> = await client.db.get('servers').findOne({ id: message.serverContext._id });
 
-                    if (!serverConf?.userScan?.enable) return message.reply(`User scanning is not enabled for this server.`);
+                    if (!serverConf?.enableUserScan) return message.reply(`User scanning is not enabled for this server.`);
                     if (userscans.includes(message.serverContext._id)) return message.reply(`There is already a scan running for this server.`);
                     userscans.push(message.serverContext._id);
 

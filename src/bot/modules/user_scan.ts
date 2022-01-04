@@ -4,8 +4,8 @@ import { FindOneResult } from "monk";
 import ScannedUser from "../../struct/ScannedUser";
 import { Member } from "@janderedev/revolt.js/dist/maps/Members";
 import ServerConfig from "../../struct/ServerConfig";
-import { MessageEmbed, WebhookClient } from "discord.js";
 import logger from "../logger";
+import { sendLogMessage } from "../util";
 
 let { USERSCAN_WORDLIST_PATH } = process.env;
 
@@ -16,6 +16,8 @@ let wordlist = USERSCAN_WORDLIST_PATH
         .filter(word => word.length > 0)
     : null;
 
+if (wordlist) logger.info("Found word list; user scanning enabled");
+
 let scannedUsers = client.db.get('scanned_users');
 let serverConfig: Map<string, ServerConfig> = new Map();
 let userScanTimeout: Map<string, number> = new Map();
@@ -24,7 +26,7 @@ async function scanServer(id: string, userScanned: () => void, done: () => void)
     if (!wordlist) return;
     let conf: FindOneResult<ServerConfig> = await client.db.get('servers').findOne({ id: id });
     serverConfig.set(id, conf as ServerConfig);
-    if (!conf?.userScan?.enable) return;
+    if (!conf?.enableUserScan) return;
 
     try {
         logger.debug(`Scanning user list for ${id}`);
@@ -101,44 +103,32 @@ async function scanUser(member: Member) {
 async function logUser(member: Member, profile: any) { // `Profile` type doesn't seem to be exported by revolt.js
     try {
         let conf = serverConfig.get(member.server!._id);
-        if (!conf || !conf.userScan?.enable) return;
+        if (!conf || !conf.enableUserScan) return;
 
-        if (conf.userScan.discordWebhook) {
-            try {
-                let embed = new MessageEmbed()
-                    .setTitle('Potentially suspicious user found')
-                    .setAuthor(`${member.user?.username ?? 'Unknown user'} | ${member._id.user}`, member.generateAvatarURL());
+        logger.debug(`User ${member._id} matched word list; reporting`);
 
-                if (member.nickname) embed.addField('Nickname', member.nickname || 'None', true);
-                if (member.user?.status?.text) embed.addField('Status', member.user.status.text || 'None', true);
-                embed.addField('Profile', ((profile?.content || 'No about me text') as string).substr(0, 1000));
+        if (conf.enableUserScan && conf.logs?.userScan) {
+            let bannerUrl = client.generateFileURL({
+                _id: profile.background._id,
+                tag: profile.background.tag,
+                content_type: profile.background.content_type,
+            }, undefined, true);
+            let embedFields: { title: string, content: string, inline?: boolean }[] = [];
+            if (member.nickname) embedFields.push({ title: 'Nickname', content: member.nickname || 'None', inline: true });
+            if (member.user?.status?.text) embedFields.push({ title: 'Status', content: member.user.status.text || 'None', inline: true });
+            embedFields.push({ title: 'Profile', content: ((profile?.content || 'No about me text') as string).substring(0, 1000), inline: true });
 
-                if (profile.background) {
-                    let url = client.generateFileURL({
-                        _id: profile.background._id,
-                        tag: profile.background.tag,
-                        content_type: profile.background.content_type,
-                    }, undefined, true);
+            sendLogMessage(conf.logs.userScan, {
+                title: 'Potentially suspicious user found',
+                description: `${member.user?.username ?? 'Unknown user'} | [${member._id.user}](/@${member._id.user}) | [Avatar](<${member.generateAvatarURL()}>)`,
+                color: '#ff9c11',
+                fields: embedFields,
+                image: bannerUrl ? {
+                    type: 'BIG',
+                    url: bannerUrl
+                } : undefined,
+            });
 
-                    if (url) embed.setImage(url);
-                }
-
-                let whClient = new WebhookClient({ url: conf.userScan.discordWebhook });
-                await whClient.send({ embeds: [ embed ] });
-                whClient.destroy();
-            } catch(e) { console.error(e) }
-        }
-
-        if (conf.userScan.logChannel) {
-            try {
-                let channel = client.channels.get(conf.userScan.logChannel)
-                            || await client.channels.fetch(conf.userScan.logChannel);
-                
-                let msg = `## Potentially suspicious user found\n`
-                        + `The profile <@${member._id.user}> (${member._id.user}) might contain abusive content.`;
-
-                await channel.sendMessage(msg);
-            } catch(e) { console.error(e) }
         }
     } catch(e) { console.error(e) }
 }
@@ -166,7 +156,7 @@ new Promise((res: (value: void) => void) => client.user ? res() : client.once('r
                     let conf: FindOneResult<ServerConfig> = await client.db.get('servers').findOne({ id: server._id });
                     serverConfig.set(server._id, conf as ServerConfig);
 
-                    if (conf?.userScan?.enable) {
+                    if (conf?.enableUserScan) {
                         let member = await server.fetchMember(packet.id);
                         let t = userScanTimeout.get(member._id.user);
                         if (t && t > (Date.now() - 10000)) return;
@@ -191,7 +181,7 @@ new Promise((res: (value: void) => void) => client.user ? res() : client.once('r
             let conf: FindOneResult<ServerConfig> = await client.db.get('servers').findOne({ id: server._id });
             serverConfig.set(server._id, conf as ServerConfig);
 
-            if (conf?.userScan?.enable) {
+            if (conf?.enableUserScan) {
                 let t = userScanTimeout.get(member._id.user);
                 if (t && t > (Date.now() - 10000)) return;
                 userScanTimeout.set(member._id.user, Date.now());

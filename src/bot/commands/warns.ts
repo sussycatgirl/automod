@@ -39,7 +39,7 @@ export default {
                     + `${inf[0].type == InfractionType.Manual ? `(${await fetchUsername(inf[0].createdBy ?? '')})` : ''}\n`;
             };
 
-            message.reply(msg.substr(0, 1999));
+            message.reply(msg.substring(0, 1999));
         } else {
             switch(args[0]?.toLowerCase()) {
                 case 'delete':
@@ -55,7 +55,7 @@ export default {
 
                     if (!inf) return message.reply('I can\'t find that ID.');
 
-                    message.reply(`## Infraction deleted\n\u200b\n`
+                    message.reply(`## Infraction deleted\n`
                                 + `ID: \`${inf._id}\`\n`
                                 + `Reason: ${getInfEmoji(inf)}\`${inf.reason}\` `
                                     + `(${inf.type == InfractionType.Manual ? await fetchUsername(inf.createdBy ?? '') : 'System'})\n`

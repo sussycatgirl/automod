@@ -11,7 +11,7 @@ export default {
         message.reply(`Measuring...`)
             ?.catch(console.error)
             .then(msg => {
-                msg?.edit({ content:  `## Ping Pong!\n`
+                if (msg) msg.edit({ content:  `## Ping Pong!\n`
                                     + `WS: \`${client.websocket.ping ?? '--'}ms\`\n`
                                     + `Msg: \`${Math.round(Date.now() - now) / 2}ms\`` });
         });

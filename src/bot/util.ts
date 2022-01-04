@@ -6,6 +6,11 @@ import ServerConfig from "../struct/ServerConfig";
 import FormData from 'form-data';
 import axios from 'axios';
 import { Server } from "@janderedev/revolt.js/dist/maps/Servers";
+import LogConfig from "../struct/LogConfig";
+import LogMessage from "../struct/LogMessage";
+import { ColorResolvable, MessageAttachment, MessageEmbed, WebhookClient } from "discord.js";
+import logger from "./logger";
+import { ulid } from "ulid";
 
 let ServerPermissions = {
     ['View' as string]: 1 << 0,
@@ -127,6 +132,110 @@ async function uploadFile(file: any, filename: string): Promise<string> {
     return (req.data as any)['id'] as string;
 }
 
+async function sendLogMessage(config: LogConfig, content: LogMessage) {
+    if (config.discord?.webhookUrl) {
+        let c = { ...content, ...content.overrides?.discord }
+
+        const embed = new MessageEmbed();
+        if (c.title) embed.setTitle(content.title);
+        if (c.description) embed.setDescription(c.description);
+        if (c.color) embed.setColor(c.color as ColorResolvable);
+        if (c.fields?.length) {
+            for (const field of c.fields) {
+                embed.addField(field.title, field.content.trim() || "\u200b", field.inline);
+            }
+        }
+        if (content.image) {
+            if (content.image.type == 'THUMBNAIL') embed.setThumbnail(content.image.url);
+            else if (content.image.type == 'BIG')  embed.setImage(content.image.url);
+        }
+
+        if (content.attachments?.length) {
+            embed.setFooter(`Attachments: ${content.attachments.map(a => a.name).join(', ')}`);
+        }
+
+        let data = new FormData();
+        content.attachments?.forEach(a => {
+            data.append(`files[${ulid()}]`, a.content, { filename: a.name });
+        });
+
+        data.append("payload_json", JSON.stringify({ embeds: [ embed.toJSON() ] }), { contentType: 'application/json' });
+
+        axios.post(config.discord.webhookUrl, data, {headers: data.getHeaders() })
+            .catch(e => {
+                logger.error('Failed to fire Discord webhook: ' + e);
+            });
+    }
+
+    if (config.revolt?.channel) {
+        let c = { ...content, ...content.overrides?.revolt };
+        try {
+            const channel = client.channels.get(config.revolt.channel) || await client.channels.fetch(config.revolt.channel);
+
+            let message = '';
+            switch(config.revolt.type) {
+                case 'RVEMBED':
+                case 'DYNAMIC':
+                    c = { ...c, ...content.overrides?.revoltRvembed };
+                    let url = `https://rvembed.janderedev.xyz/embed`;
+                    let args = [];
+
+                    let description = (c.description ?? '');
+                    if (c.fields?.length) {
+                        for (const field of c.fields) {
+                            description += `\n${field.title}\n` +
+                                        `${field.content}`;
+                        }
+                    }
+
+                    description = description.trim();
+
+                    if (c.title) args.push(`title=${encodeURIComponent(c.title)}`);
+                    if (description) args.push(`description=${encodeURIComponent(description)}`);
+                    if (c.color) args.push(`color=${encodeURIComponent(c.color)}`);
+                    if (c.image) {
+                        args.push(`image=${encodeURIComponent(c.image.url)}`);
+                        args.push(`image_large=true`);
+                    }
+
+                    if (!(config.revolt.type == 'DYNAMIC' && (description.length > 1000 || description.split('\n').length > 6))) {
+                        for (const i in args) url += `${i == '0' ? '?' : '&'}${args[i]}`;
+                        message = `[\u200b](${url})`;
+                        break;
+                    }
+                default: // QUOTEBLOCK, PLAIN or unspecified
+
+                    // please disregard this mess
+
+                    c = { ...c, ...content.overrides?.revoltQuoteblock };
+                    const quote = config.revolt.type == 'PLAIN' ? '' : '>';
+
+                    if (c.title) message += `## ${c.title}\n`;
+                    if (c.description) message += `${c.description}\n`;
+                    if (c.fields?.length) {
+                        for (const field of c.fields) {
+                            message += `${quote ? '\u200b\n' : ''}${quote}### ${field.title}\n` +
+                                        `${quote}${field.content.trim().split('\n').join('\n' + quote)}\n${quote ? '\n' : ''}`;
+                        }
+                    }
+
+                    message = message.trim().split('\n').join('\n' + quote); // Wrap entire message in quotes
+                    if (c.image?.url) message += `\n[Attachment](${c.image.url})`;
+                    break;
+            }
+
+            await channel.sendMessage({
+                content: message,
+                attachments: content.attachments ?
+                    await Promise.all(content.attachments?.map(a => uploadFile(a.content, a.name))) :
+                    undefined
+            });
+        } catch(e) {
+            logger.error(`Failed to send log message in ${config.revolt.channel}: ${e}`);
+        }
+    }
+}
+
 /**
  * Attempts to escape a message's markdown content (qoutes, headers, **bold** / *italic*, etc)
  */
@@ -175,6 +284,7 @@ export {
     storeInfraction,
     uploadFile,
     sanitizeMessageContent,
+    sendLogMessage,
     NO_MANAGER_MSG,
     ULID_REGEX,
     USER_MENTION_REGEX,

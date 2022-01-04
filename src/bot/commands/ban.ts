@@ -5,9 +5,13 @@ import InfractionType from "../../struct/antispam/InfractionType";
 import Command from "../../struct/Command";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import TempBan from "../../struct/TempBan";
-import { fetchUsername } from "../modules/mod_logs";
+import { fetchUsername, logModAction } from "../modules/mod_logs";
 import { storeTempBan } from "../modules/tempbans";
 import { isModerator, NO_MANAGER_MSG, parseUser, storeInfraction } from "../util";
+import Day from 'dayjs';
+import RelativeTime from 'dayjs/plugin/relativeTime';
+
+Day.extend(RelativeTime);
 
 export default {
     name: 'ban',
@@ -18,10 +22,10 @@ export default {
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message.member!, message.serverContext))
             return message.reply(NO_MANAGER_MSG);
-        
+
         if (args.length == 0)
             return message.reply(`You need to provide a target user!`);
-        
+
         let targetUser = await parseUser(args.shift()!);
         if (!targetUser) return message.reply('Sorry, I can\'t find that user.');
 
@@ -61,7 +65,7 @@ export default {
 
         if (banDuration == 0) {
             let infId = ulid();
-            let { userWarnCount } = await storeInfraction({
+            let infraction: Infraction = {
                 _id: infId,
                 createdBy: message.author_id,
                 date: Date.now(),
@@ -70,19 +74,23 @@ export default {
                 type: InfractionType.Manual,
                 user: targetUser._id,
                 actionType: 'ban',
-            } as Infraction);
+            }
+            let { userWarnCount } = await storeInfraction(infraction);
 
             message.serverContext.banUser(targetUser._id, {
                 reason: reason + ` (by ${await fetchUsername(message.author_id)} ${message.author_id})`
             })
             .catch(e => message.reply(`Failed to ban user: \`${e}\``));
 
-            message.reply(`### @${targetUser.username} has been banned.\n`
-                        + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`);
+            await Promise.all([
+                message.reply(`### @${targetUser.username} has been banned.\n`
+                        + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`),
+                logModAction('ban', message.serverContext, message.member!, targetUser._id, reason, infraction, `Ban duration: **Permanent**`),
+            ]);
         } else {
             let banUntil = Date.now() + banDuration;
             let infId = ulid();
-            let { userWarnCount } = await storeInfraction({
+            let infraction: Infraction = {
                 _id: infId,
                 createdBy: message.author_id,
                 date: Date.now(),
@@ -91,7 +99,8 @@ export default {
                 type: InfractionType.Manual,
                 user: targetUser._id,
                 actionType: 'ban',
-            } as Infraction);
+            }
+            let { userWarnCount } = await storeInfraction(infraction);
 
             message.serverContext.banUser(targetUser._id, {
                 reason: reason + ` (by ${await fetchUsername(message.author_id)} ${message.author_id}) (${durationStr})`
@@ -105,8 +114,11 @@ export default {
                 until: banUntil,
             } as TempBan);
 
-            message.reply(`### ${targetUser.username} has been temporarily banned.\n`
-                        + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`);
+            await Promise.all([
+                message.reply(`### ${targetUser.username} has been temporarily banned.\n`
+                        + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`),
+                logModAction('ban', message.serverContext, message.member!, targetUser._id, reason, infraction, `Ban duration: **${Day(banUntil).fromNow(true)}**`),
+            ]);
         }
     }
 } as Command;
