@@ -1,4 +1,4 @@
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
+import { Message } from "revolt.js/dist/maps/Messages";
 import CustomRuleAction from "../../../../struct/antispam/CustomRuleAction";
 import { storeInfraction } from '../../../util';
 import Infraction from "../../../../struct/antispam/Infraction";

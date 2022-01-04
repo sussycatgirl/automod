@@ -1,5 +1,5 @@
 import { ulid } from "ulid";
-import { client } from "../..";
+import { client } from "../../index";
 import Infraction from "../../struct/antispam/Infraction";
 import InfractionType from "../../struct/antispam/InfractionType";
 import Command from "../../struct/Command";

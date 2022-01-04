@@ -2,7 +2,7 @@ import { client } from "../..";
 import fs from 'fs';
 import { FindOneResult } from "monk";
 import ScannedUser from "../../struct/ScannedUser";
-import { Member } from "@janderedev/revolt.js/dist/maps/Members";
+import { Member } from "revolt.js/dist/maps/Members";
 import ServerConfig from "../../struct/ServerConfig";
 import logger from "../logger";
 import { sendLogMessage } from "../util";

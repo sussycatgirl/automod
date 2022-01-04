@@ -1,9 +1,9 @@
 import Command from "../../struct/Command";
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
+import { Message } from "revolt.js/dist/maps/Messages";
 import { isBotManager, NO_MANAGER_MSG, parseUser } from "../util";
 import ServerConfig from "../../struct/ServerConfig";
 import { client } from "../..";
-import { User } from "@janderedev/revolt.js/dist/maps/Users";
+import { User } from "revolt.js/dist/maps/Users";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 
 const SYNTAX = '/mod add @user; /mod remove @user; /mod list';

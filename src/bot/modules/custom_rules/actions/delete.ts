@@ -1,4 +1,4 @@
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
+import { Message } from "revolt.js/dist/maps/Messages";
 import CustomRuleAction from "../../../../struct/antispam/CustomRuleAction";
 
 async function execute(message: Message, action: CustomRuleAction) {

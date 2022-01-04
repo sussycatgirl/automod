@@ -1,4 +1,4 @@
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
+import { Message } from "revolt.js/dist/maps/Messages";
 import { client } from "../../..";
 import CustomRuleTrigger from "../../../struct/antispam/CustomRuleTrigger";
 import VM from 'vm';

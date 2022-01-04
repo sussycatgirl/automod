@@ -1,5 +1,5 @@
 import Command from "../../struct/Command";
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
+import { Message } from "revolt.js/dist/maps/Messages";
 import { exec } from 'child_process';
 
 export default {

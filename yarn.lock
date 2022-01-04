@@ -27,21 +27,15 @@
     combined-stream "^1.0.8"
     mime-types "^2.1.12"
 
-"@janderedev/revolt.js@^5.1.0-alpha.9-patch.0":
-  version "5.1.0-alpha.9-patch.0"
-  resolved "https://registry.yarnpkg.com/@janderedev/revolt.js/-/revolt.js-5.1.0-alpha.9-patch.0.tgz#de1da9e4d09b6d07f341b9d7590a730f185de84a"
-  integrity sha512-9fzZ/hCy16//UOIHT0k7dDPyD+Wl/ijTU/wCM25EQcz2saUgBcwatjrVp2KJ0/jZmqiiYHQayCRCku2WJCyZcQ==
-  dependencies:
-    axios "^0.21.4"
-    eventemitter3 "^4.0.7"
-    exponential-backoff "^3.1.0"
-    isomorphic-ws "^4.0.1"
-    lodash.defaultsdeep "^4.6.1"
-    lodash.isequal "^4.5.0"
-    mobx "^6.3.2"
-    revolt-api "^0.5.3-alpha.8-patch.0"
-    ulid "^2.3.0"
-    ws "^8.2.2"
+"@insertish/exponential-backoff@3.1.0-patch.0":
+  version "3.1.0-patch.0"
+  resolved "https://registry.yarnpkg.com/@insertish/exponential-backoff/-/exponential-backoff-3.1.0-patch.0.tgz#1fff134f70fc0906d11d09069d51183b542e42cf"
+  integrity sha512-1qhW81s3GDbssyaxRWdpBAn1cIw5s393HnrdYFjfa2i6rq3SEjQDK6U80g6dq/K0or6JRr2eCn75Wfc1IrGM0g==
+
+"@insertish/isomorphic-ws@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@insertish/isomorphic-ws/-/isomorphic-ws-4.0.1.tgz#5bcd6f73b93efa9ccdb6abf887ae808d40827169"
+  integrity sha512-kFD/p8T4Hkqr992QrdkbW/cQ/W/q2d9MPCobwzBv2PwTKLkCD9RaYDy6m17qRnSLQQ5PU0kHCG8kaOwAqzj1vQ==
 
 "@sapphire/async-queue@^1.1.8":
   version "1.1.9"
@@ -275,20 +269,15 @@ exit-on-epipe@~1.0.1:
   resolved "https://registry.yarnpkg.com/exit-on-epipe/-/exit-on-epipe-1.0.1.tgz#0bdd92e87d5285d267daa8171d0eb06159689692"
   integrity sha512-h2z5mrROTxce56S+pnvAV890uu7ls7f1kEvVGJbw1OlFH3/mlJ5bkXu0KRyW94v37zzHPiUd55iLn3DA7TjWpw==
 
-exponential-backoff@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/exponential-backoff/-/exponential-backoff-3.1.0.tgz#9409c7e579131f8bd4b32d7d8094a911040f2e68"
-  integrity sha512-oBuz5SYz5zzyuHINoe9ooePwSu0xApKWgeNzok4hZ5YKXFh9zrQBEM15CXqoZkJJPuI2ArvqjPQd8UKJA753XA==
-
 fflate@^0.7.1:
   version "0.7.1"
   resolved "https://registry.yarnpkg.com/fflate/-/fflate-0.7.1.tgz#56e87e87c3f2fe01b025fbb1c4ea835990c02fa2"
   integrity sha512-VYM2Xy1gSA5MerKzCnmmuV2XljkpKwgJBKezW+495TTnTCh1x5HcYa1aH8wRU/MfTGhW4ziXqgwprgQUVl3Ohw==
 
 follow-redirects@^1.14.0:
-  version "1.14.5"
-  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.14.5.tgz#f09a5848981d3c772b5392309778523f8d85c381"
-  integrity sha512-wtphSXy7d4/OR+MvIFbCVBDzZ5520qV8XfPklSN5QtxuMUJZ+b0Wnst1e1lCDocfzuCkHqj8k0FpZqO+UIaKNA==
+  version "1.14.6"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.14.6.tgz#8cfb281bbc035b3c067d6cd975b0f6ade6e855cd"
+  integrity sha512-fhUl5EwSJbbl8AR+uYL2KQDxLkdSjZGR36xy46AO7cOMTrCMON6Sa28FmAnC2tRTDbd/Uuzz3aJBv7EBN7JH8A==
 
 follow-redirects@^1.14.4:
   version "1.14.4"
@@ -338,15 +327,15 @@ isarray@~1.0.0:
   resolved "https://registry.yarnpkg.com/isarray/-/isarray-1.0.0.tgz#bb935d48582cba168c06834957a54a3e07124f11"
   integrity sha1-u5NdSFgsuhaMBoNJV6VKPgcSTxE=
 
-isomorphic-ws@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/isomorphic-ws/-/isomorphic-ws-4.0.1.tgz#55fd4cd6c5e6491e76dc125938dd863f5cd4f2dc"
-  integrity sha512-BhBvN2MBpWTaSHdWRb/bwdZJ1WaehQ2L1KngkCkfLUGF0mAWAT1sQUQacEmQ0jXkFw/czDXPNQSL5u2/Krsz1w==
-
 lodash.defaultsdeep@^4.6.1:
   version "4.6.1"
   resolved "https://registry.yarnpkg.com/lodash.defaultsdeep/-/lodash.defaultsdeep-4.6.1.tgz#512e9bd721d272d94e3d3a63653fa17516741ca6"
   integrity sha512-3j8wdDzYuWO3lM3Reg03MuQR957t287Rpcxp1njpEa8oDrikb+FwGdW3n+FELh/A6qib6yPit0j/pv9G/yeAqA==
+
+lodash.flatten@^4.4.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/lodash.flatten/-/lodash.flatten-4.4.0.tgz#f31c22225a9632d2bbf8e4addbef240aa765a61f"
+  integrity sha1-8xwiIlqWMtK7+OSt2+8kCqdlph8=
 
 lodash.isequal@^4.5.0:
   version "4.5.0"
@@ -378,9 +367,9 @@ mime-types@^2.1.12:
     mime-db "1.50.0"
 
 mobx@^6.3.2:
-  version "6.3.7"
-  resolved "https://registry.yarnpkg.com/mobx/-/mobx-6.3.7.tgz#9ed85561e86da45141134c8fa20cf5f9c7246c3d"
-  integrity sha512-X7yU7eOEyxIBk4gjIi2UIilwdw48gXh0kcZ5ex3Rc+COJsJmJ4SNpf42uYea3aUqb1hedTv5xzJrq5Q55p0P5g==
+  version "6.3.10"
+  resolved "https://registry.yarnpkg.com/mobx/-/mobx-6.3.10.tgz#c3bc715c8f03717b9a2329f9697d42b7998d42e0"
+  integrity sha512-lfuIN5TGXBNy/5s3ggr1L+IbD+LvfZVlj5q1ZuqyV9AfMtunYQvE8G0WfewS9tgIR3I1q8HJEEbcAOsxEgLwRw==
 
 mongodb@^3.2.3:
   version "3.7.2"
@@ -515,10 +504,27 @@ require-at@^1.0.6:
   resolved "https://registry.yarnpkg.com/require-at/-/require-at-1.0.6.tgz#9eb7e3c5e00727f5a4744070a7f560d4de4f6e6a"
   integrity sha512-7i1auJbMUrXEAZCOQ0VNJgmcT2VOKPRl2YGJwgpHpC9CE91Mv4/4UYIUm4chGJaI381ZDq1JUicFii64Hapd8g==
 
-revolt-api@^0.5.3-alpha.8-patch.0:
-  version "0.5.3-alpha.8-patch.0"
-  resolved "https://registry.yarnpkg.com/revolt-api/-/revolt-api-0.5.3-alpha.8-patch.0.tgz#3c9f981f8100a89aec1299bc110453cf01c51f89"
-  integrity sha512-ghupcB1nJS7fCiD41L4u+QudFoBWGE381uW4s8cuHsQS3bFXgzAH1lgtjYNoFgrVUekqQAcHWote8Kn2sOABAQ==
+revolt-api@^0.5.3-alpha.9:
+  version "0.5.3-alpha.11"
+  resolved "https://registry.yarnpkg.com/revolt-api/-/revolt-api-0.5.3-alpha.11.tgz#ed666c403676de0bc47b1fe3ed59c934c5fbd842"
+  integrity sha512-5obsvdSIaiW3oVcsFpXYG3FXTPUxwR+0gpPhP+89i2agGdeKhcygaRajZ5HK83/Zmr/VcZnJoSuHc+k3ZUTHyA==
+
+revolt.js@^5.2.3:
+  version "5.2.3"
+  resolved "https://registry.yarnpkg.com/revolt.js/-/revolt.js-5.2.3.tgz#770e7fc3256d7d153fadf143acd00f4c3377f4ef"
+  integrity sha512-tFGt1yij56A1y3EDjTf1HoPmwHskQ0xoks58tWNCPdMvyCyrTih9qBKdHNDDOMUWdGF0qn1pWZmdVSxHriAuOA==
+  dependencies:
+    "@insertish/exponential-backoff" "3.1.0-patch.0"
+    "@insertish/isomorphic-ws" "^4.0.1"
+    axios "^0.21.4"
+    eventemitter3 "^4.0.7"
+    lodash.defaultsdeep "^4.6.1"
+    lodash.flatten "^4.4.0"
+    lodash.isequal "^4.5.0"
+    mobx "^6.3.2"
+    revolt-api "^0.5.3-alpha.9"
+    ulid "^2.3.0"
+    ws "^8.2.2"
 
 safe-buffer@^5.1.1, safe-buffer@^5.1.2:
   version "5.2.1"
@@ -622,9 +628,9 @@ word@~0.3.0:
   integrity sha512-OELeY0Q61OXpdUfTp+oweA/vtLVg5VDOXh+3he3PNzLGG/y0oylSOC1xRVj0+l4vQ3tj/bB1HVHv1ocXkQceFA==
 
 ws@^8.2.2:
-  version "8.2.3"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-8.2.3.tgz#63a56456db1b04367d0b721a0b80cae6d8becbba"
-  integrity sha512-wBuoj1BDpC6ZQ1B7DWQBYVLphPWkm8i9Y0/3YdHjHKHiohOJ1ws+3OccDWtH+PoC9DZD5WOTrJvNbWvjS6JWaA==
+  version "8.4.0"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.4.0.tgz#f05e982a0a88c604080e8581576e2a063802bed6"
+  integrity sha512-IHVsKe2pjajSUIl4KYMQOdlyliovpEPquKkqbwswulszzI7r0SfQrxnXdWAEqOlDCLrVSJzo+O1hAwdog2sKSQ==
 
 ws@^8.2.3:
   version "8.3.0"

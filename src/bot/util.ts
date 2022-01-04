@@ -1,11 +1,11 @@
-import { Member } from "@janderedev/revolt.js/dist/maps/Members";
-import { User } from "@janderedev/revolt.js/dist/maps/Users";
+import { Member } from "revolt.js/dist/maps/Members";
+import { User } from "revolt.js/dist/maps/Users";
 import { client } from "..";
 import Infraction from "../struct/antispam/Infraction";
 import ServerConfig from "../struct/ServerConfig";
 import FormData from 'form-data';
 import axios from 'axios';
-import { Server } from "@janderedev/revolt.js/dist/maps/Servers";
+import { Server } from "revolt.js/dist/maps/Servers";
 import LogConfig from "../struct/LogConfig";
 import LogMessage from "../struct/LogMessage";
 import { ColorResolvable, MessageAttachment, MessageEmbed, WebhookClient } from "discord.js";

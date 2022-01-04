@@ -1,4 +1,4 @@
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
+import { Message } from "revolt.js/dist/maps/Messages";
 import { ulid } from "ulid";
 import { client } from "../..";
 import AntispamRule from "../../struct/antispam/AntispamRule";
