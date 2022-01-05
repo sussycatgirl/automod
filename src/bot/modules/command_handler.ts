@@ -8,6 +8,7 @@ import { antispam } from "./antispam";
 import checkCustomRules from "./custom_rules/custom_rules";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import { fileURLToPath } from 'url';
+import { getOwnMemberInServer, hasPermForChannel } from "../util";
 
 // thanks a lot esm
 const filename = fileURLToPath(import.meta.url);
@@ -34,6 +35,14 @@ let commands: Command[];
         if (typeof msg.content != 'string' ||
             msg.author_id == client.user?._id ||
             !msg.channel?.server) return;
+
+        if (!msg.member) await msg.channel.server.fetchMember(msg.author_id);
+
+        // If we can't reply to the message, return
+        if (!hasPermForChannel(await getOwnMemberInServer(msg.channel.server), msg.channel, 'SendMessage')) {
+            logger.debug('Cannot reply to message; returning');
+            return;
+        }
 
         // Send message through anti spam check and custom rules
         if (!await antispam(msg)) return;

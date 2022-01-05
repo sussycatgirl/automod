@@ -8,22 +8,12 @@ import axios from 'axios';
 import { Server } from "revolt.js/dist/maps/Servers";
 import LogConfig from "../struct/LogConfig";
 import LogMessage from "../struct/LogMessage";
-import { ColorResolvable, MessageAttachment, MessageEmbed, WebhookClient } from "discord.js";
+import { ColorResolvable, MessageEmbed } from "discord.js";
 import logger from "./logger";
 import { ulid } from "ulid";
+import { Channel } from "revolt.js/dist/maps/Channels";
+import { ChannelPermission, ServerPermission } from "revolt.js";
 
-let ServerPermissions = {
-    ['View' as string]: 1 << 0,
-    ['ManageRoles' as string]: 1 << 1,
-    ['ManageChannels' as string]: 1 << 2,
-    ['ManageServer' as string]: 1 << 3,
-    ['KickMembers' as string]: 1 << 4,
-    ['BanMembers' as string]: 1 << 5,
-    ['ChangeNickname' as string]: 1 << 12,
-    ['ManageNicknames' as string]: 1 << 13,
-    ['ChangeAvatar' as string]: 1 << 14,
-    ['RemoveAvatars' as string]: 1 << 15,
-}
 
 const NO_MANAGER_MSG = '🔒 Missing permission';
 const ULID_REGEX = /^[0-9A-HJ-KM-NP-TV-Z]{26}$/i;
@@ -95,10 +85,8 @@ async function isBotManager(member: Member, server: Server) {
         .botManagers?.indexOf(member.user?._id!) ?? -1) > -1;
 }
 
-function hasPerm(member: Member, perm:  'View'|'ManageRoles'|'ManageChannels'|'ManageServer'|  // its late and im tired
-                                        'KickMembers'|'BanMembers'|'ChangeNickname'|           // dont judge my code
-                                        'ManageNicknames'|'ChangeAvatar'|'RemoveAvatars'): boolean {
-    let p = ServerPermissions[perm];
+function hasPerm(member: Member, perm: keyof typeof ServerPermission): boolean {
+    let p = ServerPermission[perm];
     if (member.server?.owner == member.user?._id) return true;
 
     // this should work but im not 100% certain
@@ -106,6 +94,16 @@ function hasPerm(member: Member, perm:  'View'|'ManageRoles'|'ManageChannels'|'M
         .reduce((sum?: number, cur?: number) => sum! | cur!, member.server?.default_permissions[0]) ?? 0;
 
     return !!(userPerm & p);
+}
+
+function hasPermForChannel(member: Member, channel: Channel, perm: keyof typeof ChannelPermission): boolean {
+    if (!member.server) throw 'hasPermForChannel(): Server is undefined';
+    return !!(channel.permission & ChannelPermission[perm]);
+}
+
+async function getOwnMemberInServer(server: Server): Promise<Member> {
+    return client.members.getKey({ server: server._id, user: client.user!._id })
+                          || await server.fetchMember(client.user!._id);
 }
 
 async function storeInfraction(infraction: Infraction): Promise<{ userWarnCount: number }> {
@@ -162,9 +160,7 @@ async function sendLogMessage(config: LogConfig, content: LogMessage) {
         data.append("payload_json", JSON.stringify({ embeds: [ embed.toJSON() ] }), { contentType: 'application/json' });
 
         axios.post(config.discord.webhookUrl, data, {headers: data.getHeaders() })
-            .catch(e => {
-                logger.error('Failed to fire Discord webhook: ' + e);
-            });
+            .catch(e => logger.error(`Failed to send log message (discord): ${e}`));
     }
 
     if (config.revolt?.channel) {
@@ -224,12 +220,12 @@ async function sendLogMessage(config: LogConfig, content: LogMessage) {
                     break;
             }
 
-            await channel.sendMessage({
+            channel.sendMessage({
                 content: message,
                 attachments: content.attachments ?
                     await Promise.all(content.attachments?.map(a => uploadFile(a.content, a.name))) :
                     undefined
-            });
+            }).catch(e => logger.error(`Failed to send log message (revolt): ${e}`));
         } catch(e) {
             logger.error(`Failed to send log message in ${config.revolt.channel}: ${e}`);
         }
@@ -277,6 +273,8 @@ function sanitizeMessageContent(msg: string): string {
 export {
     getAutumnURL,
     hasPerm,
+    hasPermForChannel,
+    getOwnMemberInServer,
     isModerator,
     isBotManager,
     parseUser,

@@ -7,6 +7,7 @@ import messageContentTrigger from "./message_content_trigger";
 import custom_sendMessage from "./actions/sendMessage";
 import custom_delete from "./actions/delete";
 import custom_warn from "./actions/warn";
+import { getOwnMemberInServer, hasPerm, hasPermForChannel } from "../../util";
 
 async function checkCustomRules(message: Message, isEdit: boolean = false) {
     let serverConfig: ServerConfig = await client.db.get('servers').findOne({ id: message.channel?.server_id }) ?? {};
@@ -24,13 +25,22 @@ async function checkCustomRules(message: Message, isEdit: boolean = false) {
             for (const action of rule.action) {
                 switch(action.action) {
                     case 'sendMessage':
-                        await custom_sendMessage(message, action);
+                        if (hasPermForChannel(await getOwnMemberInServer(message.channel!.server!), message.channel!, 'SendMessage'))
+                            await custom_sendMessage(message, action);
+                        else
+                            logger.warn(`Custom rule ${rule._id}: 'sendMessage' action lacks permission`);
                     break;
                     case 'delete':
-                        await custom_delete(message, action);
+                        if (hasPermForChannel(await getOwnMemberInServer(message.channel!.server!), message.channel!, 'ManageMessages'))
+                            await custom_delete(message, action);
+                        else
+                            logger.warn(`Custom rule ${rule._id}: 'delete' action lacks permission`);
                     break;
                     case 'warn':
-                        await custom_warn(message, action);
+                        if (hasPermForChannel(await getOwnMemberInServer(message.channel!.server!), message.channel!, 'SendMessage'))
+                            await custom_warn(message, action);
+                        else
+                            logger.warn(`Custom rule ${rule._id}: 'warn' action lacks permission`);
                     break;
                     default:
                         logger.warn(`Unknown action ${action.action} in custom rule ${rule._id} in server ${message.channel?.server_id}`);

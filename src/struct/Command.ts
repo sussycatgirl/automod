@@ -1,3 +1,5 @@
+import { ChannelPermission, ServerPermission } from "revolt.js";
+
 class Command {
     name: string;
     aliases: string[] | null;
@@ -7,6 +9,10 @@ class Command {
     removeEmptyArgs?: boolean | null;
     run: Function;
     category?: string;
+    requiredPermissions?: {
+        server?: keyof typeof ServerPermission,
+        channel?: keyof typeof ChannelPermission,
+    }
 }
 
 export default Command;

@@ -55,14 +55,15 @@ async function antispam(message: Message): Promise<boolean> {
                     if (!userStore.warnTriggered) {
                         userStore.warnTriggered = true;
                         setTimeout(() => userStore.warnTriggered = false, 5000);
-                        message.channel?.sendMessage(getWarnMsg(rule, message));
+                        message.channel?.sendMessage(getWarnMsg(rule, message))
+                            .catch(() => logger.warn('Antispam: Failed to send message'));
                     }
                 break;
                 case ModerationAction.Warn:
                     if (!userStore.warnTriggered) {
                         userStore.warnTriggered = true;
                         setTimeout(() => userStore.warnTriggered = false, 5000);
-                        
+
                         let inf = {
                             _id: ulid(),
                             createdBy: null,
@@ -73,7 +74,8 @@ async function antispam(message: Message): Promise<boolean> {
                             user: message.author_id,
                         } as Infraction;
 
-                        let m = message.channel?.sendMessage('## User has been warned.\n\u200b\n' + getWarnMsg(rule, message));
+                        message.channel?.sendMessage('## User has been warned.\n\u200b\n' + getWarnMsg(rule, message))
+                            .catch(() => logger.warn('Antispam: Failed to send warn message'));
 
                         await storeInfraction(inf);
                     }

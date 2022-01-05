@@ -11,10 +11,7 @@ export default {
     removeEmptyArgs: false,
     category: 'owner',
     run: async (message: Message, args: string[]) => {
-        let cmd = `let { client } = require("../..");`
-                + `let axios = require("axios").default;`
-                + `let crypto = require("crypto");`
-                + args.join(' ');
+        let cmd = args.join(' ');
 
         let m = await message.channel?.sendMessage(`Executing...`);
 
