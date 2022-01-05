@@ -11,8 +11,9 @@ const MENTION_TEXT = 'You can also @mention me instead of using the prefix.';
 export default {
     name: 'prefix',
     aliases: null,
-    description: 'modify prefix',
+    description: 'Configure AutoMod\'s prefix',
     syntax: SYNTAX,
+    category: 'configuration',
     run: async (message: Message, args: string[]) => {
         let config: ServerConfig = (await client.db.get('servers').findOne({ id: message.channel?.server_id })) ?? {};
         

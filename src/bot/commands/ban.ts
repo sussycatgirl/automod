@@ -17,8 +17,9 @@ export default {
     name: 'ban',
     aliases: null,
     description: 'Ban a member from the server',
-    syntax: '/ban @username [10m?] [reason?]',
+    syntax: '/ban @username [10m|1h|...?] [reason?]',
     removeEmptyArgs: true,
+    category: 'moderation',
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message.member!, message.serverContext))
             return message.reply(NO_MANAGER_MSG);

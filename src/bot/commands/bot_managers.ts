@@ -12,6 +12,7 @@ export default {
     aliases: [ 'admins', 'manager', 'managers' ],
     description: 'Allow users to control the bot\'s configuration',
     syntax: SYNTAX,
+    category: 'configuration',
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!hasPerm(message.member!, 'ManageServer'))
             return message.reply('You need **ManageServer** permission to use this command.');

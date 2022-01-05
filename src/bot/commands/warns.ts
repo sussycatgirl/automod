@@ -16,6 +16,7 @@ export default {
     aliases: [ 'warnings', 'infractions', 'infraction' ],
     description: 'Show all user infractions',
     syntax: '/warns; /warns @username ["export-csv"]; /warns rm [ID]',
+    category: 'moderation',
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message.member!, message.serverContext)) return message.reply(NO_MANAGER_MSG);
 

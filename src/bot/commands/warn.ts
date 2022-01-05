@@ -11,6 +11,7 @@ export default {
     aliases: null,
     removeEmptyArgs: false,
     description: 'add an infraction to an user\'s record',
+    category: 'moderation',
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message.member!, message.serverContext)) return message.reply(NO_MANAGER_MSG);
         let user = await parseUserOrId(args.shift() ?? '');

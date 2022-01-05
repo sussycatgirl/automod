@@ -9,8 +9,9 @@ const MAX_PURGE_AMOUNT = 100;
 export default {
     name: 'purge',
     aliases: [ 'clear' ],
-    description: 'delete multiple messages at once',
+    description: 'Mass delete messages',
     syntax: SYNTAX,
+    category: 'moderation',
     run: async (message: Message, args: string[]) => {
         try {
             if (!message.member || !await isModerator(message.member!, message.channel?.server!)) return message.reply('🔒 Access denied');

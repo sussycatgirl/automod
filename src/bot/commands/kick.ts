@@ -14,6 +14,7 @@ export default {
     description: 'Eject a member from the server',
     syntax: '/kick @username [reason?]',
     removeEmptyArgs: true,
+    category: 'moderation',
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message.member!, message.serverContext))
             return message.reply(NO_MANAGER_MSG);

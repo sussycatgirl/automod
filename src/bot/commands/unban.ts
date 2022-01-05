@@ -11,6 +11,7 @@ export default {
     aliases: [ 'pardon' ],
     description: 'Unbans a user',
     syntax: '/unban [@user or ID]',
+    category: 'moderation',
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!isModerator(message.member!, message.serverContext)) return message.reply(NO_MANAGER_MSG);
 

@@ -6,13 +6,14 @@ import MessageCommandContext from "../../struct/MessageCommandContext";
 import ServerConfig from "../../struct/ServerConfig";
 import { isBotManager, NO_MANAGER_MSG, parseUser } from "../util";
 
-const SYNTAX = '';
+const SYNTAX = '/whitelist add @user; /whitelist remove @user; /whitelist list';
 
 export default {
     name: 'whitelist',
     aliases: [],
     description: 'Allow users or roles to bypass moderation rules',
     syntax: SYNTAX,
+    category: 'configuration',
     run: async (message: MessageCommandContext, args: string[]) => {
         let config: ServerConfig = await client.db.get('servers').findOne({ id: message.serverContext._id }) || {}
         if (!config.whitelist) config.whitelist = { users: [], roles: [], managers: true }

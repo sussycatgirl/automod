@@ -11,11 +11,12 @@ import MessageCommandContext from "../../struct/MessageCommandContext";
 export default {
     name: 'settings',
     aliases: [ 'setting' ],
-    description: 'change antispam settings',
+    description: 'Manage AutoMod\'s configuration',
+    category: 'configuration',
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!isBotManager(message.member!, message.serverContext)) return message.reply(NO_MANAGER_MSG);
 
-        return 'command is disabled for now';
+        return 'This feature is currently disabled';
 
         let settings = {
             spam: [

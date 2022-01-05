@@ -12,6 +12,7 @@ export default {
     name: 'botctl',
     aliases: null,
     description: 'Perform administrative actions',
+    category: 'configuration',
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!isBotManager(message.member!, message.serverContext)) return message.reply(NO_MANAGER_MSG);
 

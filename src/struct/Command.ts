@@ -6,6 +6,7 @@ class Command {
     restrict?: 'BOTOWNER' | null;
     removeEmptyArgs?: boolean | null;
     run: Function;
+    category?: string;
 }
 
 export default Command;

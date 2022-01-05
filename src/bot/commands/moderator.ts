@@ -15,6 +15,7 @@ export default {
     aliases: [ 'moderators', 'mod', 'mods' ],
     description: 'Allow users to moderate other users',
     syntax: SYNTAX,
+    category: 'configuration',
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isBotManager(message.member!, message.channel?.server!)) return message.reply(NO_MANAGER_MSG);
 

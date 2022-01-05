@@ -4,8 +4,9 @@ import { Message } from "revolt.js/dist/maps/Messages";
 export default {
     name: 'test',
     aliases: [ 'testalias' ],
-    description: 'epic test command',
+    description: 'Test command',
+    category: 'misc',
     run: (message: Message, args: string[]) => {
-        message.reply('I am here');
+        message.reply('Beep boop.');
     }
 } as Command;

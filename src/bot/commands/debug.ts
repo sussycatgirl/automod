@@ -4,7 +4,8 @@ import MessageCommandContext from "../../struct/MessageCommandContext";
 export default {
     name: 'debug',
     aliases: null,
-    description: 'give info helpful for development and debugging',
+    description: 'Gives info helpful for development and debugging',
+    category: 'misc',
     run: (message: MessageCommandContext, args: string[]) => {
         message.reply(`Server ID: ${message.channel?.server_id || 'None'}\n`
                     + `Server context: ${message.serverContext._id} `

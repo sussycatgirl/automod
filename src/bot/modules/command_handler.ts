@@ -13,13 +13,16 @@ import { fileURLToPath } from 'url';
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
+const ownerIDs = process.env['BOT_OWNERS'] ? process.env['BOT_OWNERS'].split(',') : [];
 const DEFAULT_PREFIX = process.env['PREFIX']
                     ?? process.env['BOT_PREFIX']
                     ?? process.env['COMMAND_PREFIX']
                     ?? '/';
 
+let commands: Command[];
+
 (async () => {
-    let commands: Command[] = (await Promise.all(
+    commands = (await Promise.all(
         fs.readdirSync(path.join(dirname, '..', 'commands'))
             .filter(file => file.endsWith('.js'))
             .map(async file => await import(path.join(dirname, '..', 'commands', file)) as Command)
@@ -43,10 +46,10 @@ const DEFAULT_PREFIX = process.env['PREFIX']
         let guildPrefix = config.prefix ?? DEFAULT_PREFIX;
 
         if (cmdName.startsWith(`<@${client.user?._id}>`)) {
-            cmdName = cmdName.substr(`<@${client.user?._id}>`.length);
+            cmdName = cmdName.substring(`<@${client.user?._id}>`.length);
             if (!cmdName) cmdName = args.shift() ?? ''; // Space between mention and command name
         } else if (cmdName.startsWith(guildPrefix)) {
-            cmdName = cmdName.substr(guildPrefix.length);
+            cmdName = cmdName.substring(guildPrefix.length);
             if (config.spaceAfterPrefix && !cmdName) cmdName = args.shift() ?? '';
         } else return;
 
@@ -55,7 +58,6 @@ const DEFAULT_PREFIX = process.env['PREFIX']
         let cmd = commands.find(c => c.name == cmdName || (c.aliases?.indexOf(cmdName!) ?? -1) > -1);
         if (!cmd) return;
 
-        let ownerIDs = process.env['BOT_OWNERS'] ? process.env['BOT_OWNERS'].split(',') : [];
         if (cmd.restrict == 'BOTOWNER' && ownerIDs.indexOf(msg.author_id) == -1) {
             logger.warn(`User ${msg.author?.username} tried to run owner-only command: ${cmdName}`);
             msg.reply('🔒 Access denied');
@@ -95,4 +97,4 @@ const DEFAULT_PREFIX = process.env['PREFIX']
     });
 })();
 
-export { DEFAULT_PREFIX }
+export { DEFAULT_PREFIX, commands, ownerIDs }

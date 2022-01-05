@@ -8,6 +8,7 @@ export default {
     description: 'Run code in a shell',
     restrict: 'BOTOWNER',
     removeEmptyArgs: false,
+    category: 'owner',
     run: async (message: Message, args: string[]) => {
         let cmd = args.join(' ');
 
