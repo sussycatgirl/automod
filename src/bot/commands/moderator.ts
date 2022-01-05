@@ -35,7 +35,7 @@ export default {
                 mods.push(user._id);
                 await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { moderators: mods } });
 
-                message.reply(`✅ Added \`@${user.username}\` to moderators.`);
+                message.reply(`✅ Added [@${user.username}](/@${user._id}) to moderators.`);
             break;
             case 'remove':
             case 'delete':
@@ -50,14 +50,14 @@ export default {
                 mods = mods.filter(a => a != user?._id);
                 await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { moderators: mods } });
 
-                message.reply(`✅ Removed \`@${user.username}\` from moderators.`);
+                message.reply(`✅ Removed [@${user.username}](/@${user._id}) from moderators.`);
             break;
             case 'list':
             case 'ls':
             case 'show':
                 message.reply(`# Moderators\n`
                             + `Bot admins can add or remove moderators.\n\n`
-                            + `${mods.map(a => `* <@${a}>`).join('\n')}\n\n`
+                            + `${mods.map(a => `* [${client.users.get(a)?.username ?? a}](/@${a})`).join('\n')}\n\n`
                             + `${mods.length} user${mods.length == 1 ? '' : 's'}.`)
                     ?.catch(e => message.reply(e));
             break;

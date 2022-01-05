@@ -88,12 +88,12 @@ export default {
 
                 if (config.whitelist.users?.length) {
                     config.whitelist.users?.forEach((u, index) => {
-                        if (index < 15) str += `* <@${u}>\n`;
+                        if (index < 15) str += `* [@${client.users.get(u)?.username || u}](/@${u})\n`;
                         if (index == 15) str += `**${index - 15} more user${config.whitelist?.users?.length == 16 ? '' : 's'}**\n`;
                     });
                 } else str += `**No whitelisted users**\n`;
 
-                str += `\u200b\n### Roles\n`;
+                str += `### Roles\n`;
 
                 if (config.whitelist.roles?.length) {
                     config.whitelist.roles
@@ -104,7 +104,7 @@ export default {
                     });
                 } else str += `**No whitelisted roles**\n`;
 
-                str += `\u200b\nAdmins and bot managers: **${config.whitelist.managers === false ? 'No' : 'Yes'}**`;
+                str += `\nAdmins and bot managers: **${config.whitelist.managers === false ? 'No' : 'Yes'}**`;
 
                 message.reply(str)
                     ?.catch(e => message.reply(String(e)));

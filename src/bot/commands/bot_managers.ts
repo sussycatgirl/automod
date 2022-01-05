@@ -33,7 +33,7 @@ export default {
                 admins.push(user._id);
                 await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { botManagers: admins } });
 
-                message.reply(`✅ Added \`@${user.username}\` to bot admins.`);
+                message.reply(`✅ Added [@${user.username}](/@${user._id}) to bot admins.`);
             break;
             case 'remove':
             case 'delete':
@@ -48,14 +48,14 @@ export default {
                 admins = admins.filter(a => a != user?._id);
                 await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { botManagers: admins } });
 
-                message.reply(`✅ Removed \`@${user.username}\` from bot admins.`);
+                message.reply(`✅ Removed [@${user.username}](/@${user._id}) from bot admins.`);
             break;
             case 'list':
             case 'ls':
             case 'show':
                 message.reply(`# Bot admins\n`
                             + `Users with **ManageServer** permission can add or remove admins.\n\n`
-                            + `${admins.map(a => `* <@${a}>`).join('\n')}\n\n`
+                            + `${admins.map(a => `* [@${client.users.get(a)?.username ?? a}](/@${a})`).join('\n')}\n\n`
                             + `${admins.length} user${admins.length == 1 ? '' : 's'}.`)
                     ?.catch(e => message.reply(e));
             break;
