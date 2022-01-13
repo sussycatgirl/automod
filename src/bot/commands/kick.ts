@@ -16,7 +16,7 @@ export default {
     removeEmptyArgs: true,
     category: 'moderation',
     run: async (message: MessageCommandContext, args: string[]) => {
-        if (!await isModerator(message.member!, message.serverContext))
+        if (!await isModerator(message))
             return message.reply(NO_MANAGER_MSG);
         
         if (args.length == 0)

@@ -18,7 +18,7 @@ export default {
     syntax: '/warns; /warns @username ["export-csv"]; /warns rm [ID]',
     category: 'moderation',
     run: async (message: MessageCommandContext, args: string[]) => {
-        if (!await isModerator(message.member!, message.serverContext)) return message.reply(NO_MANAGER_MSG);
+        if (!await isModerator(message)) return message.reply(NO_MANAGER_MSG);
 
         let collection = client.db.get('infractions');
         let infractions: Array<Infraction> = await collection.find({

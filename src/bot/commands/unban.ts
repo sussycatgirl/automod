@@ -13,7 +13,7 @@ export default {
     syntax: '/unban [@user or ID]',
     category: 'moderation',
     run: async (message: MessageCommandContext, args: string[]) => {
-        if (!isModerator(message.member!, message.serverContext)) return message.reply(NO_MANAGER_MSG);
+        if (!isModerator(message)) return message.reply(NO_MANAGER_MSG);
 
         let checkTempBans = async (id: string): Promise<number> => {
             let tempbans: FindResult<TempBan> = await client.db.get('tempbans').find({ bannedUser: id, server: message.serverContext._id });

@@ -191,4 +191,4 @@ new Promise((res: (value: void) => void) => client.user ? res() : client.once('r
     });
 });
 
-export { scanServer };
+export { scanServer, USERSCAN_WORDLIST_PATH, wordlist };

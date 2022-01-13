@@ -13,6 +13,8 @@ import logger from "./logger";
 import { ulid } from "ulid";
 import { Channel } from "revolt.js/dist/maps/Channels";
 import { ChannelPermission, ServerPermission } from "revolt.js";
+import { Message } from "revolt.js/dist/maps/Messages";
+import { isSudo } from "./commands/botadm";
 
 
 const NO_MANAGER_MSG = '🔒 Missing permission';
@@ -73,16 +75,30 @@ async function parseUserOrId(text: string): Promise<User|{_id: string}|null> {
     return null;
 }
 
-async function isModerator(member: Member, server: Server) {
+async function isModerator(message: Message) {
+    let member = message.member!, server = message.channel!.server!;
     return hasPerm(member, 'KickMembers')
-        || await isBotManager(member, server)
+        || await isBotManager(message)
         || (((await client.db.get('servers').findOne({ id: server._id }) || {}) as ServerConfig)
-        .moderators?.indexOf(member.user?._id!) ?? -1) > -1;
+        .moderators?.indexOf(member.user?._id!) ?? -1) > -1
+        || await checkSudoPermission(message);
 }
-async function isBotManager(member: Member, server: Server) {
+async function isBotManager(message: Message) {
+    let member = message.member!, server = message.channel!.server!;
     return hasPerm(member, 'ManageServer')
         || (((await client.db.get('servers').findOne({ id: server._id }) || {}) as ServerConfig)
-        .botManagers?.indexOf(member.user?._id!) ?? -1) > -1;
+        .botManagers?.indexOf(member.user?._id!) ?? -1) > -1
+        || await checkSudoPermission(message);
+}
+async function checkSudoPermission(message: Message): Promise<boolean> {
+    const hasPerm = isSudo(message.author!);
+    console.log(hasPerm)
+    if (!hasPerm) return false;
+    else {
+        await message.reply(`# :unlock: Bypassed permission check\n`
+            + `Sudo mode is enabled for @${message.author!.username}.\n`);
+        return true;
+    }
 }
 
 function hasPerm(member: Member, perm: keyof typeof ServerPermission): boolean {

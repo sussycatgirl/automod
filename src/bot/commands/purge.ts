@@ -15,7 +15,7 @@ export default {
     category: 'moderation',
     run: async (message: MessageCommandContext, args: string[]) => {
         try {
-            if (!message.member || !await isModerator(message.member!, message.channel?.server!)) return message.reply('🔒 Access denied');
+            if (!message.member || !await isModerator(message)) return message.reply('🔒 Access denied');
 
             let messages: Array<Message> = [];
             // X amount of messages from bottom

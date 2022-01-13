@@ -18,7 +18,7 @@ export default {
         let config: ServerConfig = await client.db.get('servers').findOne({ id: message.serverContext._id }) || {}
         if (!config.whitelist) config.whitelist = { users: [], roles: [], managers: true }
 
-        if (!isBotManager(message.member!, message.serverContext)) return message.reply(NO_MANAGER_MSG);
+        if (!isBotManager(message)) return message.reply(NO_MANAGER_MSG);
 
         let user: User|null, role: string|undefined;
         switch(args[0]?.toLowerCase()) {

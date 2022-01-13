@@ -10,6 +10,7 @@ import MessageCommandContext from "../../struct/MessageCommandContext";
 import { fileURLToPath } from 'url';
 import { getOwnMemberInServer, hasPermForChannel } from "../util";
 import { prepareMessage } from "./prepare_message";
+import { isSudo, updateSudoTimeout } from "../commands/botadm";
 
 // thanks a lot esm
 const filename = fileURLToPath(import.meta.url);
@@ -67,6 +68,8 @@ let commands: Command[];
 
         let cmd = commands.find(c => c.name == cmdName || (c.aliases?.indexOf(cmdName!) ?? -1) > -1);
         if (!cmd) return;
+
+        if (isSudo(msg.author!)) updateSudoTimeout(msg.author!);
 
         if (cmd.restrict == 'BOTOWNER' && ownerIDs.indexOf(msg.author_id) == -1) {
             logger.warn(`User ${msg.author?.username} tried to run owner-only command: ${cmdName}`);

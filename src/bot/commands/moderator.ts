@@ -17,7 +17,7 @@ export default {
     syntax: SYNTAX,
     category: 'configuration',
     run: async (message: MessageCommandContext, args: string[]) => {
-        if (!await isBotManager(message.member!, message.channel?.server!)) return message.reply(NO_MANAGER_MSG);
+        if (!await isBotManager(message)) return message.reply(NO_MANAGER_MSG);
 
         let config: ServerConfig = (await client.db.get('servers').findOne({ id: message.serverContext._id })) ?? {};
         let mods = config.moderators ?? [];

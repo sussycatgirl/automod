@@ -13,7 +13,7 @@ export default {
     description: 'add an infraction to an user\'s record',
     category: 'moderation',
     run: async (message: MessageCommandContext, args: string[]) => {
-        if (!await isModerator(message.member!, message.serverContext)) return message.reply(NO_MANAGER_MSG);
+        if (!await isModerator(message)) return message.reply(NO_MANAGER_MSG);
         let user = await parseUserOrId(args.shift() ?? '');
         if (!user) return message.reply('I can\'t find that user.');
         if ((user as any)?.bot != null) return message.reply('You cannot warn bots.');

@@ -14,7 +14,7 @@ export default {
     description: 'Perform administrative actions',
     category: 'configuration',
     run: async (message: MessageCommandContext, args: string[]) => {
-        if (!isBotManager(message.member!, message.serverContext)) return message.reply(NO_MANAGER_MSG);
+        if (!isBotManager(message)) return message.reply(NO_MANAGER_MSG);
 
         let action = args.shift();
         switch(action) {
