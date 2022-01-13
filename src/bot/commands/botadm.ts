@@ -13,7 +13,6 @@ import { adminBotLog } from "../logging";
 const sudoOverrides: { [key: string]: number|null } = {}
 
 const isSudo = (user: User): boolean => {
-    console.log(sudoOverrides[user._id])
     return !!(sudoOverrides[user._id] && sudoOverrides[user._id]! > Date.now());
 }
 
