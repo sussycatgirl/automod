@@ -2,6 +2,7 @@ import Command from "../../struct/Command";
 import { Message } from "revolt.js/dist/maps/Messages";
 import { commands, DEFAULT_PREFIX, ownerIDs } from "../modules/command_handler";
 import CommandCategory from "../../struct/CommandCategory";
+import MessageCommandContext from "../../struct/MessageCommandContext";
 
 const categories: { [key: string]: CommandCategory } = {
     'moderation': {
@@ -37,7 +38,7 @@ export default {
     description: 'Help command.',
     removeEmptyArgs: true,
     category: 'misc',
-    run: async (message: Message, args: string[]) => {
+    run: async (message: MessageCommandContext, args: string[]) => {
         const isBotOwner = ownerIDs.includes(message.author_id);
         const prefix = DEFAULT_PREFIX; // TODO: fetch prefix from server config
 

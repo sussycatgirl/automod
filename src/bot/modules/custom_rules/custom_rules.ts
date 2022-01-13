@@ -7,7 +7,8 @@ import messageContentTrigger from "./message_content_trigger";
 import custom_sendMessage from "./actions/sendMessage";
 import custom_delete from "./actions/delete";
 import custom_warn from "./actions/warn";
-import { getOwnMemberInServer, hasPerm, hasPermForChannel } from "../../util";
+import { getOwnMemberInServer, hasPermForChannel } from "../../util";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
 
 async function checkCustomRules(message: Message, isEdit: boolean = false) {
     let serverConfig: ServerConfig = await client.db.get('servers').findOne({ id: message.channel?.server_id }) ?? {};

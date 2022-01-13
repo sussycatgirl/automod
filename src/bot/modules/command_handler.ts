@@ -9,6 +9,7 @@ import checkCustomRules from "./custom_rules/custom_rules";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import { fileURLToPath } from 'url';
 import { getOwnMemberInServer, hasPermForChannel } from "../util";
+import { prepareMessage } from "./prepare_message";
 
 // thanks a lot esm
 const filename = fileURLToPath(import.meta.url);
@@ -88,6 +89,7 @@ let commands: Command[];
 
         let message: MessageCommandContext = msg as MessageCommandContext;
         message.serverContext = serverCtx;
+        prepareMessage(message);
 
         logger.info(`Command: ${message.author?.username} (${message.author?._id}) in ${message.channel?.server?.name} (${message.channel?.server?._id}): ${message.content}`);
 

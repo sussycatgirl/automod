@@ -2,6 +2,7 @@ import Command from "../../struct/Command";
 import { Message } from "revolt.js/dist/maps/Messages";
 import { inspect } from 'util';
 import { client } from "../..";
+import MessageCommandContext from "../../struct/MessageCommandContext";
 
 export default {
     name: 'eval',
@@ -10,7 +11,7 @@ export default {
     restrict: 'BOTOWNER',
     removeEmptyArgs: false,
     category: 'owner',
-    run: async (message: Message, args: string[]) => {
+    run: async (message: MessageCommandContext, args: string[]) => {
         let cmd = args.join(' ');
 
         let m = await message.channel?.sendMessage(`Executing...`);

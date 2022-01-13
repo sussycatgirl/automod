@@ -1,5 +1,6 @@
 import { Message } from "revolt.js/dist/maps/Messages";
 import { Server } from "revolt.js/dist/maps/Servers";
+import logger from "../bot/logger";
 
 class MessageCommandContext extends Message {
     // The server to which the command should be applied.

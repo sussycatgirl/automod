@@ -4,6 +4,7 @@ import { client } from "../..";
 import ServerConfig from "../../struct/ServerConfig";
 import { DEFAULT_PREFIX } from "../modules/command_handler";
 import { hasPerm, isBotManager, NO_MANAGER_MSG } from "../util";
+import MessageCommandContext from "../../struct/MessageCommandContext";
 
 const SYNTAX = '/prefix set [new prefix]; /prefix get; prefix clear';
 const MENTION_TEXT = 'You can also @mention me instead of using the prefix.';
@@ -14,7 +15,7 @@ export default {
     description: 'Configure AutoMod\'s prefix',
     syntax: SYNTAX,
     category: 'configuration',
-    run: async (message: Message, args: string[]) => {
+    run: async (message: MessageCommandContext, args: string[]) => {
         let config: ServerConfig = (await client.db.get('servers').findOne({ id: message.channel?.server_id })) ?? {};
         
         switch(args[0]?.toLowerCase()) {

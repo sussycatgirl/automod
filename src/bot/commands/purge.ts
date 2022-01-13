@@ -2,6 +2,7 @@ import Command from "../../struct/Command";
 import { Message } from "revolt.js/dist/maps/Messages";
 import { decodeTime } from 'ulid';
 import { isModerator, parseUser } from "../util";
+import MessageCommandContext from "../../struct/MessageCommandContext";
 
 const SYNTAX = '/purge [SELECTOR] [@user?[m @user?[, ...]]]; where SELECTOR: [number] || [messageID]-[messageID]';
 const MAX_PURGE_AMOUNT = 100;
@@ -12,7 +13,7 @@ export default {
     description: 'Mass delete messages',
     syntax: SYNTAX,
     category: 'moderation',
-    run: async (message: Message, args: string[]) => {
+    run: async (message: MessageCommandContext, args: string[]) => {
         try {
             if (!message.member || !await isModerator(message.member!, message.channel?.server!)) return message.reply('🔒 Access denied');
 
