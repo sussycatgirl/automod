@@ -92,7 +92,6 @@ async function isBotManager(message: Message) {
 }
 async function checkSudoPermission(message: Message): Promise<boolean> {
     const hasPerm = isSudo(message.author!);
-    console.log(hasPerm)
     if (!hasPerm) return false;
     else {
         await message.reply(`# :unlock: Bypassed permission check\n`
