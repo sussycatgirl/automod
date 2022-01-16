@@ -10,6 +10,13 @@ class CustomRuleTrigger {
 
     userFilter?: 'user' | 'bot' | 'any';
 
+    channelFilter?: {
+        // Whitelist only triggers the rule in specified channels,
+        // Blacklist only triggers the rule in channels not specified
+        mode: 'WHITELIST'|'BLACKLIST',
+        channels: string[],
+    }
+
     // The minimum delay between rule matches. If omitted, rule matches every message
     timeout?: {
         perUser?: number;

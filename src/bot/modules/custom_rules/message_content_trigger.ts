@@ -11,6 +11,11 @@ async function messageContentTrigger(message: Message, trigger: CustomRuleTrigge
 
     let matched = false;
     if (trigger.matcher) {
+        if (trigger.channelFilter) {
+            if (trigger.channelFilter.mode == 'WHITELIST' && !trigger.channelFilter.channels.includes(message.channel_id)) return false;
+            if (trigger.channelFilter.mode == 'BLACKLIST' &&  trigger.channelFilter.channels.includes(message.channel_id)) return false;
+        }
+
         if (trigger.matcher instanceof RegExp) {
             /**
              * Since users will eventually be able to provide regexes, we need to protect
