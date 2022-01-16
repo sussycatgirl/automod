@@ -16,6 +16,7 @@ async function checkCustomRules(message: Message, isEdit: boolean = false) {
     if (!rules) return;
 
     for (let rule of rules) {
+        if (!rule?.trigger?.on) continue;
         let onEdit = rule.trigger.on.includes('message/update');
         let onNew  = rule.trigger.on.includes('message/create');
 

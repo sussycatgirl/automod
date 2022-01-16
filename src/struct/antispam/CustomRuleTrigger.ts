@@ -2,7 +2,6 @@ class CustomRuleTrigger {
     _id: string;
 
     // Which events this rule should apply to
-    // todo: message/update is not implemented
     on: ('message/create' | 'message/update')[];
 
     // Regex or string to match the content of the message against. If omitted, rule applies to every message

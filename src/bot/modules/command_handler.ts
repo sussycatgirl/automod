@@ -31,6 +31,10 @@ let commands: Command[];
             .map(async file => await import(path.join(dirname, '..', 'commands', file)) as Command)
         )).map(c => (c as any).default)
 
+    client.on('message/update', async msg => {
+        checkCustomRules(msg, true);
+    });
+
     client.on('message', async msg => {
         logger.debug(`Message -> ${msg.content}`);
 
