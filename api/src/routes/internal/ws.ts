@@ -4,8 +4,10 @@
  */
 
 import { WebSocketServer, WebSocket } from 'ws';
+import { EventEmitter } from 'events';
 import { logger } from "../..";
 import server from '../../server';
+
 if (!process.env.BOT_API_TOKEN) {
     logger.error(`$BOT_API_TOKEN is not set. This token is `
         + `required for the bot to communicate with the API.`);
@@ -14,6 +16,7 @@ if (!process.env.BOT_API_TOKEN) {
 
 const { BOT_API_TOKEN } = process.env;
 const wsServer = new WebSocketServer({ noServer: true });
+const botWS = new EventEmitter();
 const sockets: WebSocket[] = [];
 
 wsServer.on('connection', (sock) => {
@@ -27,7 +30,7 @@ wsServer.on('connection', (sock) => {
 
     sock.on('message', (msg) => {
         logger.debug(`[WS] [<] ${msg.toString()}`);
-        sock.send(JSON.stringify({ "h": JSON.parse(msg.toString()) }));
+        botWS.emit('message', JSON.parse(msg.toString()));
     });
 });
 
@@ -51,3 +54,15 @@ server.on('upgrade', (req, socket, head) => {
             socket.end();
     }
 });
+
+function sendBotWS(msg: { [key: string]: any }) {
+    const socks = sockets.filter(sock => sock.readyState == sock.OPEN);
+    logger.debug(`[WS] [>] [${socks.length}] ${JSON.stringify(msg)}`);
+    socks.forEach(sock => sock.send(JSON.stringify(msg)));
+}
+
+botWS.on('message', msg => {
+    sendBotWS({ amogus: msg });
+});
+
+export { botWS, sendBotWS }

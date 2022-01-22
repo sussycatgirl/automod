@@ -55,7 +55,7 @@ function connect() {
     });
 }
 
-function wsSend(data: { [key: string]: string }) {
+function wsSend(data: { [key: string]: any }) {
     if (client && client.readyState == client.OPEN) {
         logger.debug(`[WS] [>] ${JSON.stringify(data)}`);
         client.send(JSON.stringify(data));
