@@ -1,0 +1,21 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "",
+  "exports": "./index",
+  "type": "module",
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "start": "node --experimental-specifier-resolution=node dist/index",
+    "dev": "yarn build && yarn start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^4.17.13",
+    "dotenv": "^14.2.0",
+    "express": "^4.17.2",
+    "log75": "^2.2.0"
+  }
+}
