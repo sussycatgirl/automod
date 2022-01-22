@@ -25,4 +25,5 @@ export { client }
     import('./bot/modules/event_handler');
     import('./bot/modules/tempbans');
     import('./bot/modules/user_scan');
+    import('./bot/modules/api_communication');
 })();

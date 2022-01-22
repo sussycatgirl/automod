@@ -14,8 +14,10 @@
   "license": "ISC",
   "dependencies": {
     "@types/express": "^4.17.13",
+    "@types/ws": "^8.2.2",
     "dotenv": "^14.2.0",
     "express": "^4.17.2",
-    "log75": "^2.2.0"
+    "log75": "^2.2.0",
+    "ws": "^8.4.2"
   }
 }
