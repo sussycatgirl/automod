@@ -22,7 +22,7 @@ app.post('/login/begin', async (req: Request, res: Response) => {
 
     if (!r.success) return res.status(r.statusCode ?? 500).send(JSON.stringify({ error: r.error }, null, 4));
 
-    res.status(200).send({ success: true, nonce: r.nonce, code: r.code });
+    res.status(200).send({ success: true, nonce: r.nonce, code: r.code, uid: r.uid });
 });
 
 app.post('/login/complete', async (req: Request, res: Response) => {

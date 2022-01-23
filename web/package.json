@@ -7,9 +7,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@revoltchat/ui": "^1.0.24",
+    "@types/axios": "^0.14.0",
+    "@types/core-js": "^2.5.5",
+    "@types/styled-components": "^5.1.21",
+    "axios": "^0.25.0",
+    "core-js": "^3.20.3",
+    "localforage": "^1.10.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-router-dom": "^6.2.1"
+    "react-router-dom": "^6.2.1",
+    "styled-components": "^5.3.3"
   },
   "devDependencies": {
     "@types/react": "^17.0.33",

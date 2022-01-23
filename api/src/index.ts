@@ -21,6 +21,7 @@ export { logger, app, db, PORT, SESSION_LIFETIME }
     await Promise.all([
         import('./middlewares/log'),
         import('./middlewares/updateTokenExpiry'),
+        import('./middlewares/cors'),
         import('./routes/internal/ws'),
         import('./routes/root'),
         import('./routes/login'),

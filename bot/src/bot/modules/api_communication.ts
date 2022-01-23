@@ -97,7 +97,7 @@ wsEvents.on('req:requestLogin', async (data: any, cb: (data: any) => void) => {
         const user = await parseUser(data.user);
         if (!user)
             return cb({ success: false, statusCode: 404, error: `The specified user could not be found` });
-        
+
         let code: string|null = null;
         while (!code) {
             const c = crypto.randomBytes(8).toString('hex');

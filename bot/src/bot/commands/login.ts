@@ -51,7 +51,7 @@ export default {
 
             await Promise.all([
                 message.reply(`Successfully logged in.\n\n` +
-                    `If this wasn't you, ~~run \`${DEFAULT_PREFIX}logout ${code}\` immediately~~ pray.`),
+                    `If this wasn't you, run \`${DEFAULT_PREFIX}logout ${code}\` immediately.`),
                 client.db.get('pending_logins').update({ _id: login._id }, { $set: { confirmed: true } }),
             ]);
         } catch(e) {
