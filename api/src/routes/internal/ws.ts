@@ -29,8 +29,12 @@ wsServer.on('connection', (sock) => {
     });
 
     sock.on('message', (msg) => {
+        const jsonBody = JSON.parse(msg.toString());
         logger.debug(`[WS] [<] ${msg.toString()}`);
-        botWS.emit('message', JSON.parse(msg.toString()));
+        botWS.emit('message', jsonBody);
+        if (jsonBody.data && jsonBody.type) {
+            botWS.emit(jsonBody.type, jsonBody.data);
+        }
     });
 });
 
@@ -61,8 +65,23 @@ function sendBotWS(msg: { [key: string]: any }) {
     socks.forEach(sock => sock.send(JSON.stringify(msg)));
 }
 
-botWS.on('message', msg => {
-    sendBotWS({ amogus: msg });
-});
+type botReqRes = { success: false, error: string, statusCode?: number } | { success: true, [key: string]: any }
+function botReq(type: string, data?: { [key: string]: any }): Promise<botReqRes> {
+    return new Promise((resolve, reject) => {
+        const nonce = `${Date.now()}.${Math.round(Math.random() * 10000000)}`;
+        if (sockets.length == 0) return resolve({ success: false, error: 'Unable to communicate with bot' });
+        sendBotWS({ nonce, type, data });
+        botWS.once(`response:${nonce}`, (data: string|Object) => {
+            try {
+                const d = typeof data == 'string' ? JSON.parse(data || '{}') : data;
+                if (d.success == undefined) d.success = true;
+                if (d.success == false && !d.error) d.error = 'Unknown error';
+                resolve(d);
+            } catch(e) { reject(e) }
+        });
+    });
+}
 
-export { botWS, sendBotWS }
+//setInterval(() => botReq('test', { "sus": true }), 1000);
+
+export { botWS, sendBotWS, botReq }
