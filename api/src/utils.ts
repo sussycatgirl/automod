@@ -1,4 +1,4 @@
-import { Request } from "express";
+import { Request, Response } from "express";
 import { FindOneResult } from "monk";
 import { db } from ".";
 
@@ -15,13 +15,16 @@ class Session {
  * @param req 
  * @returns false if not authenticated, otherwise the (Revolt) user ID
  */
-async function isAuthenticated(req: Request): Promise<string|false> {
+async function isAuthenticated(req: Request, res?: Response, send401?: boolean): Promise<string|false> {
     const user = req.header('x-auth-user');
     const token = req.header('x-auth-token');
 
     if (!user || !token) return false;
 
     const info = await getSessionInfo(user, token);
+    if (res && send401 && !info.valid) {
+        res.status(401).send({ error: 'Unauthorized' });
+    }
     return info.valid ? user : false;
 }
 

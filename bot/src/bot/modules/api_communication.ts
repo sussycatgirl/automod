@@ -9,13 +9,14 @@ import { client as bot } from '../..';
 import { EventEmitter } from "events";
 import { parseUser } from "../util";
 import PendingLogin from "../../struct/PendingLogin";
-import { LogLevel } from "log75";
 import { ulid } from "ulid";
 
 const wsEvents = new EventEmitter();
 const { API_WS_URL, API_WS_TOKEN } = process.env;
 const wsQueue: { [key: string]: string }[] = [];
 let client: ws|undefined = undefined;
+
+type WSResponse = { success: false, error: string, statusCode?: number } | { success: true, [key: string]: any }
 
 if (!API_WS_URL || !API_WS_TOKEN)
     logger.info("$API_WS_URL or $API_WS_TOKEN not found.");
@@ -92,7 +93,7 @@ wsEvents.on('req:test', (data: any, res: (data: any) => void) => {
     res({ received: data });
 });
 
-wsEvents.on('req:requestLogin', async (data: any, cb: (data: any) => void) => {
+wsEvents.on('req:requestLogin', async (data: any, cb: (data: WSResponse) => void) => {
     try {
         const user = await parseUser(data.user);
         if (!user)
@@ -126,8 +127,10 @@ wsEvents.on('req:requestLogin', async (data: any, cb: (data: any) => void) => {
         cb({ success: true, uid: user._id, nonce, code });
     } catch(e) {
         console.error(e);
-        cb({ success: false, error: e });
+        cb({ success: false, error: `${e}` });
     }
 });
 
-export { wsEvents, wsSend }
+export { wsEvents, wsSend, WSResponse }
+
+import('./api/servers');

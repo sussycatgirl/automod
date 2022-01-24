@@ -2,6 +2,14 @@ import axios from "axios";
 import localforage from "localforage";
 import { API_URL } from "./App";
 
+async function getAuthHeaders() {
+    const auth: any = await localforage.getItem('auth');
+    return {
+        'x-auth-user': auth.user,
+        'x-auth-token': auth.token,
+    }
+}
+
 async function getAuth(): Promise<false|{ user: string, token: string }> {
     const auth: any = await localforage.getItem('auth');
     if (!auth) return false;
@@ -19,4 +27,4 @@ async function getAuth(): Promise<false|{ user: string, token: string }> {
     } catch(e) { return false } // todo: dont assume we're logged out if death
 }
 
-export { getAuth }
+export { getAuth, getAuthHeaders }

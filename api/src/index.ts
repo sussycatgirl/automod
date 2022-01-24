@@ -25,6 +25,7 @@ export { logger, app, db, PORT, SESSION_LIFETIME }
         import('./routes/internal/ws'),
         import('./routes/root'),
         import('./routes/login'),
+        import('./routes/dash/servers'),
     ]);
     logger.done('All routes and middlewares loaded');
 })();

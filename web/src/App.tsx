@@ -4,6 +4,8 @@ import './App.css';
 import '@revoltchat/ui/src/styles/dark.css';
 import '@revoltchat/ui/src/styles/common.css';
 import RequireAuth from './components/RequireAuth';
+import DashboardHome from './pages/DashboardHome';
+import ServerDashboard from './pages/ServerDashboard';
 
 const API_URL = 'http://localhost:9000';
 
@@ -12,7 +14,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<Home />} />
-        <Route path='/dashboard' element={<RequireAuth><a>among us</a></RequireAuth>} />
+        <Route path='/dashboard' element={<RequireAuth><DashboardHome /></RequireAuth>} />
+        <Route path='/dashboard/:serverid' element={<RequireAuth><ServerDashboard /></RequireAuth>} />
       </Routes>
     </BrowserRouter>
   );
