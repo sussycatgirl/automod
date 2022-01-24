@@ -77,15 +77,16 @@ export default {
                 messages = messages.filter(m => users.find(u => u?._id == m.author_id));
             }
 
-            let m = await message.reply(`Deleting ${messages.length} messages...`);
+            let m = await (message.channel?.sendMessage(`Deleting ${messages.length} messages...`)?.catch(console.error));
             let res = await Promise.allSettled(messages.map(m => m.delete()));
 
             let failures = res.filter(r => r.status == 'rejected').length;
 
             await m?.edit({ content: `Deleted ${messages.length} messages.`
-                + `${failures > 0 ? `\n${failures} message${failures == 1 ? '' : 's'} failed to delete.` : ''}` });
+                + `${failures > 0 ? `\n${failures} message${failures == 1 ? '' : 's'} failed to delete.` : ''}` })
+                .catch(console.error);
         } catch(e) {
-            message.reply(`An error has occurred: ${e}`);
+            message.channel?.sendMessage(`An error has occurred: ${e}`);
         }
     }
 } as Command;
