@@ -499,15 +499,15 @@ require-at@^1.0.6:
   resolved "https://registry.yarnpkg.com/require-at/-/require-at-1.0.6.tgz#9eb7e3c5e00727f5a4744070a7f560d4de4f6e6a"
   integrity sha512-7i1auJbMUrXEAZCOQ0VNJgmcT2VOKPRl2YGJwgpHpC9CE91Mv4/4UYIUm4chGJaI381ZDq1JUicFii64Hapd8g==
 
-revolt-api@^0.5.3-alpha.9:
-  version "0.5.3-alpha.11"
-  resolved "https://registry.yarnpkg.com/revolt-api/-/revolt-api-0.5.3-alpha.11.tgz#ed666c403676de0bc47b1fe3ed59c934c5fbd842"
-  integrity sha512-5obsvdSIaiW3oVcsFpXYG3FXTPUxwR+0gpPhP+89i2agGdeKhcygaRajZ5HK83/Zmr/VcZnJoSuHc+k3ZUTHyA==
+revolt-api@0.5.3-alpha.12:
+  version "0.5.3-alpha.12"
+  resolved "https://registry.yarnpkg.com/revolt-api/-/revolt-api-0.5.3-alpha.12.tgz#78f25b567b840c1fd072595526592a422cb01f25"
+  integrity sha512-MM42oI5+5JJMnAs3JiOwSQOy/SUYzYs3M8YRC5QI4G6HU7CfyB2HNWh5jFsyRlcLdSi13dGazHm31FUPHsxOzw==
 
-revolt.js@^5.2.3:
-  version "5.2.3"
-  resolved "https://registry.yarnpkg.com/revolt.js/-/revolt.js-5.2.3.tgz#770e7fc3256d7d153fadf143acd00f4c3377f4ef"
-  integrity sha512-tFGt1yij56A1y3EDjTf1HoPmwHskQ0xoks58tWNCPdMvyCyrTih9qBKdHNDDOMUWdGF0qn1pWZmdVSxHriAuOA==
+revolt.js@^5.2.7:
+  version "5.2.7"
+  resolved "https://registry.yarnpkg.com/revolt.js/-/revolt.js-5.2.7.tgz#7b887329913494a2caf02c9828685d63551890db"
+  integrity sha512-KNoQqLrdd/B8zryu2fhWim9rO5OEkouhCZj4nU+upwrekz30DjxqWgZCup/apKXE8PSmrhSgWdKT8SHCBXOxFQ==
   dependencies:
     "@insertish/exponential-backoff" "3.1.0-patch.0"
     "@insertish/isomorphic-ws" "^4.0.1"
@@ -517,7 +517,7 @@ revolt.js@^5.2.3:
     lodash.flatten "^4.4.0"
     lodash.isequal "^4.5.0"
     mobx "^6.3.2"
-    revolt-api "^0.5.3-alpha.9"
+    revolt-api "0.5.3-alpha.12"
     ulid "^2.3.0"
     ws "^8.2.2"
 
