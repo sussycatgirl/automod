@@ -36,4 +36,12 @@ async function getSessionInfo(user: string, token: string): Promise<SessionInfo>
     return { exists: !!session, valid: !!(session && !session.invalid && session.expires > Date.now()), nonce: session?.nonce }
 }
 
-export { isAuthenticated, getSessionInfo }
+function badRequest(res: Response) {
+    res.status(400).send(JSON.stringify({ "error": "Invalid request body" }, null, 4));
+}
+
+function unauthorized(res: Response) {
+    res.status(401).send(JSON.stringify({ "error": "Unauthorized" }, null, 4));
+}
+
+export { isAuthenticated, getSessionInfo, badRequest, unauthorized }

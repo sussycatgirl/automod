@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import { botReq } from './internal/ws';
 import { db } from '..';
 import { FindOneResult } from 'monk';
+import { badRequest } from '../utils';
 
 class BeginReqBody {
     user: string;
@@ -61,7 +62,3 @@ app.post('/login/complete', async (req: Request, res: Response) => {
 
     res.status(200).send({ success: true, user: body.user.toUpperCase(), token: sessionToken });
 });
-
-function badRequest(res: Response) {
-    res.status(400).send(JSON.stringify({ "error": "Invalid request body" }, null, 4));
-}

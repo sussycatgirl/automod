@@ -134,3 +134,4 @@ wsEvents.on('req:requestLogin', async (data: any, cb: (data: WSResponse) => void
 export { wsEvents, wsSend, WSResponse }
 
 import('./api/servers');
+import('./api/server_details');
