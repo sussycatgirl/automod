@@ -13,7 +13,8 @@ function permissionName(p: number) {
     switch(p) {
         case 0:  return 'User';
         case 1:  return 'Moderator';
-        case 2:  return 'Manager';
+        case 2:
+        case 3:  return 'Manager';
         default: return 'Unknown';
     }
 }
