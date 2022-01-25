@@ -37,7 +37,7 @@ export default {
     description: 'Bot administration',
     removeEmptyArgs: true,
     restrict: 'BOTOWNER',
-    category: 'moderation',
+    category: 'owner',
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!args.length) return message.reply('No subcommand specified. Available subcommands: ' + SUBCOMMANDS.join(', '));
 
