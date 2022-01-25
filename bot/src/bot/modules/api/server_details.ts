@@ -1,21 +1,22 @@
 import { Member } from "revolt.js/dist/maps/Members";
 import { User } from "revolt.js/dist/maps/Users";
 import { client } from "../../..";
-import AutomodSettings from "../../../struct/antispam/AutomodSettings";
 import ServerConfig from "../../../struct/ServerConfig";
 import { getPermissionLevel } from "../../util";
 import { wsEvents, WSResponse } from "../api_communication";
 
 type ReqData = { user: string, server: string }
+type APIUser = { id: string, username?: string, avatarURL?: string }
 
 type ServerDetails = {
     id: string,
-    perms: 0|1|2,
+    perms: 0|1|2|3,
     name: string,
     description?: string,
     iconURL?: string,
     bannerURL?: string,
     serverConfig?: ServerConfig,
+    users: APIUser[],
 }
 
 wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSResponse) => void) => {
@@ -43,6 +44,20 @@ wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSRespo
 
         // todo: remove unwanted keys from server config
 
+        async function fetchUser(id: string) {
+            try {
+                return client.users.get(id) || await client.users.fetch(id);
+            } catch(e) {
+                throw id; // this is stupid but idc
+            }
+        }
+
+        const users = await Promise.allSettled([
+            ...(serverConfig.botManagers?.map(u => fetchUser(u)) ?? []),
+            ...(serverConfig.moderators?.map(u => fetchUser(u)) ?? []),
+            fetchUser(user._id),
+        ]);
+
         const response: ServerDetails = {
             id: server._id,
             name: server.name,
@@ -51,6 +66,11 @@ wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSRespo
             bannerURL: server.generateBannerURL(),
             iconURL: server.generateIconURL(),
             serverConfig,
+            users: users.map(
+                u => u.status == 'fulfilled'
+                    ? { id: u.value._id, avatarURL: u.value.generateAvatarURL(), username: u.value.username }
+                    : { id: u.reason }
+            ),
         }
 
         cb({ success: true, server: response });
@@ -59,3 +79,5 @@ wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSRespo
         cb({ success: false, error: `${e}` });
     }
 });
+
+export { APIUser }

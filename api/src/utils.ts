@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { FindOneResult } from "monk";
 import { db } from ".";
+import { botReq } from "./routes/internal/ws";
 
 class Session {
     user: string;
@@ -44,4 +45,8 @@ function unauthorized(res: Response) {
     res.status(401).send(JSON.stringify({ "error": "Unauthorized" }, null, 4));
 }
 
-export { isAuthenticated, getSessionInfo, badRequest, unauthorized }
+async function getPermissionLevel(user: string, server: string) {
+    return await botReq('getPermissionLevel', { user, server });
+}
+
+export { isAuthenticated, getSessionInfo, badRequest, unauthorized, getPermissionLevel }

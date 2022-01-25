@@ -17,7 +17,7 @@ wsEvents.on('req:getUserServers', async (data: ReqData, cb: (data: WSResponse) =
 
         const mutuals = await user.fetchMutual();
 
-        type ServerResponse = { id: string, perms: 0|1|2, name: string, iconURL?: string, bannerURL?: string }
+        type ServerResponse = { id: string, perms: 0|1|2|3, name: string, iconURL?: string, bannerURL?: string }
 
         const promises: Promise<ServerResponse>[] = [];
 

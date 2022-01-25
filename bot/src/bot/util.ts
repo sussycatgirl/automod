@@ -99,13 +99,13 @@ async function checkSudoPermission(message: Message): Promise<boolean> {
         return true;
     }
 }
-async function getPermissionLevel(user: User|Member, server: Server): Promise<0|1|2> {
+async function getPermissionLevel(user: User|Member, server: Server): Promise<0|1|2|3> {
     if (isSudo(user instanceof User ? user : (user.user || await client.users.fetch(user._id.user)))) return 2;
 
     const member = user instanceof User ? await server.fetchMember(user) : user;
     if (user instanceof Member) user = user.user!;
 
-    if (hasPerm(member, 'ManageServer')) return 2;
+    if (hasPerm(member, 'ManageServer')) return 3;
     if (hasPerm(member, 'KickMembers')) return 1;
 
     const config = (await client.db.get('servers').findOne({ id: server._id }) || {}) as ServerConfig;

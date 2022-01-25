@@ -135,3 +135,4 @@ export { wsEvents, wsSend, WSResponse }
 
 import('./api/servers');
 import('./api/server_details');
+import('./api/users');

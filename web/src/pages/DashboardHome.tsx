@@ -7,7 +7,7 @@ import { H2 } from '@revoltchat/ui/lib/components/atoms/heading/H2';
 import { API_URL } from "../App";
 import { getAuthHeaders } from "../utils";
 
-type Server = { id: string, perms: 0|1|2, name: string, iconURL?: string, bannerURL?: string }
+type Server = { id: string, perms: 0|1|2|3, name: string, iconURL?: string, bannerURL?: string }
 
 function permissionName(p: number) {
     switch(p) {

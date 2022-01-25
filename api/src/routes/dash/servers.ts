@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { isAuthenticated, unauthorized } from '../../utils';
 import { botReq } from '../internal/ws';
 
-type Server = { id: string, perms: 0|1|2, name: string, iconURL?: string, bannerURL?: string }
+type Server = { id: string, perms: 0|1|2|3, name: string, iconURL?: string, bannerURL?: string }
 
 app.get('/dash/servers', async (req: Request, res: Response) => {
     const user = await isAuthenticated(req, res, true);
