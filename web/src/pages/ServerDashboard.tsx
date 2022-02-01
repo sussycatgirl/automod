@@ -30,6 +30,7 @@ const ServerDashboard: FunctionComponent = () => {
     const [serverInfo, setServerInfo] = useState({} as Server);
     const [status, setStatus] = useState('');
 
+    const [changed, setChanged] = useState({} as { prefix?: boolean, prefixAllowSpace?: boolean });
     const [prefix, setPrefix] = useState('' as string|undefined);
     const [prefixAllowSpace, setPrefixAllowSpace] = useState(false);
     
@@ -39,8 +40,23 @@ const ServerDashboard: FunctionComponent = () => {
     const { serverid } = useParams();
 
     const saveConfig = useCallback(async () => {
-        alert('server config saved (not really)');
-    }, [ prefix, prefixAllowSpace ]);
+        if (Object.values(changed).filter(i => i).length == 0) return;
+
+        const payload = {
+            ...(changed.prefix ? { prefix } : undefined),
+            ...(changed.prefixAllowSpace ? { spaceAfterPrefix: prefixAllowSpace } : undefined),
+        }
+
+        const res = await axios.put(
+            API_URL + `/dash/server/${serverid}/config`,
+            payload,
+            { headers: await getAuthHeaders() }
+        );
+
+        if (res.data.success) {
+            setChanged({});
+        }
+    }, [ prefix, prefixAllowSpace, changed ]);
 
     const loadInfo = useCallback(async () => {
         try {
@@ -78,6 +94,7 @@ const ServerDashboard: FunctionComponent = () => {
                         value={prefix}
                         onChange={e => {
                             setPrefix(e.currentTarget.value);
+                            setChanged({ ...changed, prefix: true });
                         }}
                     />
                     <Checkbox
@@ -85,6 +102,7 @@ const ServerDashboard: FunctionComponent = () => {
                         value={prefixAllowSpace}
                         onChange={() => {
                             setPrefixAllowSpace(!prefixAllowSpace);
+                            setChanged({ ...changed, prefixAllowSpace: true });
                         }}
                         title="Allow space after prefix"
                         description={'Whether the bot recognizes a command if the prefix is followed by a space. Enable if your prefix is a word.'}

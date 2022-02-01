@@ -37,11 +37,11 @@ app.get('/dash/server/:server', async (req: Request, res: Response) => {
 app.put('/dash/server/:server/:option', async (req: Request, res: Response) => {
     try {
         const user = await isAuthenticated(req, res, true);
-        if (!user) return unauthorized(res);
+        if (!user) return;
     
         const { server } = req.params;
         const { item } = req.body;
-        if (!server || typeof server != 'string' || !item || typeof item != 'string') return badRequest(res);
+        if (!server || typeof server != 'string') return badRequest(res);
     
         const permissionLevelRes = await getPermissionLevel(user, server);
         if (!permissionLevelRes.success)
@@ -53,6 +53,7 @@ app.put('/dash/server/:server/:option', async (req: Request, res: Response) => {
     
         switch(req.params.option) {
             case 'managers': {
+                if (!item || typeof item != 'string') return badRequest(res);
                 if (permissionLevel < 3) return res.status(403).send({ error: 'You are not allowed to add other bot managers.' });
 
                 const userRes = await botReq('getUser', { user: item });
@@ -75,6 +76,7 @@ app.put('/dash/server/:server/:option', async (req: Request, res: Response) => {
             }
 
             case 'mods': {
+                if (!item || typeof item != 'string') return badRequest(res);
                 if (permissionLevel < 2) return res.status(403).send({ error: 'You are not allowed to add other moderators.' });
 
                 const userRes = await botReq('getUser', { user: item });
@@ -96,9 +98,46 @@ app.put('/dash/server/:server/:option', async (req: Request, res: Response) => {
                 return;
             }
 
+            case 'config': {
+                function validateField(field: string, type: string[], level: 0|1|2|3): boolean {
+                    if (permissionLevel < level) {
+                        res.status(403).send({ error: `You are not authorized to change '${field}'` });
+                        return false;
+                    }
+
+                    if (req.body?.[field] != undefined && !type.includes(typeof req.body?.[field])) {
+                        res.status(400).send({ error: `Field '${field}' needs to be of type ${type} or null` });
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                type RequestBody = {
+                    prefix?: string,
+                    spaceAfterPrefix?: boolean,
+                }
+
+                if (!validateField('prefix', ['string'], 2) ||
+                    !validateField('spaceAfterPrefix', ['boolean'], 2)
+                ) return;
+
+                const body: RequestBody = req.body;
+
+                await db.get('servers').update({ id: server }, {
+                    $set: JSON.parse(JSON.stringify({ // Get rid of undefined fields
+                        prefix: body.prefix || null,
+                        spaceAfterPrefix: body.spaceAfterPrefix,
+                    })),
+                });
+
+                return res.send({ success: true });
+            }
+
             default: return badRequest(res);
         }
     } catch(e: any) {
+        console.error(e);
         res.status(500).send({ error: e });
     }
 });
