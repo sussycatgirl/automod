@@ -126,7 +126,7 @@ app.put('/dash/server/:server/:option', async (req: Request, res: Response) => {
 
                 await db.get('servers').update({ id: server }, {
                     $set: JSON.parse(JSON.stringify({ // Get rid of undefined fields
-                        prefix: body.prefix || null,
+                        prefix: body.prefix == '' ? null : body.prefix,
                         spaceAfterPrefix: body.spaceAfterPrefix,
                     })),
                 });
