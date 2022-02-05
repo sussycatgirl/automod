@@ -13,6 +13,7 @@ const logger: Log75 = new (Log75 as any).default(DEBUG ? LogLevel.Debug : LogLev
 const db = buildDBClient();
 const app = Express();
 
+app.set('trust proxy', true);
 app.use(Express.json());
 
 export { logger, app, db, PORT, SESSION_LIFETIME }
@@ -22,6 +23,8 @@ export { logger, app, db, PORT, SESSION_LIFETIME }
         import('./middlewares/log'),
         import('./middlewares/updateTokenExpiry'),
         import('./middlewares/cors'),
+        import('./middlewares/ratelimit'),
+
         import('./routes/internal/ws'),
         import('./routes/root'),
         import('./routes/login'),

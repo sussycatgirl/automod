@@ -5,6 +5,7 @@ import { botReq } from './internal/ws';
 import { db } from '..';
 import { FindOneResult } from 'monk';
 import { badRequest } from '../utils';
+import { RateLimiter } from '../middlewares/ratelimit';
 
 class BeginReqBody {
     user: string;
@@ -15,7 +16,10 @@ class CompleteReqBody {
     code: string;
 }
 
-app.post('/login/begin', async (req: Request, res: Response) => {
+const beginRatelimiter = new RateLimiter('/login/begin', { limit: 10, timeframe: 300 });
+const completeRatelimiter = new RateLimiter('/login/complete', { limit: 5, timeframe: 30 });
+
+app.post('/login/begin', (...args) => beginRatelimiter.execute(...args), async (req: Request, res: Response) => {
     const body = req.body as BeginReqBody;
     if (!body.user || typeof body.user != 'string') return badRequest(res);
 
@@ -26,7 +30,7 @@ app.post('/login/begin', async (req: Request, res: Response) => {
     res.status(200).send({ success: true, nonce: r.nonce, code: r.code, uid: r.uid });
 });
 
-app.post('/login/complete', async (req: Request, res: Response) => {
+app.post('/login/complete', (...args) => completeRatelimiter.execute(...args), async (req: Request, res: Response) => {
     const body = req.body as CompleteReqBody;
     if ((!body.user || typeof body.user != 'string') ||
         (!body.nonce || typeof body.nonce != 'string') ||

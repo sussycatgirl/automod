@@ -111,8 +111,13 @@ wsEvents.on('req:requestLogin', async (data: any, cb: (data: WSResponse) => void
 
         const nonce = ulid();
 
-        const previousLogins = await bot.db.get('pending_logins').find({ user: user._id, confirmed: true });
+        const [previousLogins, currentValidLogins] = await Promise.all([
+            bot.db.get('pending_logins').find({ user: user._id, confirmed: true }),
+            bot.db.get('pending_logins').find({ user: user._id, confirmed: false, expires: { $gt: Date.now() } }),
+        ]);
 
+        if (currentValidLogins.length >= 5) return cb({ success: false, statusCode: 403, error: 'Too many pending logins. Try again later.' });
+        
         await bot.db.get('pending_logins').insert({
             code,
             expires: Date.now() + (1000 * 60 * 15), // Expires in 15 minutes
