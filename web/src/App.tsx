@@ -7,7 +7,11 @@ import RequireAuth from './components/RequireAuth';
 import DashboardHome from './pages/DashboardHome';
 import ServerDashboard from './pages/ServerDashboard';
 
-const API_URL = 'http://localhost:9000';
+const API_URL = import.meta.env.VITE_API_URL?.toString()
+  || 'http://localhost:9000';
+
+const BOT_PREFIX = import.meta.env.VITE_BOT_PREFIX?.toString()
+  || '/';
 
 function App() {
   return (
@@ -22,4 +26,4 @@ function App() {
 }
 
 export default App;
-export { API_URL }
+export { API_URL, BOT_PREFIX }

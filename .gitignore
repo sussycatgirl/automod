@@ -2,3 +2,5 @@ node_modules
 dist
 .env
 yarn-error.log
+docker-compose.yml
+/db

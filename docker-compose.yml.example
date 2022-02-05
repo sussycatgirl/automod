@@ -1,0 +1,65 @@
+# Copy this file to `docker-compose.yml` and modify it to your liking.
+# Copy `.env.example` to `.env` to configure environment variables.
+
+version: "3.1"
+
+services:
+  bot:
+    build: ./bot
+    environment:
+      - DB_HOST=mongo:27017
+      - DB_USERNAME=mogus
+      - DB_PASS
+      - DB_NAME=admin
+      - BOT_TOKEN
+      - BOT_OWNERS
+      - LOG_WEBHOOK
+      - NODE_ENV=production
+      - API_WS_URL=ws://api:9000/internal/ws
+      - API_WS_TOKEN=${INTERNAL_API_TOKEN}
+      - WEB_UI_URL=${PUBLIC_WEB_URL}
+      - BOT_PREFIX
+    depends_on:
+      - mongo
+      - api
+    restart: unless-stopped
+
+  api:
+    build: ./api
+    environment:
+      - BOT_API_TOKEN=${INTERNAL_API_TOKEN}
+      - DB_HOST=mongo:27017
+      - DB_USERNAME=mogus
+      - DB_PASS
+      - DB_NAME=admin
+    expose:
+      - 9000
+    ports:
+      - 0.0.0.0:9000:9000
+    restart: unless-stopped
+
+  # If you prefer to host the web app on a different
+  # platform like Vercel, you can remove this part.
+  web:
+    build:
+      context: ./web
+      args:
+        - VITE_API_URL=${PUBLIC_API_URL}
+        - VITE_BOT_PREFIX=${BOT_PREFIX}
+    ports:
+      - 0.0.0.0:8080:80
+    restart: unless-stopped
+
+  mongo:
+    image: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mogus
+      - MONGO_INITDB_ROOT_PASSWORD=${DB_PASS}
+    expose:
+      - 27017
+    # If you want to access the database from outside
+    #ports:
+    #  - "0.0.0.0:36602:27017"
+    volumes:
+      - ./db:/data/db:rw
+    restart: unless-stopped

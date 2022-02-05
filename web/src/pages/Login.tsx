@@ -5,7 +5,7 @@ import { Button } from '@revoltchat/ui/lib/components/atoms/inputs/Button';
 import { InputBox } from '@revoltchat/ui/lib/components/atoms/inputs/InputBox';
 import { H1 } from '@revoltchat/ui/lib/components/atoms/heading/H1';
 import { H2 } from '@revoltchat/ui/lib/components/atoms/heading/H2';
-import { API_URL } from "../App";
+import { API_URL, BOT_PREFIX } from "../App";
 
 const Login: FunctionComponent = () => {
     const [username, setUsername] = useState('');
@@ -66,7 +66,7 @@ const Login: FunctionComponent = () => {
                 <H2>Your code: <a>{code}</a></H2>
                 <p style={{ color: "var(--foreground)" }}>
                     Run <code style={{ userSelect: 'all' }}>
-                        /login {code}
+                        {BOT_PREFIX}login {code}
                     </code> in any server using AutoMod, then <a
                         onClick={getSession}
                         style={{ cursor: 'pointer' }}
