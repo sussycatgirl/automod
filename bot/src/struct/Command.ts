@@ -1,4 +1,4 @@
-import { ChannelPermission, ServerPermission } from "revolt.js";
+import { ChannelPermission, ServerPermission } from "@janderedev/revolt.js";
 
 class Command {
     name: string;

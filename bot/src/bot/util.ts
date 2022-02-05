@@ -1,19 +1,19 @@
-import { Member } from "revolt.js/dist/maps/Members";
-import { User } from "revolt.js/dist/maps/Users";
+import { Member } from "@janderedev/revolt.js/dist/maps/Members";
+import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { client } from "..";
 import Infraction from "../struct/antispam/Infraction";
 import ServerConfig from "../struct/ServerConfig";
 import FormData from 'form-data';
 import axios from 'axios';
-import { Server } from "revolt.js/dist/maps/Servers";
+import { Server } from "@janderedev/revolt.js/dist/maps/Servers";
 import LogConfig from "../struct/LogConfig";
 import LogMessage from "../struct/LogMessage";
 import { ColorResolvable, MessageEmbed } from "discord.js";
 import logger from "./logger";
 import { ulid } from "ulid";
-import { Channel } from "revolt.js/dist/maps/Channels";
-import { ChannelPermission, ServerPermission } from "revolt.js";
-import { Message } from "revolt.js/dist/maps/Messages";
+import { Channel } from "@janderedev/revolt.js/dist/maps/Channels";
+import { ChannelPermission, ServerPermission } from "@janderedev/revolt.js";
+import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { isSudo } from "./commands/botadm";
 
 

@@ -2,7 +2,7 @@ import Command from "../../struct/Command";
 import { hasPerm, parseUser } from "../util";
 import ServerConfig from "../../struct/ServerConfig";
 import { client } from "../..";
-import { User } from "revolt.js/dist/maps/Users";
+import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 
 const SYNTAX = '/admin add @user; /admin remove @user; /admin list';

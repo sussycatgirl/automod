@@ -1,5 +1,5 @@
-import { Message } from "revolt.js/dist/maps/Messages";
-import { User } from "revolt.js/dist/maps/Users";
+import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
+import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { client } from "../..";
 import Command from "../../struct/Command";
 import MessageCommandContext from "../../struct/MessageCommandContext";

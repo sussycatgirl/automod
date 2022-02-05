@@ -4,6 +4,7 @@ import { badRequest, getPermissionLevel, isAuthenticated, unauthorized } from '.
 import { botReq } from '../internal/ws';
 
 type User = { id: string, username?: string, avatarURL?: string }
+type Channel = { id: string, name: string, icon?: string, type: 'VOICE'|'TEXT', nsfw: boolean }
 
 type ServerDetails = {
     id: string,
@@ -14,11 +15,12 @@ type ServerDetails = {
     bannerURL?: string,
     serverConfig: any,
     users: User[],
+    channels: Channel[],
 }
 
 app.get('/dash/server/:server', async (req: Request, res: Response) => {
     const user = await isAuthenticated(req, res, true);
-    if (!user) return unauthorized(res);
+    if (!user) return;
 
     const { server } = req.params;
     if (!server || typeof server != 'string') return badRequest(res);

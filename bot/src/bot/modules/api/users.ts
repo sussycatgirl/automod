@@ -1,4 +1,4 @@
-import { User } from "revolt.js/dist/maps/Users";
+import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { client } from "../../..";
 import { getPermissionLevel, parseUser } from "../../util";
 import { wsEvents, WSResponse } from "../api_communication";

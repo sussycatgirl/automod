@@ -18,7 +18,7 @@ app.use(Express.json());
 export { logger, app, db, PORT, SESSION_LIFETIME }
 
 (async () => {
-    await Promise.all([
+    const promises = [
         import('./middlewares/log'),
         import('./middlewares/updateTokenExpiry'),
         import('./middlewares/cors'),
@@ -27,7 +27,12 @@ export { logger, app, db, PORT, SESSION_LIFETIME }
         import('./routes/login'),
         import('./routes/dash/servers'),
         import('./routes/dash/server'),
-    ]);
+        import('./routes/dash/server-automod'),
+    ];
+
+    for (const p of promises) await p;
+
+
     logger.done('All routes and middlewares loaded');
 })();
 

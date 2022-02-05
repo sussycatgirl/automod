@@ -1,4 +1,4 @@
-import { Member } from "revolt.js/dist/maps/Members";
+import { Member } from "@janderedev/revolt.js/dist/maps/Members";
 import { ulid } from "ulid";
 import { client } from "../..";
 import Infraction from "../../struct/antispam/Infraction";

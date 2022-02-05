@@ -37,12 +37,12 @@ async function getSessionInfo(user: string, token: string): Promise<SessionInfo>
     return { exists: !!session, valid: !!(session && !session.invalid && session.expires > Date.now()), nonce: session?.nonce }
 }
 
-function badRequest(res: Response) {
-    res.status(400).send(JSON.stringify({ "error": "Invalid request body" }, null, 4));
+function badRequest(res: Response, infoText?: string) {
+    res.status(400).send(JSON.stringify({ "error": "Invalid request body", "info": infoText || undefined }, null, 4));
 }
 
-function unauthorized(res: Response) {
-    res.status(401).send(JSON.stringify({ "error": "Unauthorized" }, null, 4));
+function unauthorized(res: Response, infoText?: string) {
+    res.status(401).send(JSON.stringify({ "error": "Unauthorized", "info": infoText || undefined }, null, 4));
 }
 
 async function getPermissionLevel(user: string, server: string) {

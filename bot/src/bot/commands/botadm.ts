@@ -6,7 +6,7 @@ import child_process from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { wordlist } from "../modules/user_scan";
-import { User } from "revolt.js/dist/maps/Users";
+import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { adminBotLog } from "../logging";
 
 // id: expireDate

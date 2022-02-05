@@ -1,5 +1,5 @@
 import Command from "../../struct/Command";
-import { Message } from "revolt.js/dist/maps/Messages";
+import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { client } from "../..";
 import ServerConfig from "../../struct/ServerConfig";
 import { DEFAULT_PREFIX } from "../modules/command_handler";

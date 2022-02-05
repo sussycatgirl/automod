@@ -1,5 +1,5 @@
-import { Member } from "revolt.js/dist/maps/Members";
-import { User } from "revolt.js/dist/maps/Users";
+import { Member } from "@janderedev/revolt.js/dist/maps/Members";
+import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { client } from "../../..";
 import ServerConfig from "../../../struct/ServerConfig";
 import { getPermissionLevel } from "../../util";
@@ -7,6 +7,7 @@ import { wsEvents, WSResponse } from "../api_communication";
 
 type ReqData = { user: string, server: string }
 type APIUser = { id: string, username?: string, avatarURL?: string }
+type APIChannel = { id: string, name: string, icon?: string, type: 'VOICE'|'TEXT', nsfw: boolean }
 
 type ServerDetails = {
     id: string,
@@ -17,6 +18,7 @@ type ServerDetails = {
     bannerURL?: string,
     serverConfig?: ServerConfig,
     users: APIUser[],
+    channels: APIChannel[],
 }
 
 wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSResponse) => void) => {
@@ -71,6 +73,13 @@ wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSRespo
                     ? { id: u.value._id, avatarURL: u.value.generateAvatarURL(), username: u.value.username }
                     : { id: u.reason }
             ),
+            channels: server.channels.filter(c => c != undefined).map(c => ({
+                id: c!._id,
+                name: c!.name ?? '',
+                nsfw: c!.nsfw ?? false,
+                type: c!.channel_type == 'VoiceChannel' ? 'VOICE' : 'TEXT',
+                icon: c!.generateIconURL(),
+            })),
         }
 
         cb({ success: true, server: response });

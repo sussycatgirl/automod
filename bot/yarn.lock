@@ -37,6 +37,23 @@
   resolved "https://registry.yarnpkg.com/@insertish/isomorphic-ws/-/isomorphic-ws-4.0.1.tgz#5bcd6f73b93efa9ccdb6abf887ae808d40827169"
   integrity sha512-kFD/p8T4Hkqr992QrdkbW/cQ/W/q2d9MPCobwzBv2PwTKLkCD9RaYDy6m17qRnSLQQ5PU0kHCG8kaOwAqzj1vQ==
 
+"@janderedev/revolt.js@^5.2.8-patch.1":
+  version "5.2.8-patch.1"
+  resolved "https://registry.yarnpkg.com/@janderedev/revolt.js/-/revolt.js-5.2.8-patch.1.tgz#e8570090612cb9e0f399f8bc75feed3cbbdfcd2a"
+  integrity sha512-rUjpp+Nk7/aPdFrSNBorSyvJwIb4fkwRzLB2OODWLesYvlxddJG2PtFujWU4dk3fnQMxpMaQVLq95T2GtsOkdg==
+  dependencies:
+    "@insertish/exponential-backoff" "3.1.0-patch.0"
+    "@insertish/isomorphic-ws" "^4.0.1"
+    axios "^0.21.4"
+    eventemitter3 "^4.0.7"
+    lodash.defaultsdeep "^4.6.1"
+    lodash.flatten "^4.4.0"
+    lodash.isequal "^4.5.0"
+    mobx "^6.3.2"
+    revolt-api "0.5.3-alpha.12"
+    ulid "^2.3.0"
+    ws "^8.2.2"
+
 "@sapphire/async-queue@^1.1.8":
   version "1.1.9"
   resolved "https://registry.yarnpkg.com/@sapphire/async-queue/-/async-queue-1.1.9.tgz#ce69611c8753c4affd905a7ef43061c7eb95c01b"
@@ -362,9 +379,9 @@ mime-types@^2.1.12:
     mime-db "1.50.0"
 
 mobx@^6.3.2:
-  version "6.3.10"
-  resolved "https://registry.yarnpkg.com/mobx/-/mobx-6.3.10.tgz#c3bc715c8f03717b9a2329f9697d42b7998d42e0"
-  integrity sha512-lfuIN5TGXBNy/5s3ggr1L+IbD+LvfZVlj5q1ZuqyV9AfMtunYQvE8G0WfewS9tgIR3I1q8HJEEbcAOsxEgLwRw==
+  version "6.3.13"
+  resolved "https://registry.yarnpkg.com/mobx/-/mobx-6.3.13.tgz#93e56a57ee72369f850cf3d6398fd36ee8ef062e"
+  integrity sha512-zDDKDhYUk9QCHQUdLG+wb4Jv/nXutSLt/P8kkwHyjdbrJO4OZS6QTEsrOnrKM39puqXSrJZHdB6+yRys2NBFFA==
 
 mongodb@^3.2.3:
   version "3.7.2"
@@ -504,23 +521,6 @@ revolt-api@0.5.3-alpha.12:
   resolved "https://registry.yarnpkg.com/revolt-api/-/revolt-api-0.5.3-alpha.12.tgz#78f25b567b840c1fd072595526592a422cb01f25"
   integrity sha512-MM42oI5+5JJMnAs3JiOwSQOy/SUYzYs3M8YRC5QI4G6HU7CfyB2HNWh5jFsyRlcLdSi13dGazHm31FUPHsxOzw==
 
-revolt.js@^5.2.7:
-  version "5.2.7"
-  resolved "https://registry.yarnpkg.com/revolt.js/-/revolt.js-5.2.7.tgz#7b887329913494a2caf02c9828685d63551890db"
-  integrity sha512-KNoQqLrdd/B8zryu2fhWim9rO5OEkouhCZj4nU+upwrekz30DjxqWgZCup/apKXE8PSmrhSgWdKT8SHCBXOxFQ==
-  dependencies:
-    "@insertish/exponential-backoff" "3.1.0-patch.0"
-    "@insertish/isomorphic-ws" "^4.0.1"
-    axios "^0.21.4"
-    eventemitter3 "^4.0.7"
-    lodash.defaultsdeep "^4.6.1"
-    lodash.flatten "^4.4.0"
-    lodash.isequal "^4.5.0"
-    mobx "^6.3.2"
-    revolt-api "0.5.3-alpha.12"
-    ulid "^2.3.0"
-    ws "^8.2.2"
-
 safe-buffer@^5.1.1, safe-buffer@^5.1.2:
   version "5.2.1"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.2.1.tgz#1eaf9fa9bdb1fdd4ec75f58f9cdb4e6b7827eec6"
@@ -623,9 +623,9 @@ word@~0.3.0:
   integrity sha512-OELeY0Q61OXpdUfTp+oweA/vtLVg5VDOXh+3he3PNzLGG/y0oylSOC1xRVj0+l4vQ3tj/bB1HVHv1ocXkQceFA==
 
 ws@^8.2.2:
-  version "8.4.0"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-8.4.0.tgz#f05e982a0a88c604080e8581576e2a063802bed6"
-  integrity sha512-IHVsKe2pjajSUIl4KYMQOdlyliovpEPquKkqbwswulszzI7r0SfQrxnXdWAEqOlDCLrVSJzo+O1hAwdog2sKSQ==
+  version "8.4.2"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.4.2.tgz#18e749868d8439f2268368829042894b6907aa0b"
+  integrity sha512-Kbk4Nxyq7/ZWqr/tarI9yIt/+iNNFOjBXEWgTb4ydaNHBNGgvf2QHbS9fdfsndfjFlFwEd4Al+mw83YkaD10ZA==
 
 ws@^8.2.3:
   version "8.3.0"

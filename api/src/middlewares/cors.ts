@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { app, logger } from "..";
+import { app } from "..";
 
 app.use('*', (req: Request, res: Response, next: () => void) => {
     res.header('Access-Control-Allow-Origin', '*');
