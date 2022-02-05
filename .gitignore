@@ -4,3 +4,5 @@ dist
 yarn-error.log
 docker-compose.yml
 /db
+
+.vercel
