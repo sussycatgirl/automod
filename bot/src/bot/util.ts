@@ -106,12 +106,11 @@ async function getPermissionLevel(user: User|Member, server: Server): Promise<0|
     if (user instanceof Member) user = user.user!;
 
     if (hasPerm(member, 'ManageServer')) return 3;
-    if (hasPerm(member, 'KickMembers')) return 1;
 
     const config = (await client.db.get('servers').findOne({ id: server._id }) || {}) as ServerConfig;
 
     if (config.botManagers?.includes(user._id)) return 2;
-    if (config.moderators?.includes(user._id)) return 1;
+    if (config.moderators?.includes(user._id) || hasPerm(member, 'KickMembers')) return 1;
 
     return 0;
 }
