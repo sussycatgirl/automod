@@ -1,0 +1,31 @@
+{
+  "name": "revolt-automod",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "exports": "./index.js",
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "start": "node --experimental-specifier-resolution=node dist/index",
+    "dev": "yarn build && yarn start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@janderedev/revolt.js": "^5.2.8-patch.1",
+    "@types/monk": "^6.0.0",
+    "axios": "^0.22.0",
+    "dayjs": "^1.10.7",
+    "discord.js": "^13.3.1",
+    "dotenv": "^10.0.0",
+    "form-data": "^4.0.0",
+    "log75": "^2.2.0",
+    "monk": "^7.3.4",
+    "ulid": "^2.3.0",
+    "xlsx": "^0.17.3"
+  },
+  "devDependencies": {
+    "typescript": "^4.4.3"
+  }
+}
