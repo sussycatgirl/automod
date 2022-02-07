@@ -1,6 +1,6 @@
 import { app, db } from '../..';
 import { Request, Response } from 'express';
-import { badRequest, getPermissionLevel, isAuthenticated, unauthorized } from '../../utils';
+import { badRequest, getPermissionLevel, isAuthenticated, requireAuth, unauthorized } from '../../utils';
 import { botReq } from '../internal/ws';
 
 type User = { id: string, username?: string, avatarURL?: string }
@@ -18,7 +18,7 @@ type ServerDetails = {
     channels: Channel[],
 }
 
-app.get('/dash/server/:server', async (req: Request, res: Response) => {
+app.get('/dash/server/:server', requireAuth({ permission: 0 }), async (req: Request, res: Response) => {
     const user = await isAuthenticated(req, res, true);
     if (!user) return;
 

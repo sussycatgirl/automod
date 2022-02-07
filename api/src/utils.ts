@@ -49,4 +49,24 @@ async function getPermissionLevel(user: string, server: string) {
     return await botReq('getPermissionLevel', { user, server });
 }
 
-export { isAuthenticated, getSessionInfo, badRequest, unauthorized, getPermissionLevel }
+type RequireAuthConfig = { permission?: 0|1|2|3, requireLogin?: boolean, noAuthOnly?: boolean }
+function requireAuth(config: RequireAuthConfig): (req: Request, res: Response, next: () => void) => void {
+    return async (req: Request, res: Response, next: () => void) => {
+        const auth = await isAuthenticated(req);
+
+        if (config.noAuthOnly && typeof auth == 'string') return res.status(403).send({ error: 'Cannot access this route with authentication' });
+        if (config.requireLogin && !auth) return unauthorized(res, 'Authentication required for this route');
+
+        if (config.permission != undefined) {
+            if (!auth) return unauthorized(res, 'Authentication required for this route');
+            const server_id = req.params.serverid || req.params.server;
+            const levelRes = await getPermissionLevel(auth, server_id);
+            if (!levelRes.success) return res.status(500).send({ error: 'Unknown server or other error' });
+            if (levelRes.level < config.permission) return unauthorized(res, 'Your permission level is too low');
+        }
+
+        next();
+    }
+}
+
+export { isAuthenticated, getSessionInfo, badRequest, unauthorized, getPermissionLevel, requireAuth }

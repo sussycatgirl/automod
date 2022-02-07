@@ -1,6 +1,6 @@
 import { app, db } from '../..';
 import { Request, Response } from 'express';
-import { badRequest, isAuthenticated, unauthorized } from '../../utils';
+import { badRequest, isAuthenticated, requireAuth, unauthorized } from '../../utils';
 import { botReq } from '../internal/ws';
 import { FindOneResult } from 'monk';
 
@@ -13,7 +13,7 @@ type AntispamRule = {
     message: string | null;
 }
 
-app.get('/dash/server/:server/automod', async (req: Request, res: Response) => {
+app.get('/dash/server/:server/automod',requireAuth({ permission: 2 }) , async (req: Request, res: Response) => {
     const user = await isAuthenticated(req, res, true);
     if (!user) return;
 
@@ -48,23 +48,13 @@ app.get('/dash/server/:server/automod', async (req: Request, res: Response) => {
     res.send(result);
 });
 
-app.patch('/dash/server/:server/automod/:ruleid', async (req: Request, res: Response) => {
+app.patch('/dash/server/:server/automod/:ruleid', requireAuth({ permission: 2 }), async (req: Request, res: Response) => {
     const user = await isAuthenticated(req, res, true);
     if (!user) return;
 
     const { server, ruleid } = req.params;
     const body = req.body;
     if (!server || !ruleid) return badRequest(res);
-
-    const response = await botReq('getUserServerDetails', { user, server });
-    if (!response.success) {
-        return res.status(response.statusCode ?? 500).send({ error: response.error });
-    }
-
-    if (!response.server) return res.status(404).send({ error: 'Server not found' });
-
-    const permissionLevel: 0|1|2|3 = response.perms;
-    if (permissionLevel < 2) return unauthorized(res, `Only bot managers can manage moderation rules.`);
 
     const serverConfig: FindOneResult<any> = await db.get('servers').findOne({ id: server });
     const antiSpamRules: AntispamRule[] = serverConfig.automodSettings?.spam ?? [];

@@ -1,13 +1,13 @@
 import { app } from '../..';
 import { Request, Response } from 'express';
-import { isAuthenticated, unauthorized } from '../../utils';
+import { isAuthenticated, requireAuth, unauthorized } from '../../utils';
 import { botReq } from '../internal/ws';
 
 type Server = { id: string, perms: 0|1|2|3, name: string, iconURL?: string, bannerURL?: string }
 
-app.get('/dash/servers', async (req: Request, res: Response) => {
-    const user = await isAuthenticated(req);
-    if (!user) return unauthorized(res);
+app.get('/dash/servers', requireAuth({ requireLogin: true }), async (req: Request, res: Response) => {
+    const user = await isAuthenticated(req, res, true);
+    if (!user) return;
 
     const response = await botReq('getUserServers', { user });
     if (!response.success) {
