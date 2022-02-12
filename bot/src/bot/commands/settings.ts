@@ -1,11 +1,4 @@
 import Command from "../../struct/Command";
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
-import { client } from "../..";
-import AutomodSettings from "../../struct/antispam/AutomodSettings";
-import AntispamRule from "../../struct/antispam/AntispamRule";
-import ModerationAction from "../../struct/antispam/ModerationAction";
-import { isBotManager, NO_MANAGER_MSG } from "../util";
-import { ulid } from 'ulid';
 import MessageCommandContext from "../../struct/MessageCommandContext";
 
 export default {
@@ -14,32 +7,7 @@ export default {
     description: 'Manage AutoMod\'s configuration',
     category: 'configuration',
     run: async (message: MessageCommandContext, args: string[]) => {
-        if (!isBotManager(message)) return message.reply(NO_MANAGER_MSG);
-
-        return 'This feature is currently disabled';
-
-        let settings = {
-            spam: [
-                {
-                    id: ulid(),
-                    max_msg: 5,
-                    timeframe: 3,
-                    action: ModerationAction.Delete,
-                    channels: null,
-                } as AntispamRule,
-                {
-                    id: ulid(),
-                    max_msg: 4,
-                    timeframe: 3,
-                    action: ModerationAction.Warn,
-                    channels: null,
-                } as AntispamRule
-            ]
-        } as AutomodSettings;
-
-        client.db.get('servers')
-            .update({ id: message.channel?.server_id }, { $set: { automodSettings: settings } });
-
-        message.reply('Default config restored');
+        await message.reply(`Bot configuration can be managed from `
+            + `[here](<${process.env.WEB_UI_URL || 'https://automod.janderedev.xyz'}/dashboard>).`);
     }
 } as Command;
