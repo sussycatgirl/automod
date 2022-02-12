@@ -2,7 +2,6 @@ import prom from 'prom-client';
 import http from 'http';
 import logger from '../logger';
 import { client } from '../..';
-import { decodeTime } from 'ulid';
 
 const PORT = Number(process.env.BOT_METRICS_PORT);
 
@@ -56,7 +55,7 @@ if (!isNaN(PORT)) {
                     const msg = await channel?.sendMessage('Ping?');
                     if (!msg) return;
 
-                    const delay = decodeTime(msg._id) - now;
+                    const delay = Date.now() - now;
                     metrics.msgPing.set(delay);
                     await msg.edit({ content: `Pong! ${delay}ms` });
                 } catch(e) { console.error(e) }
