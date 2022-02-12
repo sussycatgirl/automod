@@ -8,7 +8,7 @@ const PORT = Number(process.env.BOT_METRICS_PORT);
 prom.collectDefaultMetrics({ prefix: 'automod_' });
 
 const metrics = {
-    commands: new prom.Counter({ name: 'commands_executed', help: 'Amount of executed commands' }),
+    commands: new prom.Counter({ name: 'commands_executed', help: 'Command usage stats', labelNames: [ 'command' ] }),
     servers: new prom.Gauge({ name: 'server_count', help: 'Amount of servers the bot is in' }),
     wsPing: new prom.Gauge({ name: 'ws_ping', help: 'WebSocket ping as returned by revolt.js' }),
     msgPing: new prom.Gauge({ name: 'msg_ping', help: 'Amount of time it takes for the bot to send a message' }),

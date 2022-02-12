@@ -73,7 +73,7 @@ let commands: Command[];
         let cmd = commands.find(c => c.name == cmdName || (c.aliases?.indexOf(cmdName!) ?? -1) > -1);
         if (!cmd) return;
 
-        metrics.commands.inc();
+        metrics.commands.inc({ command: cmd.name });
 
         if (isSudo(msg.author!)) updateSudoTimeout(msg.author!);
 
