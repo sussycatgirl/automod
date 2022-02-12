@@ -31,4 +31,5 @@ export { client }
     import('./bot/modules/tempbans');
     import('./bot/modules/user_scan');
     import('./bot/modules/api_communication');
+    import('./bot/modules/metrics');
 })();

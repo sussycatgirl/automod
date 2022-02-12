@@ -10,6 +10,7 @@ import MessageCommandContext from "../../struct/MessageCommandContext";
 import { fileURLToPath } from 'url';
 import { getOwnMemberInServer, hasPermForChannel } from "../util";
 import { isSudo, updateSudoTimeout } from "../commands/botadm";
+import { metrics } from "./metrics";
 
 // thanks a lot esm
 const filename = fileURLToPath(import.meta.url);
@@ -71,6 +72,8 @@ let commands: Command[];
 
         let cmd = commands.find(c => c.name == cmdName || (c.aliases?.indexOf(cmdName!) ?? -1) > -1);
         if (!cmd) return;
+
+        metrics.commands.inc();
 
         if (isSudo(msg.author!)) updateSudoTimeout(msg.author!);
 

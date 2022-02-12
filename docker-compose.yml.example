@@ -19,6 +19,11 @@ services:
       - API_WS_TOKEN=${INTERNAL_API_TOKEN}
       - WEB_UI_URL=${PUBLIC_WEB_URL}
       - BOT_PREFIX
+      - BOT_METRICS_PORT
+      - BOT_METRICS_MSG_PING_CHANNEL
+    # Uncomment if you enabled Prometheus metrics
+    #ports:
+    #  - 127.0.0.1:${BOT_METRICS_PORT}:${BOT_METRICS_PORT}
     depends_on:
       - mongo
       - api
