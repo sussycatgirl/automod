@@ -43,6 +43,7 @@ let commands: Command[];
             !msg.channel?.server) return;
 
         if (!msg.member) await msg.channel.server.fetchMember(msg.author_id);
+        if (msg.author?.bot) return;
 
         // If we can't reply to the message, return
         if (!hasPermForChannel(await getOwnMemberInServer(msg.channel.server), msg.channel, 'SendMessage')) {
