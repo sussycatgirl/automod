@@ -42,8 +42,14 @@ let commands: Command[];
             msg.author_id == client.user?._id ||
             !msg.channel?.server) return;
 
-        if (!msg.member) await msg.channel.server.fetchMember(msg.author_id);
-        if (msg.author?.bot) return;
+        try {
+            if (!msg.member) await msg.channel.server.fetchMember(msg.author_id);
+            if (!msg.author) await client.users.fetch(msg.author_id);
+        } catch(e) {
+            return msg.reply('⚠ Failed to fetch message author');
+        }
+
+        if (msg.author!.bot) return;
 
         // If we can't reply to the message, return
         if (!hasPermForChannel(await getOwnMemberInServer(msg.channel.server), msg.channel, 'SendMessage')) {
