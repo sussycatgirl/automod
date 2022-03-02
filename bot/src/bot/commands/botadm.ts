@@ -55,7 +55,7 @@ export default {
                             + `Environment: \`${process.env.NODE_ENV || 'testing'}\`\n`
                             + `Commit hash: \`${await getCommitHash() || 'Unknown'}\`\n`
                             + `### Packages\n`
-                            + `revolt.js: \`${pjson.dependencies['revolt.js']}\`\n`
+                            + `revolt.js: \`${pjson.dependencies['@janderedev/revolt.js']}\`\n`
                             + `discord.js: \`${pjson.dependencies['discord.js']}\`\n`
                             + `axios: \`${pjson.dependencies['axios']}\`\n`
                             + `log75: \`${pjson.dependencies['log75']}\`\n`
