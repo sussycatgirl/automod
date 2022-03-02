@@ -37,10 +37,10 @@
   resolved "https://registry.yarnpkg.com/@insertish/isomorphic-ws/-/isomorphic-ws-4.0.1.tgz#5bcd6f73b93efa9ccdb6abf887ae808d40827169"
   integrity sha512-kFD/p8T4Hkqr992QrdkbW/cQ/W/q2d9MPCobwzBv2PwTKLkCD9RaYDy6m17qRnSLQQ5PU0kHCG8kaOwAqzj1vQ==
 
-"@janderedev/revolt.js@^5.2.8-patch.1":
-  version "5.2.8-patch.1"
-  resolved "https://registry.yarnpkg.com/@janderedev/revolt.js/-/revolt.js-5.2.8-patch.1.tgz#e8570090612cb9e0f399f8bc75feed3cbbdfcd2a"
-  integrity sha512-rUjpp+Nk7/aPdFrSNBorSyvJwIb4fkwRzLB2OODWLesYvlxddJG2PtFujWU4dk3fnQMxpMaQVLq95T2GtsOkdg==
+"@janderedev/revolt.js@^5.2.8-patch.2":
+  version "5.2.8-patch.2"
+  resolved "https://registry.yarnpkg.com/@janderedev/revolt.js/-/revolt.js-5.2.8-patch.2.tgz#d74a6500e217a4cb94d139027dec2acb71f73a0f"
+  integrity sha512-2nucMuToKC5F4jsajmTauBaV9Q7oyl1KWKF0ysYYPzEKxK9LfPL560v9bQR/ff1g8GkEv4biAN/A17MCcddAuw==
   dependencies:
     "@insertish/exponential-backoff" "3.1.0-patch.0"
     "@insertish/isomorphic-ws" "^4.0.1"
