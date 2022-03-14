@@ -9,10 +9,10 @@ import { H1 } from '@revoltchat/ui/lib/components/atoms/heading/H1';
 import { H3 } from '@revoltchat/ui/lib/components/atoms/heading/H3';
 import { H4 } from '@revoltchat/ui/lib/components/atoms/heading/H4';
 import { Icon } from '@mdi/react';
-import { mdiCloseBox } from '@mdi/js';
+import { mdiChevronLeft, mdiCloseBox } from '@mdi/js';
 import { API_URL } from "../App";
 import { getAuthHeaders } from "../utils";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import defaultChannelIcon from '../assets/channel-default-icon.svg';
 
 type User = { id: string, username?: string, avatarURL?: string }
@@ -108,7 +108,13 @@ const ServerDashboard: FunctionComponent = () => {
 
     return (
         <>
-            <H1>{serverInfo?.name ?? 'Loading...'}</H1>
+            <Link to='/dashboard'>
+                <div style={{ display: 'flex', marginTop: '4px' }}>
+                    <Icon path={mdiChevronLeft} style={{ height: '24px' }} />
+                    <span>Back</span>
+                </div>
+            </Link>
+            <H1 style={{ marginTop: '8px' }}>{serverInfo?.name ?? 'Loading...'}</H1>
             {status.length ? <a>{status}</a> : <br/>}
             <div hidden={Object.keys(serverInfo).length == 0}>
                 <H4>{serverInfo.description ?? <i>No server description set</i>}</H4>
