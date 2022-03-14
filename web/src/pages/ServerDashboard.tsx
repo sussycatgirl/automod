@@ -188,6 +188,7 @@ const ServerDashboard: FunctionComponent = () => {
                                         {automodSettings.antispam.map(r => <AntispamRule rule={r} key={r.id} />)}
                                         <Button style={{
                                             marginTop: '12px',
+                                            marginBottom: '8px',
                                         }} onClick={async () => {
                                             const newRule: AntispamRule = {
                                                 action: 0,
