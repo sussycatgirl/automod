@@ -602,6 +602,16 @@ const ServerDashboard: FunctionComponent = () => {
                     <Button style={{ float: 'left' }} onClick={save}>Save</Button>
                     <Button style={{ float: 'left', marginLeft: '8px' }} onClick={reset}>Reset</Button>
                     <Button style={{ float: 'left', marginLeft: '8px' }} onClick={remove}>Delete</Button>
+                    <code
+                        style={{
+                            float: 'left',
+                            color: 'var(--secondary-foreground)',
+                            marginTop: '10px',
+                            paddingLeft: '12px',
+                        }}
+                    >
+                        {props.rule.id}
+                    </code>
                     <div style={{ clear: 'both' }} />
                 </div>
             </div>
