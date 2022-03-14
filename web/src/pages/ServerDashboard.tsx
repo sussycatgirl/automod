@@ -8,7 +8,6 @@ import { LineDivider } from '@revoltchat/ui/lib/components/atoms/layout/LineDivi
 import { H1 } from '@revoltchat/ui/lib/components/atoms/heading/H1';
 import { H3 } from '@revoltchat/ui/lib/components/atoms/heading/H3';
 import { H4 } from '@revoltchat/ui/lib/components/atoms/heading/H4';
-import { H5 } from '@revoltchat/ui/lib/components/atoms/heading/H5';
 import { Icon } from '@mdi/react';
 import { mdiCloseBox } from '@mdi/js';
 import { API_URL } from "../App";
@@ -187,6 +186,34 @@ const ServerDashboard: FunctionComponent = () => {
                                 ? (
                                     <>
                                         {automodSettings.antispam.map(r => <AntispamRule rule={r} key={r.id} />)}
+                                        <Button style={{
+                                            marginTop: '12px',
+                                        }} onClick={async () => {
+                                            const newRule: AntispamRule = {
+                                                action: 0,
+                                                max_msg: 5,
+                                                timeframe: 3,
+                                                message: null,
+                                                id: '',
+                                                channels: [],
+                                            }
+
+                                            const res = await axios.post(
+                                                `${API_URL}/dash/server/${serverid}/automod`,
+                                                {
+                                                    action: newRule.action,
+                                                    max_msg: newRule.max_msg,
+                                                    timeframe: newRule.timeframe,
+                                                },
+                                                { headers: await getAuthHeaders() }
+                                            );
+
+                                            newRule.id = res.data.id;
+
+                                            setAutomodSettings({ antispam: [ ...(automodSettings.antispam), newRule ] });
+                                        }}>
+                                            Create Rule
+                                        </Button>
                                     </>
                                 )
                                 : (
@@ -441,6 +468,13 @@ const ServerDashboard: FunctionComponent = () => {
             setChannelsChanged(false);
         }, []);
 
+        const remove = useCallback(async () => {
+            if (confirm(`Do you want to irreversably delete rule ${props.rule.id}?`)) {
+                await axios.delete(`${API_URL}/dash/server/${serverid}/automod/${props.rule.id}`, { headers: await getAuthHeaders() });
+                setAutomodSettings({ antispam: automodSettings!.antispam.filter(r => r.id != props.rule.id) });
+            }
+        }, []);
+
         const inputStyle: React.CSSProperties = {
             maxWidth: '100px',
             margin: '8px 8px 0px 8px',
@@ -560,6 +594,7 @@ const ServerDashboard: FunctionComponent = () => {
                 >
                     <Button style={{ float: 'left' }} onClick={save}>Save</Button>
                     <Button style={{ float: 'left', marginLeft: '8px' }} onClick={reset}>Reset</Button>
+                    <Button style={{ float: 'left', marginLeft: '8px' }} onClick={remove}>Delete</Button>
                     <div style={{ clear: 'both' }} />
                 </div>
             </div>

@@ -69,4 +69,49 @@ function requireAuth(config: RequireAuthConfig): (req: Request, res: Response, n
     }
 }
 
-export { isAuthenticated, getSessionInfo, badRequest, unauthorized, getPermissionLevel, requireAuth }
+/**
+ * Strips the input object of unwanted fields and
+ * throws if a value has the wrong type
+ * @param obj 
+ * @param structure 
+ */
+function ensureObjectStructure(obj: any, structure: { [key: string]: 'string'|'number'|'float'|'strarray' }, allowEmpty?: boolean): any {
+    const returnObj: any = {}
+
+    for (const key of Object.keys(obj)) {
+        const type = obj[key] == null ? 'null' : typeof obj[key];
+
+        if (allowEmpty && (type == 'undefined' || type == 'null')) continue;
+
+        switch(structure[key]) {
+            case 'string':
+            case 'number':
+            case 'float':
+                if (type != structure[key]) throw `Property '${key}' was expected to be of type '${structure[key]}', got '${type}' instead`;
+
+                if (structure[key] == 'number' && `${Math.round(obj[key])}` != `${obj[key]}`)
+                    throw `Property '${key}' was expected to be of type '${structure[key]}', got 'float' instead`;
+
+                returnObj[key] = obj[key];
+            break;
+            case 'strarray':
+                if (!(obj[key] instanceof Array)) {
+                    throw `Property '${key}' was expected to be of type 'string[]', got '${type}' instead`;
+                }
+
+                for (const i in obj[key]) {
+                    const item = obj[key][i];
+                    if (typeof item != 'string') throw `Property '${key}' was expected to be of type 'string[]', `
+                        + `found '${typeof item}' at index ${i}`;
+                }
+
+                returnObj[key] = obj[key];
+            break;
+            default: continue;
+        }
+    }
+
+    return returnObj;
+}
+
+export { isAuthenticated, getSessionInfo, badRequest, unauthorized, getPermissionLevel, requireAuth, ensureObjectStructure }

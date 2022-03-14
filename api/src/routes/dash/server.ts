@@ -144,7 +144,7 @@ app.put('/dash/server/:server/:option', async (req: Request, res: Response) => {
     }
 });
 
-app.delete('/dash/server/:server/:option/:target', async (req: Request, res: Response) => {
+app.delete('/dash/server/:server/:option/:target', async (req: Request, res: Response, next) => {
     const user = await isAuthenticated(req, res, true);
     if (!user) return unauthorized(res);
 
@@ -190,6 +190,6 @@ app.delete('/dash/server/:server/:option/:target', async (req: Request, res: Res
             });
             return;
         }
-        default: return badRequest(res);
+        default: next();
     }
 });
