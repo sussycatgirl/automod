@@ -15,7 +15,7 @@ Day.extend(RelativeTime);
 
 export default {
     name: 'ban',
-    aliases: null,
+    aliases: [ 'eject' ],
     description: 'Ban a member from the server',
     syntax: '/ban @username [10m|1h|...?] [reason?]',
     removeEmptyArgs: true,
@@ -85,7 +85,7 @@ export default {
             .catch(e => message.reply(`Failed to ban user: \`${e}\``));
 
             await Promise.all([
-                message.reply(`### @${targetName} has been banned.\n`
+                message.reply(`### @${targetName} has been ${Math.random() > 0.8 ? 'ejected' : 'banned'}.\n`
                         + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`),
                 logModAction('ban', message.serverContext, message.member!, targetUser._id, reason, infraction, `Ban duration: **Permanent**`),
             ]);

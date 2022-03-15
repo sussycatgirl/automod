@@ -10,7 +10,7 @@ import { isModerator, NO_MANAGER_MSG, parseUser, storeInfraction } from "../util
 
 export default {
     name: 'kick',
-    aliases: [ 'yeet', 'eject', 'vent' ],
+    aliases: [ 'yeet', 'vent' ],
     description: 'Eject a member from the server',
     syntax: '/kick @username [reason?]',
     removeEmptyArgs: true,
@@ -62,7 +62,7 @@ export default {
         }
 
         await Promise.all([
-            message.reply(`### @${targetUser.username} has been ${Math.random() > 0.8 ? 'ejected' : 'kicked'}.\n`
+            message.reply(`### @${targetUser.username} has been ${Math.random() > 0.8 ? 'yeeted' : 'kicked'}.\n`
                     + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`),
             logModAction('kick', message.serverContext, message.member!, targetUser._id, reason, infraction),
         ]);
