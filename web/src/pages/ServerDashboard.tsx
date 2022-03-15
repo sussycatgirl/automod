@@ -613,6 +613,7 @@ const ServerDashboard: FunctionComponent = () => {
                         {props.rule.id}
                     </code>
                     <div style={{ clear: 'both' }} />
+                        <div style={{ maxWidth: 'max(40%, 600px)' }}><LineDivider/></div>
                 </div>
             </div>
         )
