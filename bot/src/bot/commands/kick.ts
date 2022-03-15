@@ -10,7 +10,7 @@ import { isModerator, NO_MANAGER_MSG, parseUser, storeInfraction } from "../util
 
 export default {
     name: 'kick',
-    aliases: [ 'yeet', 'eject' ],
+    aliases: [ 'yeet', 'eject', 'vent' ],
     description: 'Eject a member from the server',
     syntax: '/kick @username [reason?]',
     removeEmptyArgs: true,
