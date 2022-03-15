@@ -7,7 +7,7 @@ import MessageCommandContext from "../../struct/MessageCommandContext";
 import TempBan from "../../struct/TempBan";
 import { fetchUsername, logModAction } from "../modules/mod_logs";
 import { storeTempBan } from "../modules/tempbans";
-import { isModerator, NO_MANAGER_MSG, parseUser, storeInfraction } from "../util";
+import { isModerator, NO_MANAGER_MSG, parseUserOrId, storeInfraction } from "../util";
 import Day from 'dayjs';
 import RelativeTime from 'dayjs/plugin/relativeTime';
 
@@ -27,8 +27,9 @@ export default {
         if (args.length == 0)
             return message.reply(`You need to provide a target user!`);
 
-        let targetUser = await parseUser(args.shift()!);
+        const targetUser = await parseUserOrId(args.shift()!);
         if (!targetUser) return message.reply('Sorry, I can\'t find that user.');
+        const targetName = await fetchUsername(targetUser._id);
 
         if (targetUser._id == message.author_id) {
             return message.reply('nah');
@@ -84,7 +85,7 @@ export default {
             .catch(e => message.reply(`Failed to ban user: \`${e}\``));
 
             await Promise.all([
-                message.reply(`### @${targetUser.username} has been banned.\n`
+                message.reply(`### @${targetName} has been banned.\n`
                         + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`),
                 logModAction('ban', message.serverContext, message.member!, targetUser._id, reason, infraction, `Ban duration: **Permanent**`),
             ]);
@@ -116,7 +117,7 @@ export default {
             } as TempBan);
 
             await Promise.all([
-                message.reply(`### ${targetUser.username} has been temporarily banned.\n`
+                message.reply(`### ${targetName} has been temporarily banned.\n`
                         + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`),
                 logModAction('ban', message.serverContext, message.member!, targetUser._id, reason, infraction, `Ban duration: **${Day(banUntil).fromNow(true)}**`),
             ]);
