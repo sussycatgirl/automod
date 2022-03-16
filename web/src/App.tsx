@@ -5,7 +5,7 @@ import '@revoltchat/ui/src/styles/dark.css';
 import '@revoltchat/ui/src/styles/common.css';
 import RequireAuth from './components/RequireAuth';
 import DashboardHome from './pages/DashboardHome';
-import ServerDashboard from './pages/ServerDashboard';
+import ServerDashboard from './pages/ServerDashboard/ServerDashboard';
 
 const API_URL = import.meta.env.VITE_API_URL?.toString()
   || 'http://localhost:9000';

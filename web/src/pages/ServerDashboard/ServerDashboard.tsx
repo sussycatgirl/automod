@@ -10,10 +10,11 @@ import { H3 } from '@revoltchat/ui/lib/components/atoms/heading/H3';
 import { H4 } from '@revoltchat/ui/lib/components/atoms/heading/H4';
 import { Icon } from '@mdi/react';
 import { mdiChevronLeft, mdiCloseBox } from '@mdi/js';
-import { API_URL } from "../App";
-import { getAuthHeaders } from "../utils";
+import { API_URL } from "../../App";
+import { getAuthHeaders } from "../../utils";
 import { Link, useParams } from "react-router-dom";
-import defaultChannelIcon from '../assets/channel-default-icon.svg';
+import defaultChannelIcon from '../../assets/channel-default-icon.svg';
+import CategorySelector from '../../components/CategorySelector';
 
 type User = { id: string, username?: string, avatarURL?: string }
 type Channel = { id: string, name: string, icon?: string, type: 'VOICE'|'TEXT', nsfw: boolean }
@@ -40,6 +41,8 @@ type AntispamRule = {
 }
 
 const ServerDashboard: FunctionComponent = () => {
+    const [category, setCategory] = useState('home');
+
     const [serverInfo, setServerInfo] = useState({} as Server);
     const [status, setStatus] = useState('');
 
@@ -77,7 +80,7 @@ const ServerDashboard: FunctionComponent = () => {
         try {
             const res = await axios.get(`${API_URL}/dash/server/${serverid}`, { headers: await getAuthHeaders() });
             console.log(res.data);
-            
+
             const server: Server = res.data.server;
             setServerInfo(server);
 
@@ -108,131 +111,179 @@ const ServerDashboard: FunctionComponent = () => {
 
     return (
         <>
-            <Link to='/dashboard'>
-                <div style={{ display: 'flex', marginTop: '4px' }}>
-                    <Icon path={mdiChevronLeft} style={{ height: '24px' }} />
-                    <span>Back</span>
-                </div>
-            </Link>
-            <H1 style={{ marginTop: '8px' }}>{serverInfo?.name ?? 'Loading...'}</H1>
-            {status.length ? <a>{status}</a> : <br/>}
+            {status.length ? <a>{status}</a> : <></>}
+            <div
+                style={{
+                    marginTop: '8px',
+                    marginLeft: '8px',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    color: 'var(--secondary-foreground)',
+                    maxWidth: 'calc(100% - 20px)',
+                }}
+            >
+                <Link to='/dashboard' style={{ float: 'left' }}>
+                    <div style={{ display: 'flex' }}>
+                        <Icon path={mdiChevronLeft} style={{ height: '25px' }} />
+                        <span>Back</span>
+                    </div>
+                </Link>
+                <span
+                    style={{
+                        color: 'var(--foreground)',
+                        marginLeft: '8px',
+                    }}
+                >
+                    {serverInfo?.name ?? 'Loading...'}
+                </span>
+                <span style={{ color: 'var(--secondary-foreground)', marginLeft: '6px' }}>
+                    •
+                </span>
+                <span
+                    style={{
+                        color: 'var(--secondary-foreground)',
+                        marginLeft: '6px',
+                    }}
+                >
+                    {serverInfo.description || <i>No server description set</i>}
+                </span>
+            </div>
+
+            <CategorySelector
+                keys={[
+                    { id: 'home', name: 'Home' },
+                    { id: 'automod', name: 'Moderation Rules' },
+                ]}
+                selected={category}
+                onChange={setCategory}
+                />
+
             <div hidden={Object.keys(serverInfo).length == 0}>
-                <H4>{serverInfo.description ?? <i>No server description set</i>}</H4>
-                <br/>
                 <div style={{ paddingLeft: '10px', paddingRight: '10px' }}>
-                    <>
-                        <H3>Prefix</H3>
-                        <InputBox
-                            style={{ width: '150px', }}
-                            placeholder="Enter a prefix..."
-                            value={prefix}
-                            onChange={e => {
-                                setPrefix(e.currentTarget.value);
-                                setChanged({ ...changed, prefix: true });
-                            }}
-                        />
-                        <Checkbox
-                            style={{ maxWidth: '400px' }}
-                            value={prefixAllowSpace}
-                            onChange={() => {
-                                setPrefixAllowSpace(!prefixAllowSpace);
-                                setChanged({ ...changed, prefixAllowSpace: true });
-                            }}
-                            title="Allow space after prefix"
-                            description={'Whether the bot recognizes a command if the prefix is followed by a space. Enable if your prefix is a word.'}
-                        />
-                        <Button
-                            style={{ marginTop: "16px" }}
-                            onClick={saveConfig}
-                        >Save</Button>
-                    </>
 
-                    <LineDivider />
+                    {category == 'home' && (
+                        <>
+                            <>
+                                <H3>Prefix</H3>
+                                <InputBox
+                                    style={{ width: '150px', }}
+                                    placeholder="Enter a prefix..."
+                                    value={prefix}
+                                    onChange={e => {
+                                        setPrefix(e.currentTarget.value);
+                                        setChanged({ ...changed, prefix: true });
+                                    }}
+                                />
+                                <Checkbox
+                                    style={{ maxWidth: '400px' }}
+                                    value={prefixAllowSpace}
+                                    onChange={() => {
+                                        setPrefixAllowSpace(!prefixAllowSpace);
+                                        setChanged({ ...changed, prefixAllowSpace: true });
+                                    }}
+                                    title="Allow space after prefix"
+                                    description={'Whether the bot recognizes a command if the prefix is followed by a space. Enable if your prefix is a word.'}
+                                />
+                                <Button
+                                    style={{ marginTop: "16px" }}
+                                    onClick={saveConfig}
+                                >Save</Button>
+                            </>
 
-                    <>
-                        <H3>Bot Managers</H3>
-                        <H4>
-                            Only users with "Manage Server" permission are allowed to add/remove other
-                            bot managers and are automatically considered bot manager.
-                        </H4>
-                        <UserListTypeContainer>
-                            <UserListContainer disabled={(serverInfo.perms ?? 0) < 3}>
-                                {botManagers.map((uid: string) => {
-                                    const user = serverInfo.users.find(u => u.id == uid) || { id: uid }
-                                    return (
-                                        <UserListEntry type='MANAGER' user={user} key={uid} />
-                                    )})}
-                                <UserListAddField type='MANAGER' />
-                            </UserListContainer>
-                        </UserListTypeContainer>
+                            <LineDivider />
 
-                        <H3>Moderators</H3>
-                        <H4>
-                            Only bot managers are allowed to add/remove moderators.
-                            All bot managers are also moderators.
-                        </H4>
-                        <UserListTypeContainer>
-                            <UserListContainer disabled={(serverInfo.perms ?? 0) < 2}>
-                                {moderators.map((uid: string) => {
-                                    const user = serverInfo.users.find(u => u.id == uid) || { id: uid }
-                                    return (
-                                        <UserListEntry type='MOD' user={user} key={uid} />
-                                    )})}
-                                <UserListAddField type='MOD' />
-                            </UserListContainer>
-                        </UserListTypeContainer>
-                    </>
+                            <>
+                                <H3>Bot Managers</H3>
+                                <H4>
+                                    Only users with "Manage Server" permission are allowed to add/remove other
+                                    bot managers and are automatically considered bot manager.
+                                </H4>
+                                <UserListTypeContainer>
+                                    <UserListContainer disabled={(serverInfo.perms ?? 0) < 3}>
+                                        {botManagers.map((uid: string) => {
+                                            const user = serverInfo.users.find(u => u.id == uid) || { id: uid }
+                                            return (
+                                                <UserListEntry type='MANAGER' user={user} key={uid} />
+                                            )})}
+                                        <UserListAddField type='MANAGER' />
+                                    </UserListContainer>
+                                </UserListTypeContainer>
 
-                    <LineDivider />
+                                <H3>Moderators</H3>
+                                <H4>
+                                    Only bot managers are allowed to add/remove moderators.
+                                    All bot managers are also moderators.
+                                </H4>
+                                <UserListTypeContainer>
+                                    <UserListContainer disabled={(serverInfo.perms ?? 0) < 2}>
+                                        {moderators.map((uid: string) => {
+                                            const user = serverInfo.users.find(u => u.id == uid) || { id: uid }
+                                            return (
+                                                <UserListEntry type='MOD' user={user} key={uid} />
+                                            )})}
+                                        <UserListAddField type='MOD' />
+                                    </UserListContainer>
+                                </UserListTypeContainer>
+                            </>
+                        </>
+                    )}
 
-                    <>
-                        <H3>Antispam Rules</H3>
-                        {serverInfo.perms != null && automodSettings && (
-                            serverInfo.perms > 0
-                                ? (
-                                    <>
-                                        {automodSettings.antispam.map(r => <AntispamRule rule={r} key={r.id} />)}
-                                        <Button style={{
-                                            marginTop: '12px',
-                                            marginBottom: '8px',
-                                        }} onClick={async () => {
-                                            const newRule: AntispamRule = {
-                                                action: 0,
-                                                max_msg: 5,
-                                                timeframe: 3,
-                                                message: null,
-                                                id: '',
-                                                channels: [],
-                                            }
+                    {category == 'automod' && (
+                        <>
+                            <H3>Antispam Rules</H3>
+                            {serverInfo.perms != null && automodSettings && (
+                                serverInfo.perms > 0
+                                    ? (
+                                        <>
+                                            {automodSettings.antispam.map((r, i) => (
+                                                <>
+                                                    <AntispamRule rule={r} key={r.id} />
+                                                    {i < automodSettings.antispam.length - 1 && <LineDivider/>}
+                                                </>
+                                            ))}
+                                            <Button style={{
+                                                marginTop: '12px',
+                                                marginBottom: '8px',
+                                            }} onClick={async () => {
+                                                const newRule: AntispamRule = {
+                                                    action: 0,
+                                                    max_msg: 5,
+                                                    timeframe: 3,
+                                                    message: null,
+                                                    id: '',
+                                                    channels: [],
+                                                }
 
-                                            const res = await axios.post(
-                                                `${API_URL}/dash/server/${serverid}/automod`,
-                                                {
-                                                    action: newRule.action,
-                                                    max_msg: newRule.max_msg,
-                                                    timeframe: newRule.timeframe,
-                                                },
-                                                { headers: await getAuthHeaders() }
-                                            );
+                                                const res = await axios.post(
+                                                    `${API_URL}/dash/server/${serverid}/automod`,
+                                                    {
+                                                        action: newRule.action,
+                                                        max_msg: newRule.max_msg,
+                                                        timeframe: newRule.timeframe,
+                                                    },
+                                                    { headers: await getAuthHeaders() }
+                                                );
 
-                                            newRule.id = res.data.id;
+                                                newRule.id = res.data.id;
 
-                                            setAutomodSettings({ antispam: [ ...(automodSettings.antispam), newRule ] });
-                                        }}>
-                                            Create Rule
-                                        </Button>
-                                    </>
+                                                setAutomodSettings({ antispam: [ ...(automodSettings.antispam), newRule ] });
+                                            }}>
+                                                Create Rule
+                                            </Button>
+                                        </>
+                                    )
+                                    : (
+                                        <div>
+                                            <p style={{ color: 'var(--foreground)' }}>
+                                                You do not have access to this.
+                                            </p>
+                                        </div>
+                                    )
                                 )
-                                : (
-                                    <div>
-                                        <p style={{ color: 'var(--foreground)' }}>
-                                            You do not have access to this.
-                                        </p>
-                                    </div>
-                                )
-                            )
-                        }
-                    </>
+                            }
+                        </>
+                    )}
                 </div>
             </div>
         </>
@@ -296,7 +347,7 @@ const ServerDashboard: FunctionComponent = () => {
                             `${API_URL}/dash/server/${serverid}/${props.type == 'MANAGER' ? 'managers' : 'mods'}/${props.user.id}`,
                             { headers: await getAuthHeaders() }
                         );
-                        
+
                         if (props.type == 'MANAGER') {
                             setBotManagers(res.data.managers);
                         }
@@ -308,7 +359,7 @@ const ServerDashboard: FunctionComponent = () => {
             </div>
         );
     }
-    
+
     function UserListContainer(props: { disabled: boolean, children: any }) {
         return (
             <div
@@ -406,7 +457,7 @@ const ServerDashboard: FunctionComponent = () => {
                     .find(c => c.name == content)
                     || serverInfo.channels                                     // Prefer channel with same capitalization,
                     .find(c => c.name.toLowerCase() == content.toLowerCase()); // otherwise search case insensitive
-                
+
                 if (channel && channel.type == 'TEXT') {
                     props.onInput(channel);
                     setContent('');
@@ -613,7 +664,6 @@ const ServerDashboard: FunctionComponent = () => {
                         {props.rule.id}
                     </code>
                     <div style={{ clear: 'both' }} />
-                        <div style={{ maxWidth: 'max(40%, 600px)' }}><LineDivider/></div>
                 </div>
             </div>
         )
