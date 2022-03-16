@@ -595,53 +595,55 @@ const ServerDashboard: FunctionComponent = () => {
                             If left empty, it will run in all channels.
                         </H4>
                         <UserListTypeContainer>
-                            {
-                                channels.map(cid => {
-                                    const channel: Channel = serverInfo.channels.find(c => c.id == cid && c.type == 'TEXT')
-                                        || { id: cid, name: 'Unknown channel', nsfw: false, type: 'TEXT' };
-                                    return (
-                                        <div
-                                            key={cid}
-                                            style={{
-                                                display: 'block',
-                                                margin: '4px 6px',
-                                                padding: '4px',
-                                                backgroundColor: 'var(--tertiary-background)',
-                                                borderRadius: '5px',
-                                            }}
-                                        >
-                                            <img
-                                                src={channel.icon ?? defaultChannelIcon}
+                            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                                {
+                                    channels.map(cid => {
+                                        const channel: Channel = serverInfo.channels.find(c => c.id == cid && c.type == 'TEXT')
+                                            || { id: cid, name: 'Unknown channel', nsfw: false, type: 'TEXT' };
+                                        return (
+                                            <div
+                                                key={cid}
                                                 style={{
-                                                    width: '32px',
-                                                    height: '32px',
-                                                    objectFit: 'cover',
-                                                    borderRadius: '10%',
-                                                    verticalAlign: 'middle',
-                                                    display: 'inline-block',
+                                                    display: 'block',
+                                                    margin: '4px 6px',
+                                                    padding: '4px',
+                                                    backgroundColor: 'var(--tertiary-background)',
+                                                    borderRadius: '5px',
                                                 }}
-                                            />
-                                            <span
-                                                style={{
-                                                    fontSize: '20px',
-                                                    verticalAlign: 'middle',
-                                                    marginLeft: '4px',
-                                                }}
-                                            >{channel.name}</span>
-                                            <RemoveButton onClick={() => {
-                                                setChannels(channels.filter(c => c != cid));
-                                                setChannelsChanged(true);
-                                            }} />
-                                        </div>
-                                    )
-                                })
-                            }
-                            <ChannelListAddField onInput={channel => {
-                                if (!channels.includes(channel.id)) {
-                                    setChannels([ ...channels, channel.id ]);
-                                    setChannelsChanged(true);
+                                            >
+                                                <img
+                                                    src={channel.icon ?? defaultChannelIcon}
+                                                    style={{
+                                                        width: '32px',
+                                                        height: '32px',
+                                                        objectFit: 'cover',
+                                                        borderRadius: '10%',
+                                                        verticalAlign: 'middle',
+                                                        display: 'inline-block',
+                                                    }}
+                                                />
+                                                <span
+                                                    style={{
+                                                        fontSize: '20px',
+                                                        verticalAlign: 'middle',
+                                                        marginLeft: '4px',
+                                                    }}
+                                                >{channel.name}</span>
+                                                <RemoveButton onClick={() => {
+                                                    setChannels(channels.filter(c => c != cid));
+                                                    setChannelsChanged(true);
+                                                }} />
+                                            </div>
+                                        )
+                                    })
                                 }
-                            }} />
+                                <ChannelListAddField onInput={channel => {
+                                    if (!channels.includes(channel.id)) {
+                                        setChannels([ ...channels, channel.id ]);
+                                        setChannelsChanged(true);
+                                    }
+                                }} />
+                            </div>
                         </UserListTypeContainer>
                     </div>
                 </span>
