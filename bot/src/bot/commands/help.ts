@@ -1,5 +1,4 @@
 import Command from "../../struct/Command";
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { commands, DEFAULT_PREFIX, ownerIDs } from "../modules/command_handler";
 import CommandCategory from "../../struct/CommandCategory";
 import MessageCommandContext from "../../struct/MessageCommandContext";
@@ -45,7 +44,9 @@ export default {
         let searchInput = args.shift()?.toLowerCase();
         if (!searchInput) {
             let msg = `## AutoMod help\n` +
-                      `Type **${prefix}help [category]** to view see all commands or **${prefix}help [command]** to learn more about a command.\n\n`;
+                      `Type **${prefix}help [category]** to view see all commands or **${prefix}help [command]** to learn more about a command.\n\n`
+                      + `### [Open Server Settings]`
+                      + `(<${process.env.WEB_UI_URL || 'https://automod.janderedev.xyz'}/dashboard/${message.channel?.server_id}>)\n\n`;
 
             let total = 0;
 
