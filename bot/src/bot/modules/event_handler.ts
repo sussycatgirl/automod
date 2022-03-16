@@ -8,7 +8,16 @@ import { DEFAULT_PREFIX } from "./command_handler";
 
 // Listen to system messages
 client.on('message', async message => {
-    if (typeof message.content != 'object') return;
+    if (typeof message.content != 'object') {
+        // reply to 74
+        if (message.author_id == '01FCXF8V6RDKHSQ3AHJ410AASX' && message.content == 'we do a little') {
+            try {
+                message.reply('shut the fuck up');
+            } catch(e) { console.error(e) }
+        }
+
+        return;
+    }
 
     let sysMsg = message.asSystemMessage;
 
