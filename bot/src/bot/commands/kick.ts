@@ -64,7 +64,7 @@ export default {
         await Promise.all([
             message.reply(`### @${targetUser.username} has been ${Math.random() > 0.8 ? 'yeeted' : 'kicked'}.\n`
                     + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`),
-            logModAction('kick', message.serverContext, message.member!, targetUser._id, reason, infraction),
+            logModAction('kick', message.serverContext, message.member!, targetUser._id, reason, infraction._id),
         ]);
     }
 } as Command;

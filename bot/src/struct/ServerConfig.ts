@@ -8,6 +8,12 @@ class ServerConfig {
     automodSettings: AutomodSettings | undefined;
     botManagers: string[] | undefined;
     moderators: string[] | undefined;
+    votekick: {
+        enabled: boolean;
+        votesRequired: number;
+        banDuration: number;    // -1: Only kick, 0: Permanent, >0: Ban duration in minutes
+        trustedRoles: string[];
+    } | undefined;
     linkedServer: string | undefined;
     whitelist: {
         users: string[] | undefined,

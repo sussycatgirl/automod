@@ -87,7 +87,7 @@ export default {
             await Promise.all([
                 message.reply(`### ${targetName} has been ${Math.random() > 0.8 ? 'ejected' : 'banned'}.\n`
                         + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`),
-                logModAction('ban', message.serverContext, message.member!, targetUser._id, reason, infraction, `Ban duration: **Permanent**`),
+                logModAction('ban', message.serverContext, message.member!, targetUser._id, reason, infraction._id, `Ban duration: **Permanent**`),
             ]);
         } else {
             let banUntil = Date.now() + banDuration;
@@ -119,7 +119,7 @@ export default {
             await Promise.all([
                 message.reply(`### ${targetName} has been temporarily banned.\n`
                         + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`),
-                logModAction('ban', message.serverContext, message.member!, targetUser._id, reason, infraction, `Ban duration: **${Day(banUntil).fromNow(true)}**`),
+                logModAction('ban', message.serverContext, message.member!, targetUser._id, reason, infraction._id, `Ban duration: **${Day(banUntil).fromNow(true)}**`),
             ]);
         }
     }

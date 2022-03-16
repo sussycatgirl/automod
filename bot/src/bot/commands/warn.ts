@@ -43,7 +43,7 @@ export default {
                             + ` for ${await fetchUsername(user._id)}.\n`
                           + `**Infraction ID:** \`${infraction._id}\`\n`
                           + `**Reason:** \`${infraction.reason}\``),
-            logModAction('warn', message.serverContext, message.member!, user._id, reason, infraction, `This is warn number ${userWarnCount} for this user.`),
+            logModAction('warn', message.serverContext, message.member!, user._id, reason, infraction._id, `This is warn number ${userWarnCount} for this user.`),
         ]);
     }
 } as Command;

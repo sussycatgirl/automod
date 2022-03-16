@@ -114,7 +114,7 @@ client.on('packet', async (packet) => {
     }
 });
 
-async function logModAction(type: 'warn'|'kick'|'ban', server: Server, mod: Member, target: string, reason: string|null, infraction: Infraction, extraText?: string): Promise<void> {
+async function logModAction(type: 'warn'|'kick'|'ban'|'votekick', server: Server, mod: Member, target: string, reason: string|null, infractionID: string, extraText?: string): Promise<void> {
     try {
         let config: ServerConfig = await client.db.get('servers').findOne({ id: server._id }) ?? {};
 
@@ -130,7 +130,7 @@ async function logModAction(type: 'warn'|'kick'|'ban', server: Server, mod: Memb
                 description: `\`@${mod.user?.username}\` **${aType}** \``
                            + `${await fetchUsername(target)}\`${type == 'warn' ? '.' : ` from ${server.name}.`}\n`
                            + `**Reason**: \`${reason ? reason : 'No reason provided.'}\`\n`
-                           + `**Warn ID**: \`${infraction._id}\`\n`
+                           + `**Warn ID**: \`${infractionID}\`\n`
                            + (extraText ?? ''),
                 color: embedColor,
                 overrides: {
@@ -138,7 +138,7 @@ async function logModAction(type: 'warn'|'kick'|'ban', server: Server, mod: Memb
                         description: `@${mod.user?.username} ${aType} `
                            + `${await fetchUsername(target)}${type == 'warn' ? '.' : ` from ${server.name}.`}\n`
                            + `Reason: ${reason ? reason : 'No reason provided.'}\n`
-                           + `Warn ID: ${infraction._id}\n`
+                           + `Warn ID: ${infractionID}\n`
                            + (extraText ?? ''),
                     }
                 }
