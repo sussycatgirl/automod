@@ -1,11 +1,12 @@
 import { FunctionComponent } from "react";
 import { Link } from "react-router-dom";
+import AutomodIcon from '../favicon.svg';
 
 const Home: FunctionComponent = () => {
     return (
         <div style={{ marginLeft: '12px' }}>
             <div style={{ display: 'flex', padding: '16px 0' }}>
-                <img src='/src/favicon.svg' style={{ height: '40px' }} />
+                <img src={AutomodIcon} style={{ height: '40px' }} />
                 <h1 style={{ color: 'var(--foreground)', margin: '0', paddingLeft: '8px' }}>Automod Web UI</h1>
             </div>
 
