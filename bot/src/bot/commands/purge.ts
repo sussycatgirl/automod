@@ -4,7 +4,7 @@ import { decodeTime } from 'ulid';
 import { isModerator, parseUser } from "../util";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 
-const SYNTAX = '/purge [SELECTOR] [@user?[m @user?[, ...]]]; where SELECTOR: [number] || [messageID]-[messageID]';
+const SYNTAX = '/purge [SELECTOR] [@user?[, @user?[, ...]]]; where SELECTOR: [number] || [messageID]-[messageID]';
 const MAX_PURGE_AMOUNT = 100;
 
 export default {
