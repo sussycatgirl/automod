@@ -46,7 +46,7 @@ async function antispam(message: Message): Promise<boolean> {
             logger.info(`Antispam rule triggered: ${rule.max_msg}/${rule.timeframe} -> ${ModerationAction[rule.action]}`);
             ruleTriggered = true;
 
-            switch(rule.action) {
+            switch(Number(rule.action)) {
                 case ModerationAction.Delete:
                     message.delete()
                         .catch(() => logger.warn('Antispam: Failed to delete message') );
@@ -86,10 +86,11 @@ async function antispam(message: Message): Promise<boolean> {
                 case ModerationAction.Ban:
                     message.reply('(Ban user)');
                 break;
+                default: logger.warn(`Unknown Moderation Action: ${rule.action}`);
             }
         }
     }
-    
+
     return !ruleTriggered;
 }
 

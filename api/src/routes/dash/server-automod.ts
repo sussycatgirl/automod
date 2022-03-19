@@ -69,12 +69,11 @@ app.patch('/dash/server/:server/automod/:ruleid', requireAuth({ permission: 2 })
         $set: {
             "automodSettings.spam.$[rulefilter]": {
                 ...rule,
-                action: body.action ?? rule.action,
+                action: Number(body.action ?? rule.action),
                 channels: body.channels ?? rule.channels,
                 message: body.message ?? rule.message,
                 max_msg: body.max_msg ?? rule.max_msg,
                 timeframe: body.timeframe ?? rule.timeframe,
-                
             } as AntispamRule
         }
     }, { arrayFilters: [ { "rulefilter.id": ruleid } ] });
