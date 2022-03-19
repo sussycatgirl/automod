@@ -31,7 +31,7 @@ async function antispam(message: Message): Promise<boolean> {
         if (serverRules.whitelist?.users?.includes(message.author_id)) break;
         if (message.member?.roles?.filter(r => serverRules.whitelist?.roles?.includes(r)).length) break;
         if (serverRules.whitelist?.managers !== false && await isModerator(message)) break;
-        if (rule.channels?.indexOf(message.channel_id) == -1) break;
+        if (rule.channels?.length && rule.channels.indexOf(message.channel_id) == -1) break;
 
         let store = msgCountStore.get(rule.id)!;
         if (!store.users[message.channel_id]) store.users[message.channel_id] = {}
