@@ -100,6 +100,27 @@ app.put('/dash/server/:server/:option', async (req: Request, res: Response) => {
                 return;
             }
 
+            case 'votekickTrusted': {
+                if (!item || typeof item != 'string') return badRequest(res);
+                if (permissionLevel < 1) return res.status(403).send({ error: 'You are not allowed to mark roles as trusted.' });
+
+                const serverRes = await botReq('getUserServerDetails', { user: user, server: server });
+                if (!serverRes.success) {
+                    return res.status(serverRes.statusCode ?? 500).send({ error: serverRes.error });
+                }
+
+                if (!serverRes.roles.find((r: any) => r.id == item)) {
+                    return res.status(404).send({ error: 'The specified role does not appear to exist' });
+                }
+
+                const newRoles = [ ...(settings.votekick.trustedRoles ?? []), item.toUpperCase() ];
+                await servers.update({ id: server }, { $set: { 'votekick.trustedRoles': newRoles } });
+                res.send({
+                    success: true,
+                    roles: newRoles,
+                });
+            }
+
             case 'config': {
                 function validateField(field: string, type: string[], level: 0|1|2|3): boolean {
                     if (permissionLevel < level) {

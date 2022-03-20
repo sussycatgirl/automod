@@ -19,6 +19,16 @@ type ServerDetails = {
     serverConfig?: ServerConfig,
     users: APIUser[],
     channels: APIChannel[],
+    roles: {
+        id: string,
+        name: string,
+        color?: string,
+        rank?: number,
+        perms: {
+            server: number,
+            channel: number,
+        }
+    }[],
 }
 
 wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSResponse) => void) => {
@@ -80,6 +90,18 @@ wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSRespo
                 type: c!.channel_type == 'VoiceChannel' ? 'VOICE' : 'TEXT',
                 icon: c!.generateIconURL(),
             })),
+            roles: server.roles
+                ? Object.entries(server.roles).map(r => ({
+                    id: r[0],
+                    name: r[1].name,
+                    color: r[1].colour,
+                    rank: r[1].rank,
+                    perms: {
+                        server: r[1].permissions[0],
+                        channel: r[1].permissions[1],
+                    },
+                }))
+                : [],
         }
 
         cb({ success: true, server: response });

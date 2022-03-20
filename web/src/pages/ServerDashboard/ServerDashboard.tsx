@@ -46,10 +46,19 @@ const ServerDashboard: FunctionComponent = () => {
     const [serverInfo, setServerInfo] = useState({} as Server);
     const [status, setStatus] = useState('');
 
-    const [changed, setChanged] = useState({} as { prefix?: boolean, prefixAllowSpace?: boolean });
+    const [changed, setChanged] = useState({} as {
+        prefix?: boolean,
+        prefixAllowSpace?: boolean,
+        votekickEnabled?: boolean,
+        votekickRequired?: number,
+        votekickDuration?: number,
+    });
     const [prefix, setPrefix] = useState('' as string|undefined);
     const [prefixAllowSpace, setPrefixAllowSpace] = useState(false);
-    
+    const [votekickEnabled, setVotekickEnabled] = useState(false);
+    const [votekickRequired, setVotekickRequired] = useState(0);
+    const [votekickDuration, setVotekickDuration] = useState(0);
+
     const [botManagers, setBotManagers] = useState([] as string[]);
     const [moderators, setModerators] = useState([] as string[]);
 
@@ -86,6 +95,9 @@ const ServerDashboard: FunctionComponent = () => {
 
             setPrefix(server.serverConfig?.prefix || '');
             setPrefixAllowSpace(!!server.serverConfig?.spaceAfterPrefix);
+            setVotekickEnabled(!!server.serverConfig?.votekick?.enabled);
+            setVotekickRequired(server.serverConfig?.votekick?.votesRequired ?? 0);
+            setVotekickDuration(server.serverConfig?.votekick?.banDuration ?? 0);
 
             setBotManagers(server.serverConfig?.botManagers ?? []);
             setModerators(server.serverConfig?.moderators ?? []);
@@ -160,7 +172,7 @@ const ServerDashboard: FunctionComponent = () => {
                 />
 
             <div hidden={Object.keys(serverInfo).length == 0}>
-                <div style={{ paddingLeft: '10px', paddingRight: '10px' }}>
+                <div style={{ paddingLeft: '10px', paddingRight: '10px', paddingBottom: '20px' }}>
 
                     {category == 'home' && (
                         <>
@@ -226,6 +238,67 @@ const ServerDashboard: FunctionComponent = () => {
                                     </UserListContainer>
                                 </UserListTypeContainer>
                             </>
+
+                            <LineDivider />
+                            <H3>Votekick</H3>
+                            <H4>
+                                Votekick allows trusted members to temporarily remove members
+                                while no moderator is online.
+                            </H4>
+
+                            <Checkbox
+                                value={votekickEnabled}
+                                onChange={() => {
+                                    setVotekickEnabled(!votekickEnabled);
+                                    setChanged({ ...changed, votekickEnabled: true });
+                                }}
+                                title="Enabled"
+                                description="Whether users are allowed to votekick"
+                                style={{ marginBottom: '12px' }}
+                            />
+
+                            <H3>Votes required</H3>
+                            <H4>How many trusted members need to vote in order for the user to be removed.</H4>
+                            <InputBox
+                                style={{
+                                    width: '150px',
+                                    margin: '16px 0 0 0',
+                                }}
+                                onChange={e => {
+                                    if (e.currentTarget.value != '' && !isNaN(Number(e.currentTarget.value))) {
+                                        if (Number(e.currentTarget.value) < 0) return;
+                                        setVotekickRequired(Number(e.currentTarget.value));
+                                        setChanged({ ...changed, votekickRequired: Number(e.currentTarget.value) })
+                                    }
+                                }}
+                                placeholder='3'
+                                value={votekickRequired}
+                            />
+
+                            <H3>Ban duration</H3>
+                            <H4>How long the user will be banned for. Set to 0 for permanent or -1 to kick the user without banning.</H4>
+                            <InputBox
+                                style={{
+                                    width: '150px',
+                                    margin: '16px 0 0 0',
+                                }}
+                                onChange={e => {
+                                    if (e.currentTarget.value == '-') e.currentTarget.value = '-1';
+                                    if (e.currentTarget.value != '' && !isNaN(Number(e.currentTarget.value))) {
+                                        if (Number(e.currentTarget.value) < -1) return;
+                                        setVotekickDuration(Number(e.currentTarget.value));
+                                        setChanged({ ...changed, votekickDuration: Number(e.currentTarget.value) })
+                                    }
+                                }}
+                                placeholder='3'
+                                value={votekickDuration}
+                            />
+
+                            <UserListTypeContainer>
+                                <UserListContainer disabled={!serverInfo.perms} >
+                                    <InputBox />
+                                </UserListContainer>
+                            </UserListTypeContainer>
                         </>
                     )}
 
@@ -392,10 +465,10 @@ const ServerDashboard: FunctionComponent = () => {
         );
     }
 
-    function UserListAddField(props: { type: 'MANAGER'|'MOD' }) {
+    function UserListAddField(props: { type: 'MANAGER'|'MOD'|'TRUSTED' }) {
         const [content, setContent] = useState('');
 
-        const onConfirm = useCallback(async () => {0
+        const onConfirm = useCallback(async () => {
             if (content.length) {
                 const res = await axios.put(
                     `${API_URL}/dash/server/${serverid}/${props.type == 'MANAGER' ? 'managers' : 'mods'}`,
