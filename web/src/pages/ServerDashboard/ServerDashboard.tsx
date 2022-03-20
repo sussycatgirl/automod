@@ -213,7 +213,7 @@ const ServerDashboard: FunctionComponent = () => {
                                 <H3>Moderators</H3>
                                 <H4>
                                     Only bot managers are allowed to add/remove moderators.
-                                    All bot managers are also moderators.
+                                    All bot managers and users with "Kick Members" permission are also moderators.
                                 </H4>
                                 <UserListTypeContainer>
                                     <UserListContainer disabled={(serverInfo.perms ?? 0) < 2}>
