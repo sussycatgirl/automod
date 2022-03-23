@@ -10,7 +10,6 @@ The best moderation bot for Revolt! \
 AutoMod aims to protect your community from spam and malicious actors. It offers powerful moderation tools, an infraction system, a web interface and in the future will be able to automatically prevent raids and ban malicious actors.
 
 <img src=".assets/demo.gif" height=500 />
-<br />
 
 ## Features
 
