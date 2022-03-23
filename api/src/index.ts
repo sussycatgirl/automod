@@ -27,6 +27,7 @@ export { logger, app, db, PORT, SESSION_LIFETIME }
 
         import('./routes/internal/ws'),
         import('./routes/root'),
+        import('./routes/stats'),
         import('./routes/login'),
         import('./routes/dash/servers'),
         import('./routes/dash/server'),
