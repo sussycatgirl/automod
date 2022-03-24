@@ -20,19 +20,14 @@ export default {
             }
 
             if (code.toLowerCase() == 'all') {
-                const [ attempts, sessions ]: FindResult<any>[] = await Promise.all([
-                    client.db.get('pending_logins').find({ user: message.author_id }),
-                    client.db.get('sessions').find({ user: message.author_id }),
+                const [resA, resB] = await Promise.all([
+                    client.db.get('pending_logins').update({ user: message.author_id, invalid: false }, { $set: { invalid: true } }),
+                    client.db.get('sessions').update({ user: message.author_id, invalid: false }, { $set: { invalid: true } }),
                 ]);
 
-                if (attempts.length == 0 && sessions.length == 0) return message.reply('There are no sessions to invalidate.');
-                
-                await Promise.all([
-                    client.db.get('pending_logins').update({ _id: { $in: attempts.map(a => a._id) } }, { $set: { invalid: true } }),
-                    client.db.get('sessions').update({ _id: { $in: sessions.map(a => a._id) } }, { $set: { invalid: true } }),
-                ]);
+                if (resA.nModified == 0 && resB.nModified == 0) return message.reply('There are no sessions to invalidate.');
 
-                message.reply(`Successfully invalidated ${attempts.length} codes and ${sessions.length} sessions.`);
+                message.reply(`Successfully invalidated ${resA.nModified} codes and ${resB.nModified} sessions.`);
             } else {
                 const loginAttempt: FindOneResult<PendingLogin> = await client.db.get('pending_logins')
                     .findOne({
