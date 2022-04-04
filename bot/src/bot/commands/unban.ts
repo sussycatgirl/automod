@@ -1,6 +1,7 @@
 import { FindResult } from "monk";
 import { client } from "../..";
-import Command from "../../struct/Command";
+import CommandCategory from "../../struct/commands/CommandCategory";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import TempBan from "../../struct/TempBan";
 import { removeTempBan } from "../modules/tempbans";
@@ -11,7 +12,7 @@ export default {
     aliases: [ 'pardon' ],
     description: 'Unbans a user',
     syntax: '/unban [@user or ID]',
-    category: 'moderation',
+    category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message)) return message.reply(NO_MANAGER_MSG);
 
@@ -74,4 +75,4 @@ export default {
             await msg.edit({ content: `@${bannedUser.username} has been unbanned.` });
         } catch(e) { console.error(e) }
     }
-} as Command;
+} as SimpleCommand;

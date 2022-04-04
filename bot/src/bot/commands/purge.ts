@@ -1,8 +1,9 @@
-import Command from "../../struct/Command";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { decodeTime } from 'ulid';
 import { isModerator, parseUser } from "../util";
 import MessageCommandContext from "../../struct/MessageCommandContext";
+import CommandCategory from "../../struct/commands/CommandCategory";
 
 const SYNTAX = '/purge [SELECTOR] [@user?[, @user?[, ...]]]; where SELECTOR: [number] || [messageID]-[messageID]';
 const MAX_PURGE_AMOUNT = 100;
@@ -12,7 +13,7 @@ export default {
     aliases: [ 'clear' ],
     description: 'Mass delete messages',
     syntax: SYNTAX,
-    category: 'moderation',
+    category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {
         try {
             if (!message.member || !await isModerator(message)) return message.reply('🔒 Access denied');
@@ -89,4 +90,4 @@ export default {
             message.channel?.sendMessage(`An error has occurred: ${e}`);
         }
     }
-} as Command;
+} as SimpleCommand;

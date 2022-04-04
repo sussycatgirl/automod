@@ -1,9 +1,10 @@
-import Command from "../../struct/Command";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import { hasPerm, parseUser } from "../util";
 import ServerConfig from "../../struct/ServerConfig";
 import { client } from "../..";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import MessageCommandContext from "../../struct/MessageCommandContext";
+import CommandCategory from "../../struct/commands/CommandCategory";
 
 const SYNTAX = '/admin add @user; /admin remove @user; /admin list';
 
@@ -12,7 +13,7 @@ export default {
     aliases: [ 'admins', 'manager', 'managers' ],
     description: 'Allow users to control the bot\'s configuration',
     syntax: SYNTAX,
-    category: 'configuration',
+    category: CommandCategory.Config,
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!hasPerm(message.member!, 'ManageServer'))
             return message.reply('You need **ManageServer** permission to use this command.');
@@ -63,4 +64,4 @@ export default {
                 message.reply(`Available subcommands: ${SYNTAX}`);
         }
     }
-} as Command;
+} as SimpleCommand;

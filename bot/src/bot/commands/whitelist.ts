@@ -1,7 +1,8 @@
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { client } from "../..";
-import Command from "../../struct/Command";
+import CommandCategory from "../../struct/commands/CommandCategory";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import ServerConfig from "../../struct/ServerConfig";
 import { isBotManager, NO_MANAGER_MSG, parseUser } from "../util";
@@ -13,7 +14,7 @@ export default {
     aliases: [],
     description: 'Allow users or roles to bypass moderation rules',
     syntax: SYNTAX,
-    category: 'configuration',
+    category: CommandCategory.Config,
     run: async (message: MessageCommandContext, args: string[]) => {
         let config: ServerConfig = await client.db.get('servers').findOne({ id: message.serverContext._id }) || {}
         if (!config.whitelist) config.whitelist = { users: [], roles: [], managers: true }
@@ -113,4 +114,4 @@ export default {
                 message.reply(`Command syntax: ${SYNTAX}`);
         }
     }
-} as Command;
+} as SimpleCommand;

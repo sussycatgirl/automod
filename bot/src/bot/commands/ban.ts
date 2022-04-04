@@ -2,7 +2,7 @@ import { ulid } from "ulid";
 import { client } from "../../index";
 import Infraction from "../../struct/antispam/Infraction";
 import InfractionType from "../../struct/antispam/InfractionType";
-import Command from "../../struct/Command";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import TempBan from "../../struct/TempBan";
 import { fetchUsername, logModAction } from "../modules/mod_logs";
@@ -10,6 +10,7 @@ import { storeTempBan } from "../modules/tempbans";
 import { isModerator, NO_MANAGER_MSG, parseUserOrId, storeInfraction } from "../util";
 import Day from 'dayjs';
 import RelativeTime from 'dayjs/plugin/relativeTime';
+import CommandCategory from "../../struct/commands/CommandCategory";
 
 Day.extend(RelativeTime);
 
@@ -19,7 +20,7 @@ export default {
     description: 'Ban a member from the server',
     syntax: '/ban @username [10m|1h|...?] [reason?]',
     removeEmptyArgs: true,
-    category: 'moderation',
+    category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message))
             return message.reply(NO_MANAGER_MSG);
@@ -123,4 +124,4 @@ export default {
             ]);
         }
     }
-} as Command;
+} as SimpleCommand;

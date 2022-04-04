@@ -1,7 +1,8 @@
-import Command from "../../struct/Command";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { exec } from 'child_process';
 import MessageCommandContext from "../../struct/MessageCommandContext";
+import CommandCategory from "../../struct/commands/CommandCategory";
 
 export default {
     name: 'shell',
@@ -9,7 +10,7 @@ export default {
     description: 'Run code in a shell',
     restrict: 'BOTOWNER',
     removeEmptyArgs: false,
-    category: 'owner',
+    category: CommandCategory.Owner,
     run: async (message: MessageCommandContext, args: string[]) => {
         let cmd = args.join(' ');
 
@@ -44,4 +45,4 @@ export default {
             message.channel?.sendMessage(`${e}`);
         }
     }
-} as Command;
+} as SimpleCommand;

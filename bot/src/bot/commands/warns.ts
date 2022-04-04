@@ -1,4 +1,4 @@
-import Command from "../../struct/Command";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import { client } from "../..";
 import Infraction from "../../struct/antispam/Infraction";
 import InfractionType from "../../struct/antispam/InfractionType";
@@ -8,6 +8,7 @@ import RelativeTime from 'dayjs/plugin/relativeTime';
 import Xlsx from 'xlsx';
 import { fetchUsername } from "../modules/mod_logs";
 import MessageCommandContext from "../../struct/MessageCommandContext";
+import CommandCategory from "../../struct/commands/CommandCategory";
 
 Day.extend(RelativeTime);
 
@@ -16,7 +17,7 @@ export default {
     aliases: [ 'warnings', 'infractions', 'infraction' ],
     description: 'Show all user infractions',
     syntax: '/warns; /warns @username ["export-csv"]; /warns rm [ID]',
-    category: 'moderation',
+    category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message)) return message.reply(NO_MANAGER_MSG);
 
@@ -122,7 +123,7 @@ export default {
             }
         }
     }
-} as Command;
+} as SimpleCommand;
 
 function getInfEmoji(inf: Infraction) {
     switch(inf.actionType) {

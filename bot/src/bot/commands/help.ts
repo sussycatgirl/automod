@@ -1,30 +1,34 @@
-import Command from "../../struct/Command";
+import Command from "../../struct/commands/SimpleCommand";
 import { commands, DEFAULT_PREFIX, ownerIDs } from "../modules/command_handler";
-import CommandCategory from "../../struct/CommandCategory";
 import MessageCommandContext from "../../struct/MessageCommandContext";
+import CommandCategory from "../../struct/commands/CommandCategory";
 
-const categories: { [key: string]: CommandCategory } = {
-    'moderation': {
+const categories: { [key in CommandCategory]: {
+    friendlyName: string,
+    description: string,
+    aliases: string[],
+} } = {
+    [CommandCategory.Moderation]: {
         friendlyName: 'Moderation',
         description: 'Moderation-focused commands',
         aliases: [ 'mod', 'mods' ],
     },
-    'configuration': {
+    [CommandCategory.Config]: {
         friendlyName: 'Configuration',
         description: 'Configure AutoMod',
         aliases: [ 'conf', 'config' ],
     },
-    'misc': {
+    [CommandCategory.Misc]: {
         friendlyName: 'Misc',
         description: 'Random stuff :yed:',
         aliases: [ 'miscellaneous', 'weirdwordicantspell' ],
     },
-    'owner': {
+    [CommandCategory.Owner]: {
         friendlyName: 'Owner',
         description: 'Owner-only commands for managing AutoMod',
         aliases: [],
     },
-    'uncategorized': {
+    [CommandCategory.None]: {
         friendlyName: 'Uncategorized',
         description: 'Uncategorized commands',
         aliases: [],
@@ -36,7 +40,7 @@ export default {
     aliases: null,
     description: 'Help command.',
     removeEmptyArgs: true,
-    category: 'misc',
+    category: CommandCategory.Misc,
     run: async (message: MessageCommandContext, args: string[]) => {
         const isBotOwner = ownerIDs.includes(message.author_id);
         const prefix = DEFAULT_PREFIX; // TODO: fetch prefix from server config
@@ -50,15 +54,15 @@ export default {
 
             let total = 0;
 
-            for (const categoryName in categories) {
+            for (const categoryName in CommandCategory) {
                 let cmdCount = commands.filter(
-                    cmd => ((cmd.category || 'uncategorized') == categoryName) &&
+                    cmd => (cmd.category == categoryName) &&
                            (cmd.restrict == 'BOTOWNER' ? isBotOwner : true) // Ensure owner commands are only shown to bot owner
                 ).length;
 
                 if (cmdCount > 0) {
                     total++;
-                    const category = categories[categoryName];
+                    const category = (categories as any)[categoryName];
                     msg += `**${category.friendlyName}**\n` +
                             ` \u200b \u200b ↳ ${(category.description)} \u200b $\\big |$ \u200b **${cmdCount}** command${cmdCount == 1 ? '' : 's'}\n`;
                 }

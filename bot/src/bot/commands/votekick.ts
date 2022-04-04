@@ -1,7 +1,8 @@
 import { FindResult } from "monk";
 import { ulid } from "ulid";
 import { client } from "../..";
-import Command from "../../struct/Command";
+import CommandCategory from "../../struct/commands/CommandCategory";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import ServerConfig from "../../struct/ServerConfig";
 import { logModAction } from "../modules/mod_logs";
@@ -21,7 +22,7 @@ export default {
     name: 'votekick',
     aliases: [ 'voteban' ],
     description: 'Allow trusted users to vote kick users',
-    category: 'moderation',
+    category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {
         try {
             const serverConfig: ServerConfig = await client.db.get('servers').findOne({ id: message.serverContext._id });
@@ -113,4 +114,4 @@ export default {
             message.reply('Oops, something happened: ' + e);
         }
     }
-} as Command;
+} as SimpleCommand;

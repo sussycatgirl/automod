@@ -1,17 +1,18 @@
-import Command from "../../struct/Command";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import { isModerator, NO_MANAGER_MSG, parseUserOrId, storeInfraction } from "../util";
 import Infraction from "../../struct/antispam/Infraction";
 import { ulid } from "ulid";
 import InfractionType from "../../struct/antispam/InfractionType";
 import { fetchUsername, logModAction } from "../modules/mod_logs";
 import MessageCommandContext from "../../struct/MessageCommandContext";
+import CommandCategory from "../../struct/commands/CommandCategory";
 
 export default {
     name: 'warn',
     aliases: null,
     removeEmptyArgs: false,
     description: 'add an infraction to an user\'s record',
-    category: 'moderation',
+    category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message)) return message.reply(NO_MANAGER_MSG);
         let user = await parseUserOrId(args.shift() ?? '');
@@ -46,4 +47,4 @@ export default {
             logModAction('warn', message.serverContext, message.member!, user._id, reason, infraction._id, `This is warn number ${userWarnCount} for this user.`),
         ]);
     }
-} as Command;
+} as SimpleCommand;

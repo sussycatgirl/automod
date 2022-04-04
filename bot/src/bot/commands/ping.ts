@@ -1,13 +1,14 @@
-import Command from "../../struct/Command";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { client } from "../..";
 import MessageCommandContext from "../../struct/MessageCommandContext";
+import CommandCategory from "../../struct/commands/CommandCategory";
 
 export default {
     name: 'ping',
     aliases: null,
     description: 'ping pong',
-    category: 'misc',
+    category: CommandCategory.Misc,
     run: async (message: MessageCommandContext, args: string[]) => {
         let now = Date.now();
         message.reply(`Measuring...`)
@@ -18,4 +19,4 @@ export default {
                                     + `Msg: \`${Math.round(Date.now() - now) / 2}ms\`` });
         });
     }
-} as Command;
+} as SimpleCommand;

@@ -1,10 +1,11 @@
-import Command from "../../struct/Command";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { isBotManager, NO_MANAGER_MSG, parseUser } from "../util";
 import ServerConfig from "../../struct/ServerConfig";
 import { client } from "../..";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import MessageCommandContext from "../../struct/MessageCommandContext";
+import CommandCategory from "../../struct/commands/CommandCategory";
 
 const SYNTAX = '/mod add @user; /mod remove @user; /mod list';
 
@@ -15,7 +16,7 @@ export default {
     aliases: [ 'moderators', 'mod', 'mods' ],
     description: 'Allow users to moderate other users',
     syntax: SYNTAX,
-    category: 'configuration',
+    category: CommandCategory.Config,
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isBotManager(message)) return message.reply(NO_MANAGER_MSG);
 
@@ -65,4 +66,4 @@ export default {
                 message.reply(`Available subcommands: ${SYNTAX}`);
         }
     }
-} as Command;
+} as SimpleCommand;

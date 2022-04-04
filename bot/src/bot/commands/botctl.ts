@@ -1,6 +1,7 @@
 import { FindOneResult } from "monk";
 import { client } from "../..";
-import Command from "../../struct/Command";
+import CommandCategory from "../../struct/commands/CommandCategory";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import ServerConfig from "../../struct/ServerConfig";
 import { scanServer } from "../modules/user_scan";
@@ -12,7 +13,7 @@ export default {
     name: 'botctl',
     aliases: null,
     description: 'Perform administrative actions',
-    category: 'configuration',
+    category: CommandCategory.Config,
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!isBotManager(message)) return message.reply(NO_MANAGER_MSG);
 
@@ -55,4 +56,4 @@ export default {
                 message.reply(`Unknown option`);
         }
     }
-} as Command;
+} as SimpleCommand;

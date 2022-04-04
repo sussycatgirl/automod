@@ -3,7 +3,8 @@ import { ulid } from "ulid";
 import { client } from "../..";
 import Infraction from "../../struct/antispam/Infraction";
 import InfractionType from "../../struct/antispam/InfractionType";
-import Command from "../../struct/Command";
+import CommandCategory from "../../struct/commands/CommandCategory";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import { logModAction } from "../modules/mod_logs";
 import { isModerator, NO_MANAGER_MSG, parseUser, storeInfraction } from "../util";
@@ -14,7 +15,7 @@ export default {
     description: 'Eject a member from the server',
     syntax: '/kick @username [reason?]',
     removeEmptyArgs: true,
-    category: 'moderation',
+    category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message))
             return message.reply(NO_MANAGER_MSG);
@@ -67,4 +68,4 @@ export default {
             logModAction('kick', message.serverContext, message.member!, targetUser._id, reason, infraction._id),
         ]);
     }
-} as Command;
+} as SimpleCommand;

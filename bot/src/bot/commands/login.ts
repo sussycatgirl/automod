@@ -1,6 +1,7 @@
 import { FindOneResult } from "monk";
 import { client } from "../..";
-import Command from "../../struct/Command";
+import CommandCategory from "../../struct/commands/CommandCategory";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import PendingLogin from "../../struct/PendingLogin";
 import logger from "../logger";
@@ -10,7 +11,7 @@ export default {
     name: 'login',
     aliases: null,
     description: 'Log into the web dashboard',
-    category: 'misc',
+    category: CommandCategory.Misc,
     run: async (message: MessageCommandContext, args: string[]) => {
         try {
             const code = args.shift();
@@ -59,4 +60,4 @@ export default {
             message.reply(`An error occurred: ${e}`);
         }
     }
-} as Command;
+} as SimpleCommand;

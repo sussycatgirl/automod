@@ -1,4 +1,4 @@
-import Command from "../../struct/Command";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import logger from "../logger";
 import { client } from "../../index";
 import fs from 'fs';
@@ -22,13 +22,13 @@ const DEFAULT_PREFIX = process.env['PREFIX']
                     ?? process.env['COMMAND_PREFIX']
                     ?? '/';
 
-let commands: Command[];
+let commands: SimpleCommand[];
 
 (async () => {
     commands = (await Promise.all(
         fs.readdirSync(path.join(dirname, '..', 'commands'))
             .filter(file => file.endsWith('.js'))
-            .map(async file => await import(path.join(dirname, '..', 'commands', file)) as Command)
+            .map(async file => await import(path.join(dirname, '..', 'commands', file)) as SimpleCommand)
         )).map(c => (c as any).default)
 
     client.on('message/update', async msg => {

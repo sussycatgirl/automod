@@ -115,6 +115,12 @@ async function getPermissionLevel(user: User|Member, server: Server): Promise<0|
     return 0;
 }
 
+function getPermissionBasedOnRole(member: Member): 0|1|2|3 {
+    if (hasPerm(member, 'ManageServer')) return 3;
+    if (hasPerm(member, 'KickMembers')) return 1;
+    return 0;
+}
+
 function hasPerm(member: Member, perm: keyof typeof ServerPermission): boolean {
     let p = ServerPermission[perm];
     if (member.server?.owner == member.user?._id) return true;
@@ -308,6 +314,7 @@ export {
     isModerator,
     isBotManager,
     getPermissionLevel,
+    getPermissionBasedOnRole,
     parseUser,
     parseUserOrId,
     storeInfraction,

@@ -1,4 +1,4 @@
-import Command from "../../struct/Command";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import { client } from "../..";
 import { commands, DEFAULT_PREFIX, ownerIDs } from "../modules/command_handler";
@@ -8,6 +8,7 @@ import path from 'path';
 import { wordlist } from "../modules/user_scan";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { adminBotLog } from "../logging";
+import CommandCategory from "../../struct/commands/CommandCategory";
 
 // id: expireDate
 const sudoOverrides: { [key: string]: number|null } = {}
@@ -37,7 +38,7 @@ export default {
     description: 'Bot administration',
     removeEmptyArgs: true,
     restrict: 'BOTOWNER',
-    category: 'owner',
+    category: CommandCategory.Owner,
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!args.length) return message.reply('No subcommand specified. Available subcommands: ' + SUBCOMMANDS.join(', '));
 
@@ -130,6 +131,6 @@ export default {
             }
         } catch(e) { console.error(e) }
     }
-} as Command;
+} as SimpleCommand;
 
 export { isSudo, updateSudoTimeout }

@@ -1,8 +1,9 @@
-import Command from "../../struct/Command";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { inspect } from 'util';
 import { client } from "../..";
 import MessageCommandContext from "../../struct/MessageCommandContext";
+import CommandCategory from "../../struct/commands/CommandCategory";
 
 export default {
     name: 'eval',
@@ -10,7 +11,7 @@ export default {
     description: 'Evaluate JS code',
     restrict: 'BOTOWNER',
     removeEmptyArgs: false,
-    category: 'owner',
+    category: CommandCategory.Owner,
     run: async (message: MessageCommandContext, args: string[]) => {
         let cmd = args.join(' ');
 
@@ -38,7 +39,7 @@ export default {
             m?.edit({ content: `## Execution failed\n\`\`\`js\n${render(e)}\n\`\`\`` });
         }
     }
-} as Command;
+} as SimpleCommand;
 
 function removeSecrets(input: string): string {
     if (process.env['DB_PASS']) input = input.replace(new RegExp(process.env['DB_PASS']!, 'gi'), '[Secret redacted]');

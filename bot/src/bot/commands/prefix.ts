@@ -1,10 +1,11 @@
-import Command from "../../struct/Command";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { client } from "../..";
 import ServerConfig from "../../struct/ServerConfig";
 import { DEFAULT_PREFIX } from "../modules/command_handler";
 import { hasPerm, isBotManager, NO_MANAGER_MSG } from "../util";
 import MessageCommandContext from "../../struct/MessageCommandContext";
+import CommandCategory from "../../struct/commands/CommandCategory";
 
 const SYNTAX = '/prefix set [new prefix]; /prefix get; prefix clear';
 const MENTION_TEXT = 'You can also @mention me instead of using the prefix.';
@@ -14,7 +15,7 @@ export default {
     aliases: null,
     description: 'Configure AutoMod\'s prefix',
     syntax: SYNTAX,
-    category: 'configuration',
+    category: CommandCategory.Config,
     run: async (message: MessageCommandContext, args: string[]) => {
         let config: ServerConfig = (await client.db.get('servers').findOne({ id: message.channel?.server_id })) ?? {};
         
@@ -56,7 +57,7 @@ export default {
         }
         
     }
-} as Command;
+} as SimpleCommand;
 
 function validatePrefix(prefix: string): string|true {
     // Check length

@@ -1,6 +1,7 @@
 import { FindOneResult, FindResult } from "monk";
 import { client } from "../..";
-import Command from "../../struct/Command";
+import CommandCategory from "../../struct/commands/CommandCategory";
+import SimpleCommand from "../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import PendingLogin from "../../struct/PendingLogin";
 import { DEFAULT_PREFIX } from "../modules/command_handler";
@@ -9,7 +10,7 @@ export default {
     name: 'logout',
     aliases: null,
     description: 'Log out of sessions created with /login',
-    category: 'misc',
+    category: CommandCategory.Misc,
     run: async (message: MessageCommandContext, args: string[]) => {
         try {
             const code = args.shift();
@@ -56,4 +57,4 @@ export default {
             message.reply(`An error occurred: ${e}`);
         }
     }
-} as Command;
+} as SimpleCommand;
