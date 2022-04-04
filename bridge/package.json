@@ -1,0 +1,23 @@
+{
+  "name": "bridge",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "exports": "./index.js",
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "start": "node --experimental-specifier-resolution=node dist/index",
+    "dev": "yarn build && yarn start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@janderedev/revolt.js": "^5.2.8-patch.2",
+    "axios": "^0.26.1",
+    "discord.js": "^13.6.0",
+    "dotenv": "^16.0.0",
+    "log75": "^2.2.0",
+    "monk": "^7.3.4"
+  }
+}
