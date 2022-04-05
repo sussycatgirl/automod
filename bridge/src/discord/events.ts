@@ -8,8 +8,10 @@ import BridgedMessage from "../types/BridgedMessage";
 client.on('messageCreate', async message => {
     try {
         logger.debug(`[M] Discord: ${message.content}`);
-
         const bridgeCfg = await BRIDGE_CONFIG.findOne({ discord: message.channelId });
+        if (message.webhookId && bridgeCfg?.discordWebhook?.id == message.webhookId) {
+            return logger.debug(`Discord: Message has already been bridged; ignoring`);
+        }
         if (!bridgeCfg?.revolt) return logger.debug(`Discord: No Revolt channel associated`);
 
         const channel = revoltClient.channels.get(bridgeCfg.revolt);
@@ -50,7 +52,7 @@ client.on('messageCreate', async message => {
                 revolt: {
                     messageId: res.data._id,
                 },
-            } as BridgedMessage);
+            });
         })
         .catch(e => {
             console.error(`Failed to send message`, e.response.data)
