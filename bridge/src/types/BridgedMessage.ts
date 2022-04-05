@@ -7,5 +7,6 @@ export default class {
 
     revolt: {
         messageId?: string;
+        nonce?: string;
     }
 }

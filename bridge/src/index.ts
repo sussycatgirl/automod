@@ -28,4 +28,4 @@ for (const v of [ 'REVOLT_TOKEN', 'DISCORD_TOKEN', 'DB_STRING' ]) {
     ]);
 })();
 
-export { logger, BRIDGED_MESSAGES, BRIDGE_CONFIG }
+export { logger, db, BRIDGED_MESSAGES, BRIDGE_CONFIG }

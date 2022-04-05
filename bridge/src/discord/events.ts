@@ -3,12 +3,21 @@ import { client } from "./client";
 import { client as revoltClient } from "../revolt/client";
 import { ChannelPermission } from "@janderedev/revolt.js";
 import axios from 'axios';
-import BridgedMessage from "../types/BridgedMessage";
+import { ulid } from "ulid";
 
 client.on('messageCreate', async message => {
     try {
+        if (!message.content) return;
+
         logger.debug(`[M] Discord: ${message.content}`);
-        const bridgeCfg = await BRIDGE_CONFIG.findOne({ discord: message.channelId });
+        const [ bridgeCfg, bridgedReply ] = await Promise.all([
+            BRIDGE_CONFIG.findOne({ discord: message.channelId }),
+            (message.reference?.messageId
+                ? BRIDGED_MESSAGES.findOne({ "discord.messageId": message.reference.messageId })
+                : undefined
+            ),
+        ]);
+
         if (message.webhookId && bridgeCfg?.discordWebhook?.id == message.webhookId) {
             return logger.debug(`Discord: Message has already been bridged; ignoring`);
         }
@@ -25,38 +34,64 @@ client.on('messageCreate', async message => {
             return logger.debug(`Discord: Lacking Masquerade permission; refusing to send`);
         }
 
-        await axios.post(
-            `${revoltClient.apiURL}/channels/${channel._id}/messages`,
+        // Setting a known nonce allows us to ignore bridged
+        // messages while still letting other AutoMod messages pass.
+        const nonce = ulid();
+
+        await BRIDGED_MESSAGES.update(
+            { "discord.messageId": message.id },
             {
-                content: message.content, // todo: parse and normalize this
-                //attachments: [],
-                //embeds: [],
-                //replies: [],
-                masquerade: {
-                    name: message.author.username,
-                    avatar: message.author.displayAvatarURL({ size: 128 }),
+                $setOnInsert: {
+                    origin: 'discord',
+                    discord: {
+                        messageId: message.id,
+                    },
+                },
+                $set: {
+                    'revolt.nonce': nonce,
                 }
             },
-            {
-                headers: {
-                    'x-bot-token': process.env['REVOLT_TOKEN']!
+            { upsert: true }
+        );
+
+        const sendBridgeMessage = async (reply?: string) => {
+            await axios.post(
+                `${revoltClient.apiURL}/channels/${channel._id}/messages`,
+                {
+                    content: message.content,
+                    //attachments: [],
+                    //embeds: [],
+                    nonce: nonce,
+                    replies: reply ? [ { id: reply, mention: !!message.mentions.repliedUser } ] : undefined,
+                    masquerade: {
+                        name: message.author.username,
+                        avatar: message.author.displayAvatarURL({ size: 128 }),
+                    }
+                },
+                {
+                    headers: {
+                        'x-bot-token': process.env['REVOLT_TOKEN']!
+                    }
                 }
-            }
-        )
-        .then(async res => {
-            await BRIDGED_MESSAGES.insert({
-                origin: 'discord',
-                discord: {
-                    messageId: message.id,
-                },
-                revolt: {
-                    messageId: res.data._id,
-                },
+            )
+            .then(async res => {
+                await BRIDGED_MESSAGES.update(
+                    { "discord.messageId": message.id },
+                    {
+                        $set: { "revolt.messageId": res.data._id },
+                    }
+                );
+            })
+            .catch(async e => {
+                console.error(`Failed to send message`, e.response.data);
+                if (reply) {
+                    console.info('Reytring without reply');
+                    await sendBridgeMessage(undefined);
+                }
             });
-        })
-        .catch(e => {
-            console.error(`Failed to send message`, e.response.data)
-        });
+        }
+
+        await sendBridgeMessage(bridgedReply?.revolt?.messageId);
     } catch(e) {
         console.error(e);
     }

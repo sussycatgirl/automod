@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "command": "yarn dev",
+            "command": "cd bridge && yarn dev",
             "name": "Debug",
             "request": "launch",
-            "type": "node-terminal"
+            "type": "node-terminal",
         }
     ]
 }
