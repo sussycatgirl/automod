@@ -4,6 +4,7 @@ import { client as revoltClient } from "../revolt/client";
 import { ChannelPermission } from "@janderedev/revolt.js";
 import axios from 'axios';
 import { ulid } from "ulid";
+import GenericEmbed from "../types/GenericEmbed";
 
 client.on('messageCreate', async message => {
     try {
@@ -66,7 +67,10 @@ client.on('messageCreate', async message => {
                     masquerade: {
                         name: message.author.username,
                         avatar: message.author.displayAvatarURL({ size: 128 }),
-                    }
+                    },
+                    embeds: message.embeds.length
+                        ? message.embeds.map(e => new GenericEmbed(e).toRevolt())
+                        : undefined,
                 },
                 {
                     headers: {

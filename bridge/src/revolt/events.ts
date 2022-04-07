@@ -3,6 +3,8 @@ import { BRIDGED_MESSAGES, BRIDGE_CONFIG, logger } from "..";
 import { client } from "./client";
 import { client as discordClient } from "../discord/client";
 import { WebhookClient } from "discord.js";
+import GenericEmbed from "../types/GenericEmbed";
+import { SendableEmbed } from "revolt-api";
 
 client.on('message', async message => {
     try {
@@ -48,6 +50,11 @@ client.on('message', async message => {
             content: `${message.content}`,
             username: message.author?.username ?? 'Unknown user',
             avatarURL: message.author?.generateAvatarURL({ max_side: 128 }),
+            embeds: message.embeds?.length
+                ? message.embeds
+                    .filter(e => e.type == "Text")
+                    .map(e => new GenericEmbed(e as SendableEmbed).toDiscord())
+                : undefined,
         })
         .then(async res => {
             await BRIDGED_MESSAGES.update({

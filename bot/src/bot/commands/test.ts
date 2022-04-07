@@ -8,6 +8,18 @@ export default {
     description: 'Test command',
     category: CommandCategory.Misc,
     run: (message: MessageCommandContext, args: string[]) => {
-        message.reply('Beep boop.');
+        message.reply({
+            content: 'Beep boop.',
+            embeds: [
+                {
+                    type: "Text",
+                    colour: "#ff0000",
+                    description: "embed description",
+                    title: "embed title",
+                    url: "https://amogus.org",
+                    icon_url: "https://amogus.org/amogus.png"
+                }
+            ],
+        });
     }
 } as SimpleCommand;
