@@ -61,10 +61,15 @@ let commands: SimpleCommand[];
         if (!await antispam(msg)) return;
         checkCustomRules(msg);
 
+        let [ config, userConfig ] = await Promise.all([
+            dbs.SERVERS.findOne({ id: msg.channel!.server_id! }),
+            dbs.USERS.findOne({ id: msg.author_id }),
+        ]);
+
+        if (userConfig?.ignore) return;
+
         let args = msg.content.split(' ');
         let cmdName = args.shift() ?? '';
-
-        let config = await dbs.SERVERS.findOne({ id: msg.channel!.server_id! });
         let guildPrefix = config?.prefix ?? DEFAULT_PREFIX;
 
         if (cmdName.startsWith(`<@${client.user?._id}>`)) {

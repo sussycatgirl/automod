@@ -1,7 +1,9 @@
+import { ChannelPermission, ServerPermission } from "@janderedev/revolt.js";
 import { ulid } from "ulid";
 import { client, dbs } from "../..";
 import Infraction from "../../struct/antispam/Infraction";
 import InfractionType from "../../struct/antispam/InfractionType";
+import { BLACKLIST_BAN_REASON, BLACKLIST_MESSAGE } from "../commands/botadm";
 import logger from "../logger";
 import { hasPermForChannel, storeInfraction } from "../util";
 import { DEFAULT_PREFIX } from "./command_handler";
@@ -48,7 +50,34 @@ client.on('message', async message => {
                 } as Infraction).catch(console.warn);
             } catch(e) { console.error(e) }
         break;
-        case 'user_joined': break;
+        case 'user_joined': {
+            if (!sysMsg.user) break;
+
+            try {
+                const [ serverConfig, userConfig ] = await Promise.all([
+                    dbs.SERVERS.findOne({ id: message.channel!.server_id! }),
+                    dbs.USERS.findOne({ id: sysMsg.user._id }),
+                ]);
+
+                if (userConfig?.globalBlacklist && !serverConfig?.allowBlacklistedUsers) {
+                    const server = message.channel?.server;
+                    if (server && (server?.permission ?? 0) & ServerPermission.BanMembers) {
+                        await server.banUser(sysMsg.user._id, { reason: BLACKLIST_BAN_REASON });
+
+                        if (server.system_messages?.user_banned) {
+                            const channel = server.channels.find(c => c?._id == server.system_messages?.user_banned);
+                            if (channel && channel.permission & ChannelPermission.SendMessage) {
+                                await channel.sendMessage(BLACKLIST_MESSAGE(sysMsg.user.username));
+                            }
+                        }
+                    }
+                }
+            } catch(e) {
+                console.error(''+e);
+            }
+
+            break;
+        };
         case 'user_left'  : break;
     }
 });

@@ -47,10 +47,29 @@ export default {
                     userscans = userscans.filter(s => s != message.serverContext._id);
                 }
             break;
+
+            case 'ignore_blacklist':
+                try {
+                    if (args[0] == 'yes') {
+                        await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { allowBlacklistedUsers: true } });
+                        await message.reply('Globally blacklisted users will no longer get banned in this server. Previously banned users will need to be unbanned manually.');
+                    } else if (args[0] == 'no') {
+                        await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { allowBlacklistedUsers: false } });
+                        await message.reply('Globally blacklisted users will now get banned in this server.');
+                    } else {
+                        await message.reply(`Please specify either 'yes' or 'no' to toggle this setting.`);
+                    }
+                } catch(e) {
+                    console.error(''+e);
+                    message.reply('Something went wrong: ' + e);
+                }
+            break;
+
             case undefined:
             case '':
                 message.reply(`### Available subcommands\n`
-                            + `- \`scan_userlist\` - If user scanning is enabled, this will scan the entire user list.`);
+                            + `- \`scan_userlist\` - If user scanning is enabled, this will scan the entire user list.\n`
+                            + `- \`ignore_blacklist\` - Ignore the bot's global blacklist.`);
             break
             default:
                 message.reply(`Unknown option`);

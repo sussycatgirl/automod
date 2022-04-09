@@ -12,6 +12,8 @@ import CommandCategory from "../../struct/commands/CommandCategory";
 
 Day.extend(RelativeTime);
 
+const GLOBAL_BLACKLIST_TEXT = `> :warning: This user has been flagged and is globally blacklisted. [Learn more.](https://github.com/janderedev/automod/wiki/Global-Blacklist)\n\n`;
+
 export default {
     name: 'warns',
     aliases: [ 'warnings', 'infractions', 'infraction' ],
@@ -66,10 +68,18 @@ export default {
                     let user = await parseUserOrId(args[0]);
                     if (!user?._id) return message.reply('I can\'t find this user.');
 
-                    let infs = userInfractions.get(user._id);
-                    if (!infs) return message.reply(`There are no infractions stored for \`${await fetchUsername(user._id)}\`.`);
+                    const infs = userInfractions.get(user._id);
+                    const userConfig = await dbs.USERS.findOne({ id: user._id });
+
+                    if (!infs) return message.reply(`There are no infractions stored for \`${await fetchUsername(user._id)}\`.`
+                        + (userConfig?.globalBlacklist ? '\n' + GLOBAL_BLACKLIST_TEXT : ''), false);
                     else {
-                        let msg = `## ${infs.length} infractions stored for ${await fetchUsername(user._id)}\n\u200b\n`;
+                        let msg = `## ${infs.length} infractions stored for ${await fetchUsername(user._id)}\n`;
+
+                        if (userConfig?.globalBlacklist) {
+                            msg += GLOBAL_BLACKLIST_TEXT;
+                        } else msg += '\u200b\n';
+
                         let attachSpreadsheet = false;
                         for (const i in infs) {
                             let inf = infs[i];
@@ -111,12 +121,12 @@ export default {
                                 let sheet = Xlsx.utils.aoa_to_sheet(csv_data);
                                 let csv = Xlsx.utils.sheet_to_csv(sheet);
 
-                                message.reply({ content: msg, attachments: [ await uploadFile(csv, `${user._id}.csv`) ] });
+                                message.reply({ content: msg, attachments: [ await uploadFile(csv, `${user._id}.csv`) ] }, false);
                             } catch(e) {
                                 console.error(e);
-                                message.reply(msg);
+                                message.reply(msg, false);
                             }
-                        } else message.reply(msg);
+                        } else message.reply(msg, false);
                     }
                 break;
             }

@@ -2,7 +2,6 @@ import { Member } from "@janderedev/revolt.js/dist/maps/Members";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { client, dbs } from "..";
 import Infraction from "../struct/antispam/Infraction";
-import ServerConfig from "../struct/ServerConfig";
 import FormData from 'form-data';
 import axios from 'axios';
 import { Server } from "@janderedev/revolt.js/dist/maps/Servers";
