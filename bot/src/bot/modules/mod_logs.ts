@@ -1,6 +1,6 @@
 import { Member } from "@janderedev/revolt.js/dist/maps/Members";
 import { Server } from "@janderedev/revolt.js/dist/maps/Servers";
-import { client } from "../..";
+import { client, dbs } from "../..";
 import Infraction from "../../struct/antispam/Infraction";
 import LogMessage from "../../struct/LogMessage";
 import ServerConfig from "../../struct/ServerConfig";
@@ -28,7 +28,7 @@ client.on('packet', async (packet) => {
             let server = channel?.server;
             if (!server || !channel) return logger.warn('Received message update in unknown channel or server');
 
-            let config: ServerConfig = await client.db.get('servers').findOne({ id: server._id }) ?? {};
+            let config = await dbs.SERVERS.findOne({ id: server._id });
             if (config?.logs?.messageUpdate) {
                 const attachFullMessage = oldMsg.length > 800 || newMsg.length > 800;
                 let embed: LogMessage = {
@@ -75,8 +75,8 @@ client.on('packet', async (packet) => {
             let msgRaw = String(message.content ?? '(Unknown)');
             let msg = sanitizeMessageContent(msgRaw);
 
-            let config: ServerConfig = await client.db.get('servers').findOne({ id: message.channel?.server?._id }) ?? {};
-            if (config.logs?.messageUpdate) {
+            let config = await dbs.SERVERS.findOne({ id: message.channel?.server?._id });
+            if (config?.logs?.messageUpdate) {
                 let embed: LogMessage = {
                     title: `Message deleted in ${message.channel?.server?.name}`,
                     description: `[\\[#${channel.name}\\]](/server/${channel.server_id}/channel/${channel._id}) | `
@@ -116,14 +116,13 @@ client.on('packet', async (packet) => {
 
 async function logModAction(type: 'warn'|'kick'|'ban'|'votekick', server: Server, mod: Member, target: string, reason: string|null, infractionID: string, extraText?: string): Promise<void> {
     try {
-        let config: ServerConfig = await client.db.get('servers').findOne({ id: server._id }) ?? {};
+        let config = await dbs.SERVERS.findOne({ id: server._id });
 
-        if (config.logs?.modAction) {
+        if (config?.logs?.modAction) {
             let aType = type == 'ban' ? 'banned' : type + 'ed';
             let embedColor = '#0576ff';
             if (type == 'kick') embedColor = '#ff861d';
             if (type == 'ban') embedColor = '#ff2f05';
-
 
             sendLogMessage(config.logs.modAction, {
                 title: `User ${aType}`,

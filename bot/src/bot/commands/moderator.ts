@@ -2,7 +2,7 @@ import SimpleCommand from "../../struct/commands/SimpleCommand";
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { isBotManager, NO_MANAGER_MSG, parseUser } from "../util";
 import ServerConfig from "../../struct/ServerConfig";
-import { client } from "../..";
+import { client, dbs } from "../..";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import CommandCategory from "../../struct/commands/CommandCategory";
@@ -20,8 +20,8 @@ export default {
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isBotManager(message)) return message.reply(NO_MANAGER_MSG);
 
-        let config: ServerConfig = (await client.db.get('servers').findOne({ id: message.serverContext._id })) ?? {};
-        let mods = config.moderators ?? [];
+        let config = await dbs.SERVERS.findOne({ id: message.serverContext._id });
+        let mods = config?.moderators ?? [];
         let user: User|null;
 
         switch(args[0]?.toLowerCase()) {
@@ -34,7 +34,7 @@ export default {
                 if (mods.indexOf(user._id) > -1) return message.reply('This user is already added as moderator.');
 
                 mods.push(user._id);
-                await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { moderators: mods } });
+                await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { moderators: mods } });
 
                 message.reply(`✅ Added [@${user.username}](/@${user._id}) to moderators.`);
             break;
@@ -49,7 +49,7 @@ export default {
                 if (mods.indexOf(user._id) == -1) return message.reply('This user is not added as moderator.');
 
                 mods = mods.filter(a => a != user?._id);
-                await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { moderators: mods } });
+                await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { moderators: mods } });
 
                 message.reply(`✅ Removed [@${user.username}](/@${user._id}) from moderators.`);
             break;

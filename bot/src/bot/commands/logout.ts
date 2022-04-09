@@ -1,5 +1,5 @@
 import { FindOneResult, FindResult } from "monk";
-import { client } from "../..";
+import { client, dbs } from "../..";
 import CommandCategory from "../../struct/commands/CommandCategory";
 import SimpleCommand from "../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../struct/MessageCommandContext";
@@ -22,30 +22,29 @@ export default {
 
             if (code.toLowerCase() == 'all') {
                 const [resA, resB] = await Promise.all([
-                    client.db.get('pending_logins').update({ user: message.author_id, invalid: false }, { $set: { invalid: true } }),
-                    client.db.get('sessions').update({ user: message.author_id, invalid: false }, { $set: { invalid: true } }),
+                    dbs.PENDING_LOGINS.update({ user: message.author_id, invalid: false }, { $set: { invalid: true } }),
+                    dbs.SESSIONS.update({ user: message.author_id, invalid: false }, { $set: { invalid: true } }),
                 ]);
 
                 if (resA.nModified == 0 && resB.nModified == 0) return message.reply('There are no sessions to invalidate.');
 
                 message.reply(`Successfully invalidated ${resA.nModified} codes and ${resB.nModified} sessions.`);
             } else {
-                const loginAttempt: FindOneResult<PendingLogin> = await client.db.get('pending_logins')
-                    .findOne({
-                        code: code.toUpperCase(),
-                        user: message.author_id,
-                    });
+                const loginAttempt = await dbs.PENDING_LOGINS.findOne({
+                    code: code.toUpperCase(),
+                    user: message.author_id,
+                });
 
                 if (!loginAttempt || loginAttempt.invalid) {
                     return message.reply('That code doesn\'t seem to exist.');
                 }
 
-                await client.db.get('pending_logins').update({ _id: loginAttempt._id }, { $set: { invalid: true } });
+                await dbs.PENDING_LOGINS.update({ _id: loginAttempt._id }, { $set: { invalid: true } });
 
                 if (loginAttempt.exchanged) {
-                    const session: FindOneResult<any> = await client.db.get('sessions').findOne({ nonce: loginAttempt.nonce });
+                    const session = await dbs.SESSIONS.findOne({ nonce: loginAttempt.nonce });
                     if (session) {
-                        await client.db.get('sessions').update({ _id: session._id }, { $set: { invalid: true } });
+                        await dbs.SESSIONS.update({ _id: session._id }, { $set: { invalid: true } });
                         return message.reply(`Successfully invalidated code and terminated associated session.`);
                     }
                 }

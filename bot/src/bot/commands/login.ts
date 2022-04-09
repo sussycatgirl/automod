@@ -1,5 +1,5 @@
 import { FindOneResult } from "monk";
-import { client } from "../..";
+import { client, dbs } from "../..";
 import CommandCategory from "../../struct/commands/CommandCategory";
 import SimpleCommand from "../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../struct/MessageCommandContext";
@@ -21,7 +21,7 @@ export default {
                     + `If you already have a code, you can use \`${DEFAULT_PREFIX}login [Code]\`.`);
             }
 
-            const login: FindOneResult<PendingLogin> = await client.db.get('pending_logins').findOne({
+            const login: FindOneResult<PendingLogin> = await dbs.PENDING_LOGINS.findOne({
                 code,
                 user: message.author_id,
                 confirmed: false,
@@ -45,7 +45,7 @@ export default {
                         `you can run this command again to continue.\n` +
                         `##### You're seeing this because this is the first time you're trying to log in. Stay safe!`
                     ),
-                    client.db.get('pending_logins').update({ _id: login._id }, { $set: { requirePhishingConfirmation: false } }),
+                    dbs.PENDING_LOGINS.update({ _id: login._id }, { $set: { requirePhishingConfirmation: false } }),
                 ]);
                 return;
             }
@@ -53,7 +53,7 @@ export default {
             await Promise.all([
                 message.reply(`Successfully logged in.\n\n` +
                     `If this wasn't you, run \`${DEFAULT_PREFIX}logout ${code}\` immediately.`),
-                client.db.get('pending_logins').update({ _id: login._id }, { $set: { confirmed: true } }),
+                dbs.PENDING_LOGINS.update({ _id: login._id }, { $set: { confirmed: true } }),
             ]);
         } catch(e) {
             console.error(e);

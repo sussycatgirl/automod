@@ -1,6 +1,5 @@
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
-import { client } from "../..";
+import { client, dbs } from "../..";
 import CommandCategory from "../../struct/commands/CommandCategory";
 import SimpleCommand from "../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../struct/MessageCommandContext";
@@ -16,7 +15,8 @@ export default {
     syntax: SYNTAX,
     category: CommandCategory.Config,
     run: async (message: MessageCommandContext, args: string[]) => {
-        let config: ServerConfig = await client.db.get('servers').findOne({ id: message.serverContext._id }) || {}
+        let config: ServerConfig|null = await dbs.SERVERS.findOne({ id: message.serverContext._id })
+        if (!config) config = { id: message.channel!.server_id! };
         if (!config.whitelist) config.whitelist = { users: [], roles: [], managers: true }
 
         if (!isBotManager(message)) return message.reply(NO_MANAGER_MSG);
@@ -37,7 +37,7 @@ export default {
                         return message.reply('That role is already whitelisted.');
 
                     config.whitelist!.roles = [role, ...(config.whitelist!.roles ?? [])];
-                    await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
+                    await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
                     return message.reply(`Added role to whitelist!`);
                 }
 
@@ -48,7 +48,7 @@ export default {
                     return message.reply('That user is already whitelisted.');
 
                 config.whitelist!.users = [user._id, ...(config.whitelist!.users ?? [])];
-                await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
+                await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
                 return message.reply('Added user to whitelist!');
             break;
             case 'rm':
@@ -67,7 +67,7 @@ export default {
                         return message.reply('That role is not whitelisted.');
 
                     config.whitelist!.roles = config.whitelist!.roles.filter(r => r != role);
-                    await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
+                    await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
                     return message.reply(`Removed role from whitelist!`);
                 }
 
@@ -77,7 +77,7 @@ export default {
                     return message.reply('That user is not whitelisted.');
 
                 config.whitelist!.users = config.whitelist!.users.filter(u => u != user?._id);
-                await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
+                await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
                 return message.reply('Removed user from whitelist!');
             break;
             case 'l':
@@ -90,7 +90,7 @@ export default {
                 if (config.whitelist.users?.length) {
                     config.whitelist.users?.forEach((u, index) => {
                         if (index < 15) str += `* [@${client.users.get(u)?.username || u}](/@${u})\n`;
-                        if (index == 15) str += `**${index - 15} more user${config.whitelist?.users?.length == 16 ? '' : 's'}**\n`;
+                        if (index == 15) str += `**${index - 15} more user${config?.whitelist?.users?.length == 16 ? '' : 's'}**\n`;
                     });
                 } else str += `**No whitelisted users**\n`;
 
@@ -101,7 +101,7 @@ export default {
                         ?.map(r => message.serverContext.roles?.[r]?.name || `Unknown role (${r})`)
                         .forEach((r, index) => {
                         if (index < 15) str += `* ${r}\n`;
-                        if (index == 15) str += `**${config.whitelist!.roles!.length - 15} more role${config.whitelist?.roles?.length == 16 ? '' : 's'}**\n`;
+                        if (index == 15) str += `**${config!.whitelist!.roles!.length - 15} more role${config?.whitelist?.roles?.length == 16 ? '' : 's'}**\n`;
                     });
                 } else str += `**No whitelisted roles**\n`;
 

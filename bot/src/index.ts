@@ -4,6 +4,13 @@ config();
 import logger from './bot/logger';
 import AutomodClient, { login } from './struct/AutomodClient';
 import MongoDB from './bot/db';
+import DbUser from './struct/DbUser';
+import ServerConfig from './struct/ServerConfig';
+import Infraction from './struct/antispam/Infraction';
+import PendingLogin from './struct/PendingLogin';
+import TempBan from './struct/TempBan';
+import { VoteEntry } from './bot/commands/votekick';
+import ScannedUser from './struct/ScannedUser';
 
 logger.info('Initializing client');
 
@@ -16,7 +23,18 @@ let client = new AutomodClient({
 }, db);
 login(client);
 
-export { client }
+const dbs = {
+    SERVERS: db.get<ServerConfig>('servers'),
+    USERS: db.get<DbUser>('users'),
+    INFRACTIONS: db.get<Infraction>('infractions'),
+    PENDING_LOGINS: db.get<PendingLogin>('pending_logins'),
+    SESSIONS: db.get('sessions'),
+    TEMPBANS: db.get<TempBan>('tempbans'),
+    VOTEKICKS: db.get<VoteEntry>('votekicks'),
+    SCANNED_USERS: db.get<ScannedUser>('scanned_users'),
+}
+
+export { client, dbs }
 
 (async () => {
     // Wait for a database query to succeed before loading the rest

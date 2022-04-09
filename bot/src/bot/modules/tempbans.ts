@@ -1,5 +1,5 @@
 import { FindResult } from "monk";
-import { client } from "../..";
+import { client, dbs } from "../..";
 import TempBan from "../../struct/TempBan";
 import logger from "../logger";
 
@@ -8,7 +8,7 @@ let dontProcess: string[] = [];
 let expired: string[] = [];
 
 async function tick() {
-    let found: FindResult<TempBan> = await client.db.get('tempbans').find({ until: { $lt: Date.now() + 60000 } });
+    let found = await dbs.TEMPBANS.find({ until: { $lt: Date.now() + 60000 } });
 
     for (const ban of found) {
         if (!dontProcess.includes(ban.id))
@@ -36,12 +36,12 @@ async function processUnban(ban: TempBan) {
 
             let promises = [
                 server.unbanUser(ban.bannedUser),
-                client.db.get('tempbans').remove({ id: ban.id }),
+                dbs.TEMPBANS.remove({ id: ban.id }),
             ];
 
             await Promise.allSettled(promises);
         }
-        else client.db.get('tempbans').remove({ id: ban.id });
+        else dbs.TEMPBANS.remove({ id: ban.id });
     } catch(e) { console.error(e) }
 }
 
@@ -54,14 +54,15 @@ async function storeTempBan(ban: TempBan): Promise<void> {
         }, ban.until - Date.now());
     }
 
-    client.db.get('tempbans').insert(ban);
+    dbs.TEMPBANS.insert(ban);
 }
 
 async function removeTempBan(banID: string): Promise<TempBan> {
-    let ban: TempBan = await client.db.get('tempbans').findOneAndDelete({ id: banID });
+    let ban = await dbs.TEMPBANS.findOneAndDelete({ id: banID });
+    if (!ban) throw `Ban ${banID} does not exist; cannot delete`;
     if (Date.now() >= ban.until - 120000) {
         expired.push(ban.id);
-        expired = expired.filter(id => id != ban.id);
+        expired = expired.filter(id => id != ban!.id);
     };
     return ban;
 }

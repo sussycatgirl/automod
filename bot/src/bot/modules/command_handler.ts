@@ -1,6 +1,6 @@
 import SimpleCommand from "../../struct/commands/SimpleCommand";
 import logger from "../logger";
-import { client } from "../../index";
+import { client, dbs } from "../../index";
 import fs from 'fs';
 import path from 'path';
 import ServerConfig from "../../struct/ServerConfig";
@@ -64,15 +64,15 @@ let commands: SimpleCommand[];
         let args = msg.content.split(' ');
         let cmdName = args.shift() ?? '';
 
-        let config: ServerConfig = (await client.db.get('servers').findOne({ 'id': msg.channel?.server_id })) ?? {};
-        let guildPrefix = config.prefix ?? DEFAULT_PREFIX;
+        let config = await dbs.SERVERS.findOne({ id: msg.channel!.server_id! });
+        let guildPrefix = config?.prefix ?? DEFAULT_PREFIX;
 
         if (cmdName.startsWith(`<@${client.user?._id}>`)) {
             cmdName = cmdName.substring(`<@${client.user?._id}>`.length);
             if (!cmdName) cmdName = args.shift() ?? ''; // Space between mention and command name
         } else if (cmdName.startsWith(guildPrefix)) {
             cmdName = cmdName.substring(guildPrefix.length);
-            if (config.spaceAfterPrefix && !cmdName) cmdName = args.shift() ?? '';
+            if (config?.spaceAfterPrefix && !cmdName) cmdName = args.shift() ?? '';
         } else return;
 
         if (!cmdName) return;
@@ -92,7 +92,7 @@ let commands: SimpleCommand[];
 
         let serverCtx = msg.channel?.server;
 
-        if (config.linkedServer) {
+        if (config?.linkedServer) {
             try {
                 serverCtx = client.servers.get(config.linkedServer)
                     || await client.servers.fetch(config.linkedServer);
@@ -109,7 +109,7 @@ let commands: SimpleCommand[];
         logger.info(`Command: ${message.author?.username} (${message.author?._id}) in ${message.channel?.server?.name} (${message.channel?.server?._id}): ${message.content}`);
 
         // Create document for server in DB, if not already present
-        if (JSON.stringify(config) == '{}') await client.db.get('servers').insert({ id: message.channel?.server_id });
+        if (JSON.stringify(config) == '{}') await dbs.SERVERS.insert({ id: message.channel!.server_id! });
 
         if (cmd.removeEmptyArgs !== false) {
             args = args.filter(a => a.length > 0);

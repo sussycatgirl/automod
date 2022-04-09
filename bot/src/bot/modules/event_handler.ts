@@ -1,5 +1,5 @@
 import { ulid } from "ulid";
-import { client } from "../..";
+import { client, dbs } from "../..";
 import Infraction from "../../struct/antispam/Infraction";
 import InfractionType from "../../struct/antispam/InfractionType";
 import logger from "../logger";
@@ -25,10 +25,10 @@ client.on('message', async message => {
         case 'user_kicked':
         case 'user_banned':
             try {
-                let recentEvents = await client.db.get('infractions').findOne({
+                let recentEvents = await dbs.INFRACTIONS.findOne({
                     date: { $gt: Date.now() - 30000 },
                     user: sysMsg.user?._id,
-                    server: message.channel?.server_id,
+                    server: message.channel!.server_id!,
                     actionType: sysMsg.type == 'user_kicked' ? 'kick' : 'ban',
                 });
 

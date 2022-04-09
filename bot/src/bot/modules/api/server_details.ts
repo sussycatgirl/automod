@@ -1,6 +1,6 @@
 import { Member } from "@janderedev/revolt.js/dist/maps/Members";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
-import { client } from "../../..";
+import { client, dbs } from "../../..";
 import ServerConfig from "../../../struct/ServerConfig";
 import { getPermissionLevel } from "../../util";
 import { wsEvents, WSResponse } from "../api_communication";
@@ -42,7 +42,7 @@ wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSRespo
             return;
         }
 
-        const serverConfig: ServerConfig = await client.db.get('servers').findOne({ id: server._id });
+        const serverConfig = await dbs.SERVERS.findOne({ id: server._id });
 
         // todo: remove unwanted keys from server config
 
@@ -55,8 +55,8 @@ wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSRespo
         }
 
         const users = await Promise.allSettled([
-            ...(serverConfig.botManagers?.map(u => fetchUser(u)) ?? []),
-            ...(serverConfig.moderators?.map(u => fetchUser(u)) ?? []),
+            ...(serverConfig?.botManagers?.map(u => fetchUser(u)) ?? []),
+            ...(serverConfig?.moderators?.map(u => fetchUser(u)) ?? []),
             fetchUser(user._id),
         ]);
 
@@ -67,7 +67,7 @@ wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSRespo
             description: server.description ?? undefined,
             bannerURL: server.generateBannerURL(),
             iconURL: server.generateIconURL(),
-            serverConfig,
+            serverConfig: (serverConfig as ServerConfig|undefined),
             users: users.map(
                 u => u.status == 'fulfilled'
                     ? { id: u.value._id, avatarURL: u.value.generateAvatarURL(), username: u.value.username }

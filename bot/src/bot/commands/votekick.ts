@@ -1,6 +1,6 @@
 import { FindResult } from "monk";
 import { ulid } from "ulid";
-import { client } from "../..";
+import { client, dbs } from "../..";
 import CommandCategory from "../../struct/commands/CommandCategory";
 import SimpleCommand from "../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../struct/MessageCommandContext";
@@ -25,7 +25,7 @@ export default {
     category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {
         try {
-            const serverConfig: ServerConfig = await client.db.get('servers').findOne({ id: message.serverContext._id });
+            const serverConfig = await dbs.SERVERS.findOne({ id: message.serverContext._id });
             if (!serverConfig?.votekick?.enabled) return message.reply('Vote kick is not enabled for this server.');
             if (!message.member!.roles?.filter(r => serverConfig.votekick?.trustedRoles.includes(r)).length
              && !(await isModerator(message))) {
@@ -55,7 +55,7 @@ export default {
                 ignore: false,
             }
 
-            const votes: FindResult<VoteEntry> = await client.db.get('votekicks').find({
+            const votes = await dbs.VOTEKICKS.find({
                 server: message.serverContext._id,
                 target: target._id,
                 time: {
@@ -66,7 +66,7 @@ export default {
 
             if (votes.find(v => v.user == message.author_id)) return message.reply('You can\'t vote twice for this user.');
 
-            await client.db.get('votekicks').insert(vote);
+            await dbs.VOTEKICKS.insert(vote);
             votes.push({ _id: '' as any, ...vote });
 
             await logModAction(
@@ -99,7 +99,7 @@ export default {
                 message.reply(`**${votes.length}/${serverConfig.votekick.votesRequired}** votes - `
                     + `Banned @${target.username} for ${serverConfig.votekick.banDuration} minutes.`); // Todo: display ban duration properly (Permban, kick, etc)
 
-                await client.db.get('votekicks').update({
+                await dbs.VOTEKICKS.update({
                     server: message.serverContext._id,
                     target: target._id,
                     time: { $gt: Date.now() - 1000 * 60 * 30 },
@@ -115,3 +115,5 @@ export default {
         }
     }
 } as SimpleCommand;
+
+export { VoteEntry }

@@ -1,5 +1,5 @@
 import SimpleCommand from "../../struct/commands/SimpleCommand";
-import { client } from "../..";
+import { client, dbs } from "../..";
 import Infraction from "../../struct/antispam/Infraction";
 import InfractionType from "../../struct/antispam/InfractionType";
 import { isModerator, NO_MANAGER_MSG, parseUserOrId, uploadFile } from "../util";
@@ -21,8 +21,7 @@ export default {
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message)) return message.reply(NO_MANAGER_MSG);
 
-        let collection = client.db.get('infractions');
-        let infractions: Array<Infraction> = await collection.find({
+        let infractions: Array<Infraction> = await dbs.INFRACTIONS.find({
             server: message.serverContext._id,
         });
         let userInfractions: Map<string, Infraction[]> = new Map();
@@ -50,7 +49,7 @@ export default {
                 case 'del':
                     let id = args[1];
                     if (!id) return message.reply('No infraction ID provided.');
-                    let inf: Infraction|null = await client.db.get('infractions').findOneAndDelete({
+                    let inf = await dbs.INFRACTIONS.findOneAndDelete({
                         _id: { $eq: id.toUpperCase() },
                         server: message.serverContext._id
                     });

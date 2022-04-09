@@ -1,6 +1,6 @@
 import { Member } from "@janderedev/revolt.js/dist/maps/Members";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
-import { client } from "..";
+import { client, dbs } from "..";
 import Infraction from "../struct/antispam/Infraction";
 import ServerConfig from "../struct/ServerConfig";
 import FormData from 'form-data';
@@ -77,18 +77,31 @@ async function parseUserOrId(text: string): Promise<User|{_id: string}|null> {
 
 async function isModerator(message: Message) {
     let member = message.member!, server = message.channel!.server!;
-    return hasPerm(member, 'KickMembers')
-        || await isBotManager(message)
-        || (((await client.db.get('servers').findOne({ id: server._id }) || {}) as ServerConfig)
-        .moderators?.indexOf(member.user?._id!) ?? -1) > -1
-        || await checkSudoPermission(message);
+
+    if (hasPerm(member, 'KickMembers')) return true;
+
+    const [ isManager, mods, isSudo ] = await Promise.all([
+        isBotManager(message),
+        dbs.SERVERS.findOne({ id: server._id }),
+        checkSudoPermission(message),
+    ]);
+
+    return isManager
+        || (mods?.moderators?.indexOf(member.user?._id!) ?? -1) > -1
+        || isSudo;
 }
 async function isBotManager(message: Message) {
     let member = message.member!, server = message.channel!.server!;
-    return hasPerm(member, 'ManageServer')
-        || (((await client.db.get('servers').findOne({ id: server._id }) || {}) as ServerConfig)
-        .botManagers?.indexOf(member.user?._id!) ?? -1) > -1
-        || await checkSudoPermission(message);
+
+    if (hasPerm(member, 'ManageServer')) return true;
+
+    const [ managers, isSudo ] = await Promise.all([
+        dbs.SERVERS.findOne({ id: server._id }),
+        checkSudoPermission(message),
+    ]);
+
+    return (managers?.botManagers?.indexOf(member.user?._id!) ?? -1) > -1
+        || isSudo;
 }
 async function checkSudoPermission(message: Message): Promise<boolean> {
     const hasPerm = isSudo(message.author!);
@@ -107,10 +120,10 @@ async function getPermissionLevel(user: User|Member, server: Server): Promise<0|
 
     if (hasPerm(member, 'ManageServer')) return 3;
 
-    const config = (await client.db.get('servers').findOne({ id: server._id }) || {}) as ServerConfig;
+    const config = await dbs.SERVERS.findOne({ id: server._id });
 
-    if (config.botManagers?.includes(user._id)) return 2;
-    if (config.moderators?.includes(user._id) || hasPerm(member, 'KickMembers')) return 1;
+    if (config?.botManagers?.includes(user._id)) return 2;
+    if (config?.moderators?.includes(user._id) || hasPerm(member, 'KickMembers')) return 1;
 
     return 0;
 }
@@ -143,17 +156,14 @@ async function getOwnMemberInServer(server: Server): Promise<Member> {
 }
 
 async function storeInfraction(infraction: Infraction): Promise<{ userWarnCount: number }> {
-    let collection = client.db.get('infractions');
-    let p = [
-        collection.insert(infraction, { castIds: false }),
-        collection.find({
+    let r = await Promise.all([
+        dbs.INFRACTIONS.insert(infraction, { castIds: false }),
+        dbs.INFRACTIONS.find({
             server: infraction.server,
             user: infraction.user,
             _id: { $not: { $eq: infraction._id } } },
         ),
-    ];
-
-    let r = await Promise.all(p);
+    ]);
 
     return { userWarnCount: (r[1].length ?? 0) + 1 }
 }

@@ -1,9 +1,8 @@
 import SimpleCommand from "../../struct/commands/SimpleCommand";
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
-import { client } from "../..";
+import { client, dbs } from "../..";
 import ServerConfig from "../../struct/ServerConfig";
 import { DEFAULT_PREFIX } from "../modules/command_handler";
-import { hasPerm, isBotManager, NO_MANAGER_MSG } from "../util";
+import { isBotManager, NO_MANAGER_MSG } from "../util";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import CommandCategory from "../../struct/commands/CommandCategory";
 
@@ -17,8 +16,8 @@ export default {
     syntax: SYNTAX,
     category: CommandCategory.Config,
     run: async (message: MessageCommandContext, args: string[]) => {
-        let config: ServerConfig = (await client.db.get('servers').findOne({ id: message.channel?.server_id })) ?? {};
-        
+        let config = await dbs.SERVERS.findOne({ id: message.channel!.server_id! });
+
         switch(args[0]?.toLowerCase()) {
             case 'set':
                 if (!await isBotManager(message)) return message.reply(NO_MANAGER_MSG);
@@ -26,28 +25,28 @@ export default {
                 args.shift();
                 if (args.length == 0) return message.reply('You need to specify a prefix.');
                 let newPrefix = args.join(' ').trim();
-                let oldPrefix = config.prefix ?? DEFAULT_PREFIX;
+                let oldPrefix = config?.prefix ?? DEFAULT_PREFIX;
 
                 let val = validatePrefix(newPrefix);
                 if (typeof val != 'boolean') {
                     return message.reply(val);
                 }
 
-                await client.db.get('servers').update({ 'id': message.channel?.server_id }, { $set: { 'prefix': newPrefix } });
+                await dbs.SERVERS.update({ id: message.channel!.server_id! }, { $set: { 'prefix': newPrefix } });
 
                 message.reply(`✅ Prefix has been changed from \`${oldPrefix}\` to \`${newPrefix}\`.\n${MENTION_TEXT}`);
             break;
             case 'get':
             case undefined:
-                if (config.prefix) message.reply(`This server's prefix is \`${config.prefix}\`.\n${MENTION_TEXT}`);
+                if (config?.prefix) message.reply(`This server's prefix is \`${config.prefix}\`.\n${MENTION_TEXT}`);
                 else message.reply(`This server uses the default prefix \`${DEFAULT_PREFIX}\`.\n${MENTION_TEXT}`);
             break;
             case 'clear':
             case 'reset':
                 if (!await isBotManager(message)) return message.reply(NO_MANAGER_MSG);
-                
-                if (config.prefix != null) {
-                    await client.db.get('servers').update({ 'id': message.channel?.server_id }, { $set: { 'prefix': null } });
+
+                if (config?.prefix != null) {
+                    await dbs.SERVERS.update({ id: message.channel!.server_id! }, { $set: { prefix: undefined } });
                 }
 
                 message.reply(`✅ Prefix has been reset to the default: \`${DEFAULT_PREFIX}\`.`);
@@ -55,7 +54,6 @@ export default {
             default:
                 message.reply(`Unknown action. Correct syntax: \`${SYNTAX}\``);
         }
-        
     }
 } as SimpleCommand;
 

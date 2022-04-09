@@ -1,7 +1,7 @@
 import SimpleCommand from "../../struct/commands/SimpleCommand";
 import { hasPerm, parseUser } from "../util";
 import ServerConfig from "../../struct/ServerConfig";
-import { client } from "../..";
+import { client, dbs } from "../..";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import CommandCategory from "../../struct/commands/CommandCategory";
@@ -18,8 +18,8 @@ export default {
         if (!hasPerm(message.member!, 'ManageServer'))
             return message.reply('You need **ManageServer** permission to use this command.');
 
-        let config: ServerConfig = (await client.db.get('servers').findOne({ id: message.serverContext._id })) ?? {};
-        let admins = config.botManagers ?? [];
+        let config = await dbs.SERVERS.findOne({ id: message.serverContext._id });
+        let admins = config?.botManagers ?? [];
         let user: User|null;
 
         switch(args[0]?.toLowerCase()) {
@@ -32,7 +32,7 @@ export default {
                 if (admins.indexOf(user._id) > -1) return message.reply('This user is already added as bot admin.');
 
                 admins.push(user._id);
-                await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { botManagers: admins } });
+                await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { botManagers: admins } });
 
                 message.reply(`✅ Added [@${user.username}](/@${user._id}) to bot admins.`);
             break;
@@ -47,7 +47,7 @@ export default {
                 if (admins.indexOf(user._id) == -1) return message.reply('This user is not added as bot admin.');
 
                 admins = admins.filter(a => a != user?._id);
-                await client.db.get('servers').update({ id: message.serverContext._id }, { $set: { botManagers: admins } });
+                await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { botManagers: admins } });
 
                 message.reply(`✅ Removed [@${user.username}](/@${user._id}) from bot admins.`);
             break;

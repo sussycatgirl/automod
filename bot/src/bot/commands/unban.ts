@@ -1,5 +1,5 @@
 import { FindResult } from "monk";
-import { client } from "../..";
+import { client, dbs } from "../..";
 import CommandCategory from "../../struct/commands/CommandCategory";
 import SimpleCommand from "../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../struct/MessageCommandContext";
@@ -17,7 +17,7 @@ export default {
         if (!await isModerator(message)) return message.reply(NO_MANAGER_MSG);
 
         let checkTempBans = async (id: string): Promise<number> => {
-            let tempbans: FindResult<TempBan> = await client.db.get('tempbans').find({ bannedUser: id, server: message.serverContext._id });
+            let tempbans = await dbs.TEMPBANS.find({ bannedUser: id, server: message.serverContext._id });
             if (tempbans.length > 0) {
                 for (const ban of tempbans) {
                     await removeTempBan(ban.id);

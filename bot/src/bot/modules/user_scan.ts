@@ -1,4 +1,4 @@
-import { client } from "../..";
+import { client, dbs } from "../..";
 import fs from 'fs';
 import { FindOneResult } from "monk";
 import ScannedUser from "../../struct/ScannedUser";
@@ -18,13 +18,12 @@ let wordlist = USERSCAN_WORDLIST_PATH
 
 if (wordlist) logger.info("Found word list; user scanning enabled");
 
-let scannedUsers = client.db.get('scanned_users');
 let serverConfig: Map<string, ServerConfig> = new Map();
 let userScanTimeout: Map<string, number> = new Map();
 
 async function scanServer(id: string, userScanned: () => void, done: () => void) {
     if (!wordlist) return;
-    let conf: FindOneResult<ServerConfig> = await client.db.get('servers').findOne({ id: id });
+    let conf = await dbs.SERVERS.findOne({ id: id });
     serverConfig.set(id, conf as ServerConfig);
     if (!conf?.enableUserScan) return;
 
@@ -50,7 +49,7 @@ async function scanUser(member: Member) {
 
     try {
         let dbEntry: FindOneResult<ScannedUser|undefined>
-            = await scannedUsers.findOne({ id: member._id.user, server: member.server?._id });
+            = await dbs.SCANNED_USERS.findOne({ id: member._id.user, server: member.server?._id });
         let user = member.user || await client.users.fetch(member._id.user);
         let profile = await user.fetchProfile();
         let report = false;
@@ -68,19 +67,19 @@ async function scanUser(member: Member) {
 
         if (report) {
             if (dbEntry) {
-                await scannedUsers.update({ _id: dbEntry._id }, {
+                await dbs.SCANNED_USERS.update({ _id: dbEntry._id }, {
                     $set: {
                         lastLog: Date.now(),
                         lastLoggedProfile: {
                             username: user.username,
-                            nickname: member.nickname,
+                            nickname: member.nickname || undefined,
                             profile: profile.content,
                             status: user.status?.text,
                         }
                     }
                 });
             } else {
-                await scannedUsers.insert({
+                await dbs.SCANNED_USERS.insert({
                     approved: false,
                     id: user._id,
                     lastLog: Date.now(),
@@ -153,7 +152,7 @@ new Promise((res: (value: void) => void) => client.user ? res() : client.once('r
                     let server = client.servers.get(sid);
                     if (!server) return;
 
-                    let conf: FindOneResult<ServerConfig> = await client.db.get('servers').findOne({ id: server._id });
+                    let conf = await dbs.SERVERS.findOne({ id: server._id });
                     serverConfig.set(server._id, conf as ServerConfig);
 
                     if (conf?.enableUserScan) {
@@ -178,7 +177,7 @@ new Promise((res: (value: void) => void) => client.user ? res() : client.once('r
             let server = member.server || await client.servers.fetch(member._id.server);
             if (!server) return;
 
-            let conf: FindOneResult<ServerConfig> = await client.db.get('servers').findOne({ id: server._id });
+            let conf: FindOneResult<ServerConfig> = await dbs.SERVERS.findOne({ id: server._id });
             serverConfig.set(server._id, conf as ServerConfig);
 
             if (conf?.enableUserScan) {

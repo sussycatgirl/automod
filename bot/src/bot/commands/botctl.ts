@@ -1,5 +1,5 @@
 import { FindOneResult } from "monk";
-import { client } from "../..";
+import { client, dbs } from "../..";
 import CommandCategory from "../../struct/commands/CommandCategory";
 import SimpleCommand from "../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../struct/MessageCommandContext";
@@ -21,7 +21,7 @@ export default {
         switch(action) {
             case 'scan_userlist':
                 try {
-                    let serverConf: FindOneResult<ServerConfig> = await client.db.get('servers').findOne({ id: message.serverContext._id });
+                    let serverConf: FindOneResult<ServerConfig> = await dbs.SERVERS.findOne({ id: message.serverContext._id });
 
                     if (!serverConf?.enableUserScan) return message.reply(`User scanning is not enabled for this server.`);
                     if (userscans.includes(message.serverContext._id)) return message.reply(`There is already a scan running for this server.`);

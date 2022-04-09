@@ -1,6 +1,6 @@
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { ulid } from "ulid";
-import { client } from "../..";
+import { client, dbs } from "../..";
 import AntispamRule from "../../struct/antispam/AntispamRule";
 import Infraction from "../../struct/antispam/Infraction";
 import InfractionType from "../../struct/antispam/InfractionType";
@@ -17,8 +17,8 @@ let msgCountStore: Map<string, { users: any }> = new Map();
  * @returns true if ok, false if spam rule triggered
  */
 async function antispam(message: Message): Promise<boolean> {
-    let serverRules: ServerConfig = await client.db.get('servers').findOne({ id: message.channel?.server_id }) ?? {};
-    if (!serverRules.automodSettings) return true;
+    let serverRules = await dbs.SERVERS.findOne({ id: message.channel!.server_id! });
+    if (!serverRules?.automodSettings) return true;
 
     let ruleTriggered = false;
 
@@ -29,7 +29,7 @@ async function antispam(message: Message): Promise<boolean> {
 
         if (message.author?.bot != null) break;
         if (serverRules.whitelist?.users?.includes(message.author_id)) break;
-        if (message.member?.roles?.filter(r => serverRules.whitelist?.roles?.includes(r)).length) break;
+        if (message.member?.roles?.filter(r => serverRules!.whitelist?.roles?.includes(r)).length) break;
         if (serverRules.whitelist?.managers !== false && await isModerator(message)) break;
         if (rule.channels?.length && rule.channels.indexOf(message.channel_id) == -1) break;
 

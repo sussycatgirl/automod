@@ -5,7 +5,7 @@
 import ws from "ws";
 import logger from "../logger";
 import crypto from 'crypto';
-import { client as bot } from '../..';
+import { client as bot, dbs } from '../..';
 import { EventEmitter } from "events";
 import { parseUser } from "../util";
 import PendingLogin from "../../struct/PendingLogin";
@@ -102,7 +102,7 @@ wsEvents.on('req:requestLogin', async (data: any, cb: (data: WSResponse) => void
         let code: string|null = null;
         while (!code) {
             const c = crypto.randomBytes(8).toString('hex');
-            const found = await bot.db.get('pending_logins').find({ code: c, user: user._id, confirmed: false });
+            const found = await dbs.PENDING_LOGINS.find({ code: c, user: user._id, confirmed: false });
             if (found.length > 0) continue;
             code = c.substring(0, 8).toUpperCase();
         }
@@ -112,13 +112,13 @@ wsEvents.on('req:requestLogin', async (data: any, cb: (data: WSResponse) => void
         const nonce = ulid();
 
         const [previousLogins, currentValidLogins] = await Promise.all([
-            bot.db.get('pending_logins').find({ user: user._id, confirmed: true }),
-            bot.db.get('pending_logins').find({ user: user._id, confirmed: false, expires: { $gt: Date.now() } }),
+            dbs.PENDING_LOGINS.find({ user: user._id, confirmed: true }),
+            dbs.PENDING_LOGINS.find({ user: user._id, confirmed: false, expires: { $gt: Date.now() } }),
         ]);
 
         if (currentValidLogins.length >= 5) return cb({ success: false, statusCode: 403, error: 'Too many pending logins. Try again later.' });
-        
-        await bot.db.get('pending_logins').insert({
+
+        await dbs.PENDING_LOGINS.insert({
             code,
             expires: Date.now() + (1000 * 60 * 15), // Expires in 15 minutes
             user: user._id,
