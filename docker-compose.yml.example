@@ -21,6 +21,8 @@ services:
       - BOT_PREFIX
       - BOT_METRICS_PORT
       - BOT_METRICS_MSG_PING_CHANNEL
+      - BOT_STATUS
+      - BOT_STATUS_INTERVAL
     # Uncomment if you enabled Prometheus metrics
     #ports:
     #  - 127.0.0.1:${BOT_METRICS_PORT}:${BOT_METRICS_PORT}
