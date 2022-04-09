@@ -78,7 +78,23 @@ let commands: SimpleCommand[];
         if (!cmdName) return;
 
         let cmd = commands.find(c => c.name == cmdName || (c.aliases?.indexOf(cmdName!) ?? -1) > -1);
-        if (!cmd) return;
+        if (!cmd) {
+            // lil easter egg
+
+            const cmds = [
+                'apt', 'pacman', 'visudo', 'apk', 'cat', 'shutdown', 'reboot',
+            ];
+            if (msg.author && guildPrefix == 'sudo' && config?.spaceAfterPrefix) {
+                if (cmds.includes(cmdName)) {
+                    await msg.reply(`${msg.author.username} is not in the sudoers file. This incident will be reported`);
+                }
+                else if (cmdName == 'echo') {
+                    await msg.reply(`What kind of monster runs echo as root?`);
+                }
+            }
+
+            return;
+        }
 
         metrics.commands.inc({ command: cmd.name });
 
