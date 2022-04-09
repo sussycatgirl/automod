@@ -5,7 +5,6 @@ import { InputBox } from '@revoltchat/ui/lib/components/atoms/inputs/InputBox';
 import { Checkbox } from '@revoltchat/ui/lib/components/atoms/inputs/Checkbox';
 import { ComboBox } from '@revoltchat/ui/lib/components/atoms/inputs/ComboBox';
 import { LineDivider } from '@revoltchat/ui/lib/components/atoms/layout/LineDivider';
-import { H1 } from '@revoltchat/ui/lib/components/atoms/heading/H1';
 import { H3 } from '@revoltchat/ui/lib/components/atoms/heading/H3';
 import { H4 } from '@revoltchat/ui/lib/components/atoms/heading/H4';
 import { Icon } from '@mdi/react';
@@ -15,6 +14,7 @@ import { getAuthHeaders } from "../../utils";
 import { Link, useParams } from "react-router-dom";
 import defaultChannelIcon from '../../assets/channel-default-icon.svg';
 import CategorySelector from '../../components/CategorySelector';
+import { CSSProperties } from 'styled-components';
 
 type User = { id: string, username?: string, avatarURL?: string }
 type Channel = { id: string, name: string, icon?: string, type: 'VOICE'|'TEXT', nsfw: boolean }
@@ -38,6 +38,11 @@ type AntispamRule = {
     action: 0|1|2|3|4;
     channels: string[] | null;
     message: string | null;
+}
+
+const STYLE_DISABLED: CSSProperties = {
+    filter: 'grayscale(100%)',
+    pointerEvents: 'none',
 }
 
 const ServerDashboard: FunctionComponent = () => {
@@ -163,7 +168,7 @@ const ServerDashboard: FunctionComponent = () => {
                 <div style={{ paddingLeft: '10px', paddingRight: '10px' }}>
 
                     {category == 'home' && (
-                        <>
+                        <div style={serverInfo.perms ? {} : STYLE_DISABLED}>
                             <>
                                 <H3>Prefix</H3>
                                 <InputBox
@@ -226,7 +231,7 @@ const ServerDashboard: FunctionComponent = () => {
                                     </UserListContainer>
                                 </UserListTypeContainer>
                             </>
-                        </>
+                        </div>
                     )}
 
                     {category == 'automod' && (
@@ -366,10 +371,7 @@ const ServerDashboard: FunctionComponent = () => {
                 style={{
                     display: 'flex',
                     flexWrap: 'wrap',
-                    ...(props.disabled ? {
-                        filter: 'grayscale(100%)',
-                        pointerEvents: 'none',
-                    } : {})
+                    ...(props.disabled ? STYLE_DISABLED : {})
                 }}
             >
                 {props.children}
