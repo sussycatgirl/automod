@@ -50,4 +50,6 @@ export { client, dbs }
     import('./bot/modules/user_scan');
     import('./bot/modules/api_communication');
     import('./bot/modules/metrics');
+    import('./bot/modules/bot_status');
+    import('./bot/modules/fetch_all');
 })();
