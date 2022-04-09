@@ -16,8 +16,8 @@ logger.info('Initializing client');
 
 let db = MongoDB();
 let client = new AutomodClient({
-    pongTimeout: 10,
-    onPongTimeout: 'RECONNECT',
+//    pongTimeout: 10,
+//    onPongTimeout: 'RECONNECT',
     fixReplyCrash: true,
     messageTimeoutFix: true
 }, db);
