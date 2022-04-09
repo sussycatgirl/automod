@@ -109,7 +109,7 @@ let commands: SimpleCommand[];
         logger.info(`Command: ${message.author?.username} (${message.author?._id}) in ${message.channel?.server?.name} (${message.channel?.server?._id}): ${message.content}`);
 
         // Create document for server in DB, if not already present
-        if (JSON.stringify(config) == '{}') await dbs.SERVERS.insert({ id: message.channel!.server_id! });
+        if (JSON.stringify(config) == '{}' || !config) await dbs.SERVERS.insert({ id: message.channel!.server_id! });
 
         if (cmd.removeEmptyArgs !== false) {
             args = args.filter(a => a.length > 0);

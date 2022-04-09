@@ -75,7 +75,7 @@ async function parseUserOrId(text: string): Promise<User|{_id: string}|null> {
     return null;
 }
 
-async function isModerator(message: Message) {
+async function isModerator(message: Message, announceSudo?: boolean) {
     let member = message.member!, server = message.channel!.server!;
 
     if (hasPerm(member, 'KickMembers')) return true;
@@ -83,32 +83,34 @@ async function isModerator(message: Message) {
     const [ isManager, mods, isSudo ] = await Promise.all([
         isBotManager(message),
         dbs.SERVERS.findOne({ id: server._id }),
-        checkSudoPermission(message),
+        checkSudoPermission(message, announceSudo),
     ]);
 
     return isManager
         || (mods?.moderators?.indexOf(member.user?._id!) ?? -1) > -1
         || isSudo;
 }
-async function isBotManager(message: Message) {
+async function isBotManager(message: Message, announceSudo?: boolean) {
     let member = message.member!, server = message.channel!.server!;
 
     if (hasPerm(member, 'ManageServer')) return true;
 
     const [ managers, isSudo ] = await Promise.all([
         dbs.SERVERS.findOne({ id: server._id }),
-        checkSudoPermission(message),
+        checkSudoPermission(message, announceSudo),
     ]);
 
     return (managers?.botManagers?.indexOf(member.user?._id!) ?? -1) > -1
         || isSudo;
 }
-async function checkSudoPermission(message: Message): Promise<boolean> {
+async function checkSudoPermission(message: Message, announce?: boolean): Promise<boolean> {
     const hasPerm = isSudo(message.author!);
     if (!hasPerm) return false;
     else {
-        await message.reply(`# :unlock: Bypassed permission check\n`
-            + `Sudo mode is enabled for @${message.author!.username}.\n`);
+        if (announce !== false) {
+            await message.reply(`# :unlock: Bypassed permission check\n`
+                + `Sudo mode is enabled for @${message.author!.username}.\n`);
+        }
         return true;
     }
 }
