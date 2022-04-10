@@ -8,4 +8,7 @@ export default class DbUser {
 
     // Whether the user is globally marked as bad actor
     globalBlacklist?: boolean;
+
+    // Optional reason why the user is blacklisted
+    blacklistReason?: string;
 }

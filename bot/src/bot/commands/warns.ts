@@ -12,7 +12,8 @@ import CommandCategory from "../../struct/commands/CommandCategory";
 
 Day.extend(RelativeTime);
 
-const GLOBAL_BLACKLIST_TEXT = `> :warning: This user has been flagged and is globally blacklisted. [Learn more.](https://github.com/janderedev/automod/wiki/Global-Blacklist)\n\n`;
+const GLOBAL_BLACKLIST_TEXT = (reason?: string) => `> :warning: This user has been flagged and is globally blacklisted. [Learn more.](https://github.com/janderedev/automod/wiki/Global-Blacklist)`
+    + `${reason ? `\nReason: "${reason}"` : ''}\n\n`;
 
 export default {
     name: 'warns',
@@ -72,12 +73,12 @@ export default {
                     const userConfig = await dbs.USERS.findOne({ id: user._id });
 
                     if (!infs) return message.reply(`There are no infractions stored for \`${await fetchUsername(user._id)}\`.`
-                        + (userConfig?.globalBlacklist ? '\n' + GLOBAL_BLACKLIST_TEXT : ''), false);
+                        + (userConfig?.globalBlacklist ? '\n' + GLOBAL_BLACKLIST_TEXT(userConfig.blacklistReason) : ''), false);
                     else {
                         let msg = `## ${infs.length} infractions stored for ${await fetchUsername(user._id)}\n`;
 
                         if (userConfig?.globalBlacklist) {
-                            msg += GLOBAL_BLACKLIST_TEXT;
+                            msg += GLOBAL_BLACKLIST_TEXT(userConfig.blacklistReason);
                         } else msg += '\u200b\n';
 
                         let attachSpreadsheet = false;

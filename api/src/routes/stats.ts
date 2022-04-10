@@ -29,7 +29,7 @@ app.get('/stats/global_blacklist', async (req: Request, res: Response) => {
 
         res.send({
             total: users.length,
-            blacklist: users.map(u => ({ id: u.id?.toUpperCase() })),
+            blacklist: users.map(u => ({ id: u.id?.toUpperCase(), reason: u.blacklistReason || null })),
         });
     } catch(e) {
         console.error(''+e);

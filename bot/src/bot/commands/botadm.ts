@@ -38,6 +38,7 @@ const SUBCOMMANDS: string[] = [
     'userinfo',
     'blacklist',
     'unblacklist',
+    'blacklistreason',
     'ignore',
     'unignore',
 ];
@@ -217,6 +218,22 @@ export default {
                     }, { upsert: true });
 
                     await message.reply(`User update stored. Existing bans will not be lifted automatically.`);
+
+                    break;
+                }
+
+                case 'blacklistreason': {
+                    const target = await parseUserOrId(args.shift() || '');
+                    if (!target) return message.reply('Specified user could not be found.');
+
+                    await dbs.USERS.update({
+                        id: target._id,
+                    }, {
+                        $setOnInsert: { id: target._id },
+                        $set: { blacklistReason: args.join(' ') || undefined }
+                    }, { upsert: true });
+
+                    await message.reply(`User update stored.`);
 
                     break;
                 }
