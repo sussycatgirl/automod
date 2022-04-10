@@ -6,7 +6,7 @@ import MessageCommandContext from "../../struct/MessageCommandContext";
 import CommandCategory from "../../struct/commands/CommandCategory";
 
 const SYNTAX = '/purge [SELECTOR] [@user?[, @user?[, ...]]]; where SELECTOR: [number] || [messageID]-[messageID]';
-const MAX_PURGE_AMOUNT = 100;
+const MAX_PURGE_AMOUNT = 2000;
 
 export default {
     name: 'purge',
