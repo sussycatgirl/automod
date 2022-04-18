@@ -45,6 +45,14 @@ services:
       - 0.0.0.0:9000:9000
     restart: unless-stopped
 
+  bridge:
+    build: ./bridge
+    environment:
+      - REVOLT_TOKEN=${BOT_TOKEN}
+      - DISCORD_TOKEN=${BOT_TOKEN_DISCORD}
+      - DB_STRING=mongodb://mogus:${DB_PASS}@mongo:27017/admin
+    restart: unless-stopped
+
   # If you prefer to host the web app on a different
   # platform like Vercel, you can remove this part.
   web:
