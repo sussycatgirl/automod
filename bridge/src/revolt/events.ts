@@ -1,11 +1,33 @@
-import axios from "axios";
 import { BRIDGED_MESSAGES, BRIDGE_CONFIG, logger } from "..";
 import { AUTUMN_URL, client } from "./client";
-import { client as discordClient } from "../discord/client";
-import { MessageEmbed, MessagePayload, Webhook, WebhookClient, WebhookMessageOptions } from "discord.js";
+import { MessageEmbed, MessagePayload, WebhookClient, WebhookMessageOptions } from "discord.js";
 import GenericEmbed from "../types/GenericEmbed";
 import { SendableEmbed } from "revolt-api";
-import { clipText, discordFetchMessage, discordFetchUser, revoltFetchMessage, revoltFetchUser } from "../util";
+import { clipText, discordFetchMessage } from "../util";
+
+client.on('message/update', async message => {
+    if (message.content && typeof message.content != 'string') return;
+
+    try {
+        logger.debug(`[E] Revolt: ${message.content}`);
+
+        const [ bridgeCfg, bridgedMsg ] = await Promise.all([
+            BRIDGE_CONFIG.findOne({ revolt: message.channel_id }),
+            BRIDGED_MESSAGES.findOne({ "revolt.nonce": message.nonce }),
+        ]);
+
+        if (!bridgedMsg) return logger.debug(`Revolt: Message has not been bridged; ignoring edit`);
+        if (!bridgeCfg?.discord) return logger.debug(`Revolt: No Discord channel associated`);
+        if (!bridgeCfg.discordWebhook) return logger.debug(`Revolt: No Discord webhook stored`);
+
+        const targetMsg = await discordFetchMessage(bridgedMsg.discord.messageId, bridgeCfg.discord);
+        if (!targetMsg) return logger.debug(`Revolt: Could not fetch message from Discord`);
+
+        const client = new WebhookClient({ id: bridgeCfg.discordWebhook.id, token: bridgeCfg.discordWebhook.token });
+        await client.editMessage(targetMsg, { content: message.content });
+        client.destroy();
+    } catch(e) { console.error(e) }
+});
 
 client.on('message', async message => {
     try {
