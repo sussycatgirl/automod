@@ -52,6 +52,8 @@ services:
       - DISCORD_TOKEN=${BOT_TOKEN_DISCORD}
       - DB_STRING=mongodb://mogus:${DB_PASS}@mongo:27017/admin
     restart: unless-stopped
+    depends_on:
+      - mongo
 
   # If you prefer to host the web app on a different
   # platform like Vercel, you can remove this part.
