@@ -1,15 +1,15 @@
 import axios from "axios";
 import { BRIDGED_MESSAGES, BRIDGE_CONFIG, logger } from "..";
-import { client } from "./client";
+import { AUTUMN_URL, client } from "./client";
 import { client as discordClient } from "../discord/client";
-import { MessageEmbed, WebhookClient } from "discord.js";
+import { MessageEmbed, MessagePayload, Webhook, WebhookClient, WebhookMessageOptions } from "discord.js";
 import GenericEmbed from "../types/GenericEmbed";
 import { SendableEmbed } from "revolt-api";
 import { clipText, discordFetchMessage, discordFetchUser, revoltFetchMessage, revoltFetchUser } from "../util";
 
 client.on('message', async message => {
     try {
-        if (!message.content || typeof message.content != 'string') return;
+        if (message.content && typeof message.content != 'string') return;
         logger.debug(`[M] Revolt: ${message.content}`);
 
         const [ bridgeCfg, bridgedMsg, ...repliedMessages ] = await Promise.all([
@@ -47,8 +47,8 @@ client.on('message', async message => {
             token: bridgeCfg.discordWebhook.token,
         });
 
-        const payload = {
-            content: `${message.content}`,
+        const payload: MessagePayload|WebhookMessageOptions = {
+            content: message.content || undefined,
             username: message.author?.username ?? 'Unknown user',
             avatarURL: message.author?.generateAvatarURL({ max_side: 128 }),
             embeds: message.embeds?.length
@@ -91,6 +91,17 @@ client.on('message', async message => {
 
             if (payload.embeds) payload.embeds.unshift(embed);
             else payload.embeds = [ embed ];
+        }
+
+        if (message.attachments?.length) {
+            payload.files = [];
+
+            for (const attachment of message.attachments) {
+                payload.files.push({
+                    attachment: `${AUTUMN_URL}/attachments/${attachment._id}/${attachment.filename}`,
+                    name: attachment.filename,
+                });
+            }
         }
 
         client.send(payload)
