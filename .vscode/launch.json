@@ -5,8 +5,26 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "command": "cd bot && yarn dev",
+            "name": "Bot",
+            "request": "launch",
+            "type": "node-terminal",
+        },
+        {
+            "command": "cd api && yarn dev",
+            "name": "API",
+            "request": "launch",
+            "type": "node-terminal",
+        },
+        {
+            "command": "cd web && yarn dev",
+            "name": "Web",
+            "request": "launch",
+            "type": "node-terminal",
+        },
+        {
             "command": "cd bridge && yarn dev",
-            "name": "Debug",
+            "name": "Bridge",
             "request": "launch",
             "type": "node-terminal",
         }
