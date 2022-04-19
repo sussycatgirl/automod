@@ -22,9 +22,13 @@ client.on('message/delete', async id => {
         const targetMsg = await discordFetchMessage(bridgedMsg.discord.messageId, bridgeCfg.discord);
         if (!targetMsg) return logger.debug(`Revolt: Could not fetch message from Discord`);
 
-        const client = new WebhookClient({ id: bridgeCfg.discordWebhook.id, token: bridgeCfg.discordWebhook.token });
-        await client.deleteMessage(bridgedMsg.discord.messageId);
-        client.destroy();
+        if (targetMsg.webhookId && targetMsg.webhookId == bridgeCfg.discordWebhook.id) {
+            const client = new WebhookClient({ id: bridgeCfg.discordWebhook.id, token: bridgeCfg.discordWebhook.token });
+            await client.deleteMessage(bridgedMsg.discord.messageId);
+            client.destroy();
+        } else if (targetMsg.deletable) {
+            targetMsg.delete();
+        } else logger.debug(`Revolt: Unable to delete Discord message`);
     } catch(e) {
         console.error(e);
     }
