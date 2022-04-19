@@ -78,6 +78,10 @@ client.on('messageCreate', async message => {
                 },
                 $set: {
                     'revolt.nonce': nonce,
+                    channels: {
+                        discord: message.channelId,
+                        revolt: bridgeCfg.revolt,
+                    }
                 }
             },
             { upsert: true }

@@ -9,4 +9,10 @@ export default class {
         messageId?: string;
         nonce?: string;
     }
+
+    // Required to sync message deletions
+    channels?: {
+        discord: string;
+        revolt: string;
+    }
 }

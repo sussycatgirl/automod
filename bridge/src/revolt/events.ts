@@ -5,6 +5,31 @@ import GenericEmbed from "../types/GenericEmbed";
 import { SendableEmbed } from "revolt-api";
 import { clipText, discordFetchMessage } from "../util";
 
+client.on('message/delete', async id => {
+    try {
+        logger.debug(`[D] Revolt: ${id}`);
+
+        const bridgedMsg = await BRIDGED_MESSAGES.findOne({ "revolt.messageId": id });
+        if (!bridgedMsg?.discord.messageId) return logger.debug(`Revolt: Message has not been bridged; ignoring delete`);
+        if (!bridgedMsg.channels?.discord) return logger.debug(`Revolt: Channel for deleted message is unknown`);
+
+        const bridgeCfg = await BRIDGE_CONFIG.findOne({ revolt: bridgedMsg.channels.revolt });
+        if (!bridgeCfg?.discordWebhook) return logger.debug(`Revolt: No Discord webhook stored`);
+        if (!bridgeCfg.discord || bridgeCfg.discord != bridgedMsg.channels.discord) {
+            return logger.debug(`Revolt: Discord channel is no longer linked; ignoring delete`);
+        }
+
+        const targetMsg = await discordFetchMessage(bridgedMsg.discord.messageId, bridgeCfg.discord);
+        if (!targetMsg) return logger.debug(`Revolt: Could not fetch message from Discord`);
+
+        const client = new WebhookClient({ id: bridgeCfg.discordWebhook.id, token: bridgeCfg.discordWebhook.token });
+        await client.deleteMessage(bridgedMsg.discord.messageId);
+        client.destroy();
+    } catch(e) {
+        console.error(e);
+    }
+});
+
 client.on('message/update', async message => {
     if (message.content && typeof message.content != 'string') return;
     if (message.author_id == client.user?._id) return;
@@ -56,6 +81,10 @@ client.on('message', async message => {
                         messageId: message._id,
                         nonce: message.nonce,
                     },
+                    channels: {
+                        revolt: message.channel_id,
+                        discord: bridgeCfg.discord,
+                    }
                 },
                 $setOnInsert: {
                     discord: {},
