@@ -7,6 +7,7 @@ import { clipText, discordFetchMessage } from "../util";
 
 client.on('message/update', async message => {
     if (message.content && typeof message.content != 'string') return;
+    if (message.author_id == client.user?._id) return;
 
     try {
         logger.debug(`[E] Revolt: ${message.content}`);
@@ -24,7 +25,7 @@ client.on('message/update', async message => {
         if (!targetMsg) return logger.debug(`Revolt: Could not fetch message from Discord`);
 
         const client = new WebhookClient({ id: bridgeCfg.discordWebhook.id, token: bridgeCfg.discordWebhook.token });
-        await client.editMessage(targetMsg, { content: message.content });
+        await client.editMessage(targetMsg, { content: message.content, allowedMentions: { parse: [ ] } });
         client.destroy();
     } catch(e) { console.error(e) }
 });
@@ -78,6 +79,7 @@ client.on('message', async message => {
                     .filter(e => e.type == "Text")
                     .map(e => new GenericEmbed(e as SendableEmbed).toDiscord())
                 : undefined,
+            allowedMentions: { parse: [ ] },
         };
 
         if (repliedMessages.length) {

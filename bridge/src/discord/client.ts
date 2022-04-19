@@ -9,6 +9,9 @@ const client = new Discord.Client({
         'GUILD_MEMBERS',
         'GUILD_WEBHOOKS',
     ],
+    partials: [
+        'MESSAGE', // Allows us to receive message updates for uncached messages
+    ],
     allowedMentions: { parse: [ ] }, // how the hell does this work
 });
 

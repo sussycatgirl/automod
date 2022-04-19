@@ -17,7 +17,9 @@ async function revoltFetchUser(id?: string): Promise<User|undefined> {
     return user;
 }
 
-async function revoltFetchMessage(id: string, channel: Channel): Promise<Message|undefined> {
+async function revoltFetchMessage(id?: string, channel?: Channel): Promise<Message|undefined> {
+    if (!id || !channel) return undefined;
+
     let message = revoltClient.messages.get(id);
     if (message) return message;
 

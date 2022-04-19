@@ -6,8 +6,35 @@ import axios from 'axios';
 import { ulid } from "ulid";
 import GenericEmbed from "../types/GenericEmbed";
 import FormData from 'form-data';
+import { revoltFetchMessage } from "../util";
 
-const MAX_BRIDGED_FILE_SIZE = 1_048_576; // 1 MiB
+const MAX_BRIDGED_FILE_SIZE = 8_000_000; // 8 MB
+
+client.on('messageUpdate', async (oldMsg, newMsg) => {
+    if (oldMsg.content && newMsg.content == oldMsg.content) return; // Let's not worry about embeds here for now
+
+    try {
+        logger.debug(`[E] Discord: ${newMsg.content}`);
+
+        const [ bridgeCfg, bridgedMsg ] = await Promise.all([
+            BRIDGE_CONFIG.findOne({ discord: newMsg.channel.id }),
+            BRIDGED_MESSAGES.findOne({ "discord.messageId": newMsg.id }),
+        ]);
+
+        if (!bridgedMsg) return logger.debug(`Discord: Message has not been bridged; ignoring edit`);
+        if (!bridgeCfg?.revolt) return logger.debug(`Discord: No Revolt channel associated`);
+        if (newMsg.webhookId && newMsg.webhookId == bridgeCfg.discordWebhook?.id) {
+            return logger.debug(`Discord: Message was sent by bridge; ignoring edit`);
+        }
+
+        const targetMsg = await revoltFetchMessage(bridgedMsg.revolt.messageId, revoltClient.channels.get(bridgeCfg.revolt));
+        if (!targetMsg) return logger.debug(`Discord: Could not fetch message from Revolt`);
+
+        await targetMsg.edit({ content: newMsg.content || undefined });
+    } catch(e) {
+        console.error(e);
+    }
+});
 
 client.on('messageCreate', async message => {
     try {
