@@ -51,6 +51,7 @@ services:
       - REVOLT_TOKEN=${BOT_TOKEN}
       - DISCORD_TOKEN=${BOT_TOKEN_DISCORD}
       - DB_STRING=mongodb://mogus:${DB_PASS}@mongo:27017/admin
+      - NODE_ENV=production
     restart: unless-stopped
     depends_on:
       - mongo
