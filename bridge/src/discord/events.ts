@@ -10,6 +10,27 @@ import { revoltFetchMessage } from "../util";
 
 const MAX_BRIDGED_FILE_SIZE = 8_000_000; // 8 MB
 
+client.on('messageDelete', async message => {
+    try {
+        logger.debug(`[D] Discord: ${message.id}`);
+
+        const [ bridgeCfg, bridgedMsg ] = await Promise.all([
+            BRIDGE_CONFIG.findOne({ discord: message.channelId }),
+            BRIDGED_MESSAGES.findOne({ "discord.messageId": message.id }),
+        ]);
+
+        if (!bridgedMsg?.revolt) return logger.debug(`Discord: Message has not been bridged; ignoring deletion`);
+        if (!bridgeCfg?.revolt) return logger.debug(`Discord: No Revolt channel associated`);
+
+        const targetMsg = await revoltFetchMessage(bridgedMsg.revolt.messageId, revoltClient.channels.get(bridgeCfg.revolt));
+        if (!targetMsg) return logger.debug(`Discord: Could not fetch message from Revolt`);
+
+        await targetMsg.delete();
+    } catch(e) {
+        console.error(e);
+    }
+});
+
 client.on('messageUpdate', async (oldMsg, newMsg) => {
     if (oldMsg.content && newMsg.content == oldMsg.content) return; // Let's not worry about embeds here for now
 
