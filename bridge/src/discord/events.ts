@@ -6,9 +6,12 @@ import axios from 'axios';
 import { ulid } from "ulid";
 import GenericEmbed from "../types/GenericEmbed";
 import FormData from 'form-data';
-import { revoltFetchMessage } from "../util";
+import { discordFetchUser, revoltFetchMessage } from "../util";
+import { TextChannel } from "discord.js";
 
 const MAX_BRIDGED_FILE_SIZE = 8_000_000; // 8 MB
+const RE_MENTION_USER = /<@!*[0-9]+>/g;
+const RE_MENTION_CHANNEL = /<#[0-9]+>/g;
 
 client.on('messageDelete', async message => {
     try {
@@ -51,7 +54,7 @@ client.on('messageUpdate', async (oldMsg, newMsg) => {
         const targetMsg = await revoltFetchMessage(bridgedMsg.revolt.messageId, revoltClient.channels.get(bridgeCfg.revolt));
         if (!targetMsg) return logger.debug(`Discord: Could not fetch message from Revolt`);
 
-        await targetMsg.edit({ content: newMsg.content || undefined });
+        await targetMsg.edit({ content: newMsg.content ? await renderMessageBody(newMsg.content) : undefined });
     } catch(e) {
         console.error(e);
     }
@@ -146,7 +149,7 @@ client.on('messageCreate', async message => {
 
         const sendBridgeMessage = async (reply?: string) => {
             const payload = {
-                content: message.content,
+                content: message.content ? await renderMessageBody(message.content) : undefined,
                 //attachments: [],
                 //embeds: [],
                 nonce: nonce,
@@ -192,3 +195,44 @@ client.on('messageCreate', async message => {
         console.error(e);
     }
 });
+
+// Replaces @mentions and #channel mentions
+async function renderMessageBody(message: string): Promise<string> {
+    // We don't want users to generate large amounts of database and API queries
+    let failsafe = 0;
+
+    // @mentions
+    while (failsafe < 10) {
+        failsafe++;
+
+        const text = message.match(RE_MENTION_USER)?.[0];
+        if (!text) break;
+
+        const id = text.replace('<@!', '').replace('<@', '').replace('>', '');
+        const user = await discordFetchUser(id);
+
+        // replaceAll() when
+        while (message.includes(text)) message = message.replace(text, `@${user?.username || id}`);
+    }
+
+    // #channels
+    while (failsafe < 10) {
+        failsafe++;
+
+        const text = message.match(RE_MENTION_CHANNEL)?.[0];
+        if (!text) break;
+
+        const id = text.replace('<#', '').replace('>', '');
+        const channel = client.channels.cache.get(id);
+        const bridgeCfg = channel ? await BRIDGE_CONFIG.findOne({ discord: channel.id }) : undefined;
+        const revoltChannel = bridgeCfg?.revolt
+            ? revoltClient.channels.get(bridgeCfg.revolt)
+            : undefined;
+
+        while (message.includes(text)) {
+            message = message.replace(text, revoltChannel ? `<#${revoltChannel._id}>` : `#${(channel as TextChannel)?.name || id}`);
+        }
+    }
+
+    return message;
+}

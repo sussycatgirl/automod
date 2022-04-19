@@ -1,9 +1,13 @@
 import { BRIDGED_MESSAGES, BRIDGE_CONFIG, logger } from "..";
 import { AUTUMN_URL, client } from "./client";
-import { MessageEmbed, MessagePayload, WebhookClient, WebhookMessageOptions } from "discord.js";
+import { client as discordClient } from "../discord/client";
+import { MessageEmbed, MessagePayload, TextChannel, WebhookClient, WebhookMessageOptions } from "discord.js";
 import GenericEmbed from "../types/GenericEmbed";
 import { SendableEmbed } from "revolt-api";
-import { clipText, discordFetchMessage } from "../util";
+import { clipText, discordFetchMessage, revoltFetchUser } from "../util";
+
+const RE_MENTION_USER = /<@[0-9A-HJ-KM-NP-TV-Z]{26}>/g;
+const RE_MENTION_CHANNEL = /<#[0-9A-HJ-KM-NP-TV-Z]{26}>/g;
 
 client.on('message/delete', async id => {
     try {
@@ -54,7 +58,7 @@ client.on('message/update', async message => {
         if (!targetMsg) return logger.debug(`Revolt: Could not fetch message from Discord`);
 
         const client = new WebhookClient({ id: bridgeCfg.discordWebhook.id, token: bridgeCfg.discordWebhook.token });
-        await client.editMessage(targetMsg, { content: message.content, allowedMentions: { parse: [ ] } });
+        await client.editMessage(targetMsg, { content: await renderMessageBody(message.content), allowedMentions: { parse: [ ] } });
         client.destroy();
     } catch(e) { console.error(e) }
 });
@@ -104,7 +108,7 @@ client.on('message', async message => {
         });
 
         const payload: MessagePayload|WebhookMessageOptions = {
-            content: message.content || undefined,
+            content: message.content ? await renderMessageBody(message.content) : undefined,
             username: message.author?.username ?? 'Unknown user',
             avatarURL: message.author?.generateAvatarURL({ max_side: 128 }),
             embeds: message.embeds?.length
@@ -178,3 +182,46 @@ client.on('message', async message => {
         console.error(e);
     }
 });
+
+// Replaces @mentions, #channel mentions and :emojis:
+async function renderMessageBody(message: string): Promise<string> {
+    // We don't want users to generate large amounts of database and API queries
+    let failsafe = 0;
+
+    // @mentions
+    while (failsafe < 10) {
+        failsafe++;
+
+        const text = message.match(RE_MENTION_USER)?.[0];
+        if (!text) break;
+
+        const id = text.replace('<@', '').replace('>', '');
+        const user = await revoltFetchUser(id);
+
+        // replaceAll() when
+        while (message.includes(text)) message = message.replace(text, `@${user?.username || id}`);
+    }
+
+    // #channels
+    while (failsafe < 10) {
+        failsafe++;
+
+        const text = message.match(RE_MENTION_CHANNEL)?.[0];
+        if (!text) break;
+
+        const id = text.replace('<#', '').replace('>', '');
+        const channel = client.channels.get(id);
+        const bridgeCfg = channel ? await BRIDGE_CONFIG.findOne({ revolt: channel._id }) : undefined;
+        const discordChannel = bridgeCfg?.discord
+            ? discordClient.channels.cache.get(bridgeCfg.discord)
+            : undefined;
+
+        while (message.includes(text)) {
+            message = message.replace(text, discordChannel ? `<#${discordChannel.id}>` : `#${channel?.name || id}`);
+        }
+    }
+
+    // :emojis: (todo lol)
+
+    return message;
+}
