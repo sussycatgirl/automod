@@ -74,7 +74,7 @@ export default {
                             type: 'Text',
                             title: `Bridges in ${message.channel?.server?.name}`,
                             description: `**${links.length}** bridged channels found.\n\n`
-                                + links.map(l => `<#${l.revolt}> **->** ${l.discord}\n`),
+                                + links.map(l => `<#${l.revolt}> **->** ${l.discord}`).join('\n'),
                         }
                     ]
                 });
