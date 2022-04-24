@@ -149,7 +149,7 @@ client.on('messageCreate', async message => {
 
         const sendBridgeMessage = async (reply?: string) => {
             const payload = {
-                content: message.content ? await renderMessageBody(message.content) : undefined,
+                content: await renderMessageBody(message.content),
                 //attachments: [],
                 //embeds: [],
                 nonce: nonce,
