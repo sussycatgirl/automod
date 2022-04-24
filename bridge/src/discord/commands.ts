@@ -80,6 +80,9 @@ client.on('interactionCreate', async interaction => {
                         const request = await BRIDGE_REQUESTS.findOne({ id: id });
                         if (!request || request.expires < Date.now()) return await interaction.reply('Unknown ID.');
 
+                        const bridgedCount = await BRIDGE_CONFIG.count({ discord: interaction.channelId });
+                        if (bridgedCount > 0) return await interaction.reply('This channel is already bridged.');
+
                         const webhook = await (interaction.channel as TextChannel)
                             .createWebhook('AutoMod Bridge', { avatar: client.user?.avatarURL() });
 
