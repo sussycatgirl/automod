@@ -77,8 +77,36 @@ client.on('message', async message => {
         if (bridgedMsg) return logger.debug(`Revolt: Message has already been bridged; ignoring`);
         if (!bridgeCfg?.discord) return logger.debug(`Revolt: No Discord channel associated`);
         if (!bridgeCfg.discordWebhook) {
-            // Todo: Create a new webhook instead of exiting
-            return logger.debug(`Revolt: No Discord webhook stored`);
+            logger.debug(`Revolt: No Discord webhook stored; Creating new Webhook`);
+
+            try {
+                const channel = await discordClient.channels.fetch(bridgeCfg.discord);
+                if (!channel || !channel.isText()) throw 'Error: Unable to fetch channel';
+                const ownPerms = (channel as TextChannel).permissionsFor(discordClient.user!);
+                if (!ownPerms?.has('MANAGE_WEBHOOKS')) throw 'Error: Bot user does not have MANAGE_WEBHOOKS permission';
+
+                const hook = await (channel as TextChannel).createWebhook('AutoMod Bridge', { avatar: discordClient.user?.avatarURL() });
+
+                bridgeCfg.discordWebhook = {
+                    id: hook.id,
+                    token: hook.token || '',
+                };
+                await BRIDGE_CONFIG.update(
+                    { revolt: message.channel_id },
+                    {
+                        $set: {
+                            discordWebhook: bridgeCfg.discordWebhook,
+                        }
+                    }
+                );
+            } catch(e) {
+                logger.warn(`Unable to create new webhook for channel ${bridgeCfg.discord}; Deleting link\n${e}`);
+                await BRIDGE_CONFIG.remove({ revolt: message.channel_id });
+                await message.channel?.sendMessage(':warning: I was unable to create a webhook in the bridged Discord channel. '
+                    + `The bridge has been removed; if you wish to rebridge, use the \`/bridge\` command.`).catch(() => {});
+
+                return;
+            }
         }
 
         await BRIDGED_MESSAGES.update(
@@ -103,8 +131,8 @@ client.on('message', async message => {
         );
 
         const client = new WebhookClient({
-            id: bridgeCfg.discordWebhook.id,
-            token: bridgeCfg.discordWebhook.token,
+            id: bridgeCfg.discordWebhook!.id,
+            token: bridgeCfg.discordWebhook!.token,
         });
 
         const payload: MessagePayload|WebhookMessageOptions = {
@@ -176,7 +204,15 @@ client.on('message', async message => {
             });
         })
         .catch(async e => {
-            console.error('Failed to execute webhook', e?.response?.data ?? e);
+            console.error('Failed to execute webhook:', e?.response?.data ?? e);
+            if (`${e}` == 'DiscordAPIError: Unknown Webhook') {
+                try {
+                    logger.warn('Revolt: Got Unknown Webhook error, deleting webhook config');
+                    await BRIDGE_CONFIG.update({ revolt: message.channel_id }, { $set: { discordWebhook: undefined } });
+                } catch(e) {
+                    console.error(e);
+                }
+            }
         });
     } catch(e) {
         console.error(e);

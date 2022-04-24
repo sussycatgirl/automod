@@ -23,5 +23,6 @@ const login = () => new Promise((resolve: (value: Discord.Client) => void) => {
 });
 
 import('./events');
+import('./commands');
 
 export { client, login }
