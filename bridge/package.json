@@ -23,7 +23,7 @@
     "log75": "^2.2.0",
     "monk": "^7.3.4",
     "revolt-api": "^0.5.3-rc.8",
-    "smart-replace": "^1.0.1",
+    "smart-replace": "^1.0.2",
     "ulid": "^2.3.0"
   }
 }
