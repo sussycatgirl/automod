@@ -5,6 +5,7 @@ import { MessageEmbed, MessagePayload, TextChannel, WebhookClient, WebhookMessag
 import GenericEmbed from "../types/GenericEmbed";
 import { SendableEmbed } from "revolt-api";
 import { clipText, discordFetchMessage, revoltFetchUser } from "../util";
+import { smartReplace } from "smart-replace";
 
 const RE_MENTION_USER = /<@[0-9A-HJ-KM-NP-TV-Z]{26}>/g;
 const RE_MENTION_CHANNEL = /<#[0-9A-HJ-KM-NP-TV-Z]{26}>/g;
@@ -189,39 +190,26 @@ async function renderMessageBody(message: string): Promise<string> {
     let failsafe = 0;
 
     // @mentions
-    while (failsafe < 10) {
-        failsafe++;
-
-        const text = message.match(RE_MENTION_USER)?.[0];
-        if (!text) break;
-
-        const id = text.replace('<@', '').replace('>', '');
+    message = await smartReplace(message, RE_MENTION_USER, async (match) => {
+        const id = match.replace('<@', '').replace('>', '');
         const user = await revoltFetchUser(id);
-
-        // replaceAll() when
-        while (message.includes(text)) message = message.replace(text, `@${user?.username || id}`);
-    }
+        return `@${user?.username || id}`;
+    }, { cacheMatchResults: true, maxMatches: 10 });
 
     // #channels
-    while (failsafe < 10) {
-        failsafe++;
-
-        const text = message.match(RE_MENTION_CHANNEL)?.[0];
-        if (!text) break;
-
-        const id = text.replace('<#', '').replace('>', '');
+    message = await smartReplace(message, RE_MENTION_CHANNEL, async (match) => {
+        const id = match.replace('<#', '').replace('>', '');
         const channel = client.channels.get(id);
+
         const bridgeCfg = channel ? await BRIDGE_CONFIG.findOne({ revolt: channel._id }) : undefined;
         const discordChannel = bridgeCfg?.discord
             ? discordClient.channels.cache.get(bridgeCfg.discord)
             : undefined;
 
-        while (message.includes(text)) {
-            message = message.replace(text, discordChannel ? `<#${discordChannel.id}>` : `#${channel?.name || id}`);
-        }
-    }
+        return discordChannel ? `<#${discordChannel.id}>` : `#${channel?.name || id}`;
+    }, { cacheMatchResults: true, maxMatches: 10 });
 
-    // :emojis: (todo lol)
+    // TODO: fetch emojis and upload them to Discord or smth
 
     return message;
 }

@@ -8,10 +8,12 @@ import GenericEmbed from "../types/GenericEmbed";
 import FormData from 'form-data';
 import { discordFetchUser, revoltFetchMessage } from "../util";
 import { TextChannel } from "discord.js";
+import { smartReplace } from "smart-replace";
 
 const MAX_BRIDGED_FILE_SIZE = 8_000_000; // 8 MB
 const RE_MENTION_USER = /<@!*[0-9]+>/g;
 const RE_MENTION_CHANNEL = /<#[0-9]+>/g;
+const RE_EMOJI = /<(a?)?:\w+:\d{18}?>/g;
 
 client.on('messageDelete', async message => {
     try {
@@ -198,41 +200,31 @@ client.on('messageCreate', async message => {
 
 // Replaces @mentions and #channel mentions
 async function renderMessageBody(message: string): Promise<string> {
-    // We don't want users to generate large amounts of database and API queries
-    let failsafe = 0;
-
     // @mentions
-    while (failsafe < 10) {
-        failsafe++;
-
-        const text = message.match(RE_MENTION_USER)?.[0];
-        if (!text) break;
-
-        const id = text.replace('<@!', '').replace('<@', '').replace('>', '');
+    message = await smartReplace(message, RE_MENTION_USER, async (match: string) => {
+        const id = match.replace('<@!', '').replace('<@', '').replace('>', '');
         const user = await discordFetchUser(id);
-
-        // replaceAll() when
-        while (message.includes(text)) message = message.replace(text, `@${user?.username || id}`);
-    }
+        return `@${user?.username || id}`;
+    }, { cacheMatchResults: true, maxMatches: 10 });
 
     // #channels
-    while (failsafe < 10) {
-        failsafe++;
-
-        const text = message.match(RE_MENTION_CHANNEL)?.[0];
-        if (!text) break;
-
-        const id = text.replace('<#', '').replace('>', '');
+    message = await smartReplace(message, RE_MENTION_CHANNEL, async (match: string) => {
+        const id = match.replace('<#', '').replace('>', '');
         const channel = client.channels.cache.get(id);
         const bridgeCfg = channel ? await BRIDGE_CONFIG.findOne({ discord: channel.id }) : undefined;
         const revoltChannel = bridgeCfg?.revolt
             ? revoltClient.channels.get(bridgeCfg.revolt)
             : undefined;
 
-        while (message.includes(text)) {
-            message = message.replace(text, revoltChannel ? `<#${revoltChannel._id}>` : `#${(channel as TextChannel)?.name || id}`);
-        }
-    }
+        return revoltChannel ? `<#${revoltChannel._id}>` : `#${(channel as TextChannel)?.name || id}`;
+    }, { cacheMatchResults: true, maxMatches: 10 });
+
+    // :emojis:
+    message = await smartReplace(message, RE_EMOJI, async (match: string) => {
+        return match
+            .replace(/<(a?)?:/, ':\u200b') // We don't want to accidentally send an unrelated emoji, so we add a zero width space here
+            .replace(/(:\d{18}?>)/, ':');
+    }, { cacheMatchResults: true });
 
     return message;
 }
