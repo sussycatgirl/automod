@@ -513,10 +513,10 @@ saslprep@^1.0.0:
   dependencies:
     sparse-bitfield "^3.0.3"
 
-smart-replace@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/smart-replace/-/smart-replace-1.0.1.tgz#4a99193ffc60bd3004370d79e1fd5103fb546ee5"
-  integrity sha512-2XhBOaa8I+OhjeXk4heFJ6VnFn6qfmT1JA5yFolH1CfGmg5fgV6/7izu8fL5+AFM3bIxFbnPiliFY8lDQ+33WQ==
+smart-replace@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/smart-replace/-/smart-replace-1.0.2.tgz#4ae13b11b4c5a7167e71d9fcfe6a60c91ea1daac"
+  integrity sha512-giHdItRHqSt3GnaAywdjCXG0us5QsGBS7VCB3vnqE9bASIuvOsBt5CCaTbxrGhYMIvh+5WpIGXg0agSEfJhFvw==
 
 sparse-bitfield@^3.0.3:
   version "3.0.3"
