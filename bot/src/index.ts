@@ -11,6 +11,8 @@ import PendingLogin from './struct/PendingLogin';
 import TempBan from './struct/TempBan';
 import { VoteEntry } from './bot/commands/votekick';
 import ScannedUser from './struct/ScannedUser';
+import BridgeRequest from './struct/BridgeRequest';
+import BridgeConfig from './struct/BridgeConfig';
 
 logger.info('Initializing client');
 
@@ -32,6 +34,8 @@ const dbs = {
     TEMPBANS: db.get<TempBan>('tempbans'),
     VOTEKICKS: db.get<VoteEntry>('votekicks'),
     SCANNED_USERS: db.get<ScannedUser>('scanned_users'),
+    BRIDGE_CONFIG: db.get<BridgeConfig>('bridge_config'),
+    BRIDGE_REQUESTS: db.get<BridgeRequest>('bridge_requests'),
 }
 
 export { client, dbs }
