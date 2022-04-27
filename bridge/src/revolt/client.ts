@@ -4,11 +4,7 @@ import { logger } from '..';
 
 let AUTUMN_URL = `http://autumnUrl`;
 
-const client = new Client({
-    messageTimeoutFix: true,
-    autoReconnect: true,
-    onPongTimeout: 'RECONNECT',
-});
+const client = new Client({ });
 
 const login = () => new Promise((resolve: (value: Client) => void) => {
     client.loginBot(process.env['REVOLT_TOKEN']!);
