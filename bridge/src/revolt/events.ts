@@ -6,6 +6,7 @@ import GenericEmbed from "../types/GenericEmbed";
 import { SendableEmbed } from "revolt-api";
 import { clipText, discordFetchMessage, revoltFetchUser } from "../util";
 import { smartReplace } from "smart-replace";
+import { metrics } from "../metrics";
 
 const RE_MENTION_USER = /<@[0-9A-HJ-KM-NP-TV-Z]{26}>/g;
 const RE_MENTION_CHANNEL = /<#[0-9A-HJ-KM-NP-TV-Z]{26}>/g;
@@ -31,8 +32,10 @@ client.on('message/delete', async id => {
             const client = new WebhookClient({ id: bridgeCfg.discordWebhook.id, token: bridgeCfg.discordWebhook.token });
             await client.deleteMessage(bridgedMsg.discord.messageId);
             client.destroy();
+            metrics.messages.inc({ source: 'revolt', type: 'delete' });
         } else if (targetMsg.deletable) {
             targetMsg.delete();
+            metrics.messages.inc({ source: 'revolt', type: 'delete' });
         } else logger.debug(`Revolt: Unable to delete Discord message`);
     } catch(e) {
         console.error(e);
@@ -61,6 +64,8 @@ client.on('message/update', async message => {
         const client = new WebhookClient({ id: bridgeCfg.discordWebhook.id, token: bridgeCfg.discordWebhook.token });
         await client.editMessage(targetMsg, { content: await renderMessageBody(message.content), allowedMentions: { parse: [ ] } });
         client.destroy();
+
+        metrics.messages.inc({ source: 'revolt', type: 'edit' });
     } catch(e) { console.error(e) }
 });
 
@@ -203,6 +208,8 @@ client.on('message', async message => {
                     "discord.messageId": res.id
                 }
             });
+
+            metrics.messages.inc({ source: 'revolt', type: 'create' });
         })
         .catch(async e => {
             console.error('Failed to execute webhook:', e?.response?.data ?? e);

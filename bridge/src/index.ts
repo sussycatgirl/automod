@@ -24,6 +24,7 @@ for (const v of [ 'REVOLT_TOKEN', 'DISCORD_TOKEN', 'DB_STRING' ]) {
 }
 
 (async () => {
+    import('./metrics');
     const [ revolt, discord ] = await Promise.allSettled([
         loginRevolt(),
         loginDiscord(),

@@ -9,6 +9,7 @@ import FormData from 'form-data';
 import { discordFetchUser, revoltFetchMessage } from "../util";
 import { TextChannel } from "discord.js";
 import { smartReplace } from "smart-replace";
+import { metrics } from "../metrics";
 
 const MAX_BRIDGED_FILE_SIZE = 8_000_000; // 8 MB
 const RE_MENTION_USER = /<@!*[0-9]+>/g;
@@ -31,6 +32,7 @@ client.on('messageDelete', async message => {
         if (!targetMsg) return logger.debug(`Discord: Could not fetch message from Revolt`);
 
         await targetMsg.delete();
+        metrics.messages.inc({ source: 'discord', type: 'delete' });
     } catch(e) {
         console.error(e);
     }
@@ -57,6 +59,7 @@ client.on('messageUpdate', async (oldMsg, newMsg) => {
         if (!targetMsg) return logger.debug(`Discord: Could not fetch message from Revolt`);
 
         await targetMsg.edit({ content: newMsg.content ? await renderMessageBody(newMsg.content) : undefined });
+        metrics.messages.inc({ source: 'discord', type: 'edit' });
     } catch(e) {
         console.error(e);
     }
@@ -182,6 +185,8 @@ client.on('messageCreate', async message => {
                         $set: { "revolt.messageId": res.data._id },
                     }
                 );
+
+                metrics.messages.inc({ source: 'discord', type: 'create' });
             })
             .catch(async e => {
                 console.error(`Failed to send message`, e.response.data);
