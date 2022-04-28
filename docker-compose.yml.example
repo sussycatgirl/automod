@@ -53,6 +53,9 @@ services:
       - DB_STRING=mongodb://mogus:${DB_PASS}@mongo:27017/admin
       - NODE_ENV=production
       - BRIDGE_METRICS_PORT
+    # Uncomment if you enabled Prometheus metrics
+    #ports:
+    #  - 127.0.0.1:${BRIDGE_METRICS_PORT}:${BRIDGE_METRICS_PORT}
     restart: unless-stopped
     depends_on:
       - mongo
