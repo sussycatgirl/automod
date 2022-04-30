@@ -14,6 +14,8 @@ const MAX_BRIDGED_FILE_SIZE = 8_000_000; // 8 MB
 const RE_MENTION_USER = /<@!*[0-9]+>/g;
 const RE_MENTION_CHANNEL = /<#[0-9]+>/g;
 const RE_EMOJI = /<(a?)?:\w+:\d{18}?>/g;
+const RE_TENOR = /^https:\/\/tenor.com\/view\/[^\s]+$/g;
+const RE_TENOR_META = /<meta class="dynamic" property="og:url" content="[^\s]+">/g
 
 client.on('messageDelete', async message => {
     try {
@@ -208,6 +210,33 @@ client.on('messageCreate', async message => {
 
 // Replaces @mentions and #channel mentions
 async function renderMessageBody(message: string): Promise<string> {
+
+    // Replace Tenor URLs so they render properly.
+    // We have to download the page first, then extract
+    // the `c.tenor.com` URL from the meta tags.
+    // Could query autumn but that's too much effort and I already wrote this.
+    if (RE_TENOR.test(message)) {
+        try {
+            logger.debug('Replacing tenor URL');
+
+            const res = await axios.get(
+                message,
+                {
+                    headers: {
+                        'User-Agent': 'AutoMod/1.0; https://github.com/janderedev/automod',
+                    }
+                }
+            );
+
+            const metaTag = RE_TENOR_META.exec(res.data as string)?.[0];
+            if (metaTag) {
+                return metaTag
+                    .replace('<meta class="dynamic" property="og:url" content="', '')
+                    .replace('">', '');
+            }
+        } catch(e) { logger.warn(`Replacing tenor URL failed: ${e}`) }
+    }
+
     // @mentions
     message = await smartReplace(message, RE_MENTION_USER, async (match: string) => {
         const id = match.replace('<@!', '').replace('<@', '').replace('>', '');
