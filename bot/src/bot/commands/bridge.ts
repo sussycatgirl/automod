@@ -31,11 +31,21 @@ export default {
                     expires: Date.now() + (1000 * 60 * 15),
                 });
 
-                await message.reply(`### Link request created.\n`
-                    + `Request ID: \`${reqId}\`\n\n`
-                    + `[Invite the bridge bot to your Discord server](<${DISCORD_INVITE_URL}>) `
-                    + `and run \`/bridge confirm ${reqId}\` in the channel you wish to link.\n`
-                    + `This request expires in 15 minutes.`);
+                let text = `### Link request created.\n` +
+                    `Request ID: \`${reqId}\`\n\n` +
+                    `[Invite the bridge bot to your Discord server](<${DISCORD_INVITE_URL}>) ` +
+                    `and run \`/bridge confirm ${reqId}\` in the channel you wish to link.\n` +
+                    `This request expires in 15 minutes.`;
+
+                if (!message.channel!.havePermission('Masquerade')
+                 || !message.channel!.havePermission('SendEmbeds')
+                 || !message.channel!.havePermission('UploadFiles')) {
+                     text += '\n\n> :warning: I currently don\'t have all required permissions in this ' +
+                             'channel for the bridge to work. Please make sure to grant the "Masquerade", ' +
+                             '"Upload Files" and "Send Embeds" permission.'
+                }
+
+                await message.reply(text, false);
 
                 break;
             }

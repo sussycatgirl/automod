@@ -93,6 +93,10 @@ client.on('messageCreate', async message => {
             return logger.debug(`Discord: Lacking SendEmbeds permission; refusing to send`);
         }
 
+        if (!(channel.havePermission('UploadFiles'))) {
+            return logger.debug(`Discord: Lacking UploadFiles permission; refusing to send`);
+        }
+
         if (!(channel.havePermission('Masquerade'))) {
             return logger.debug(`Discord: Lacking Masquerade permission; refusing to send`);
         }
