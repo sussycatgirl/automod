@@ -1,4 +1,4 @@
-import { ChannelPermission, ServerPermission } from "@janderedev/revolt.js";
+import { Permission } from "@janderedev/revolt.js/dist/permissions/definitions";
 import { ulid } from "ulid";
 import { client, dbs } from "../..";
 import Infraction from "../../struct/antispam/Infraction";
@@ -61,12 +61,12 @@ client.on('message', async message => {
 
                 if (userConfig?.globalBlacklist && !serverConfig?.allowBlacklistedUsers) {
                     const server = message.channel?.server;
-                    if (server && (server?.permission ?? 0) & ServerPermission.BanMembers) {
+                    if (server && server.havePermission('BanMembers')) {
                         await server.banUser(sysMsg.user._id, { reason: BLACKLIST_BAN_REASON });
 
                         if (server.system_messages?.user_banned) {
                             const channel = server.channels.find(c => c?._id == server.system_messages?.user_banned);
-                            if (channel && channel.permission & ChannelPermission.SendMessage) {
+                            if (channel && channel.havePermission('SendMessage')) {
                                 await channel.sendMessage(BLACKLIST_MESSAGE(sysMsg.user.username));
                             }
                         }
@@ -102,7 +102,7 @@ client.on('member/join', (member) => {
         c => c
          && c.channel_type == 'TextChannel'
          && hasPermForChannel(member, c, 'SendMessage')
-         && hasPermForChannel(member, c, 'EmbedLinks')
+         && hasPermForChannel(member, c, 'SendEmbeds')
     );
 
     // Attempt to find an appropriate channel, otherwise use the first one available

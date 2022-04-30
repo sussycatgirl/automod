@@ -29,6 +29,13 @@ let login = (client: Revolt.Client): Promise<void> => new Promise((resolve, reje
         adminBotLog({ message: 'Bot logged in', type: 'INFO' });
         resolve();
     });
+
+    client.on('packet', packet => {
+        if (packet.type == 'InvalidSession' as any) {
+            logger.error('Authentication failed: ' + JSON.stringify(packet));
+            process.exit(99);
+        }
+    });
 });
 
 export default AutomodClient;

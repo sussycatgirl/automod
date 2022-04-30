@@ -11,10 +11,9 @@ import { ColorResolvable, MessageEmbed } from "discord.js";
 import logger from "./logger";
 import { ulid } from "ulid";
 import { Channel } from "@janderedev/revolt.js/dist/maps/Channels";
-import { ChannelPermission, ServerPermission } from "@janderedev/revolt.js";
+import { Permission } from "@janderedev/revolt.js/dist/permissions/definitions";
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { isSudo } from "./commands/botadm";
-
 
 const NO_MANAGER_MSG = '🔒 Missing permission';
 const ULID_REGEX = /^[0-9A-HJ-KM-NP-TV-Z]{26}$/i;
@@ -135,20 +134,22 @@ function getPermissionBasedOnRole(member: Member): 0|1|2|3 {
     return 0;
 }
 
-function hasPerm(member: Member, perm: keyof typeof ServerPermission): boolean {
-    let p = ServerPermission[perm];
+/**
+ * @deprecated Unnecessary
+ */
+function hasPerm(member: Member, perm: keyof typeof Permission): boolean {
+    let p = Permission[perm];
     if (member.server?.owner == member.user?._id) return true;
 
-    // this should work but im not 100% certain
-    let userPerm = member.roles?.map(id => member.server?.roles?.[id]?.permissions?.[0])
-        .reduce((sum?: number, cur?: number) => sum! | cur!, member.server?.default_permissions[0]) ?? 0;
-
-    return !!(userPerm & p);
+    return member.hasPermission(member.server!, perm);
 }
 
-function hasPermForChannel(member: Member, channel: Channel, perm: keyof typeof ChannelPermission): boolean {
+/**
+ * @deprecated Unnecessary
+ */
+function hasPermForChannel(member: Member, channel: Channel, perm: keyof typeof Permission): boolean {
     if (!member.server) throw 'hasPermForChannel(): Server is undefined';
-    return !!(channel.permission & ChannelPermission[perm]);
+    return member.hasPermission(channel, perm);
 }
 
 async function getOwnMemberInServer(server: Server): Promise<Member> {

@@ -71,7 +71,6 @@ export default {
                     content: '#',
                     embeds: [
                         {
-                            type: 'Text',
                             title: `Bridges in ${message.channel?.server?.name}`,
                             description: `**${links.length}** bridged channels found.\n\n`
                                 + links.map(l => `<#${l.revolt}> **->** ${l.discord}`).join('\n'),
@@ -85,7 +84,6 @@ export default {
                     content: '#',
                     embeds: [
                         {
-                            type: 'Text',
                             title: 'Discord Bridge',
                             description: `Bridges allow you to link your Revolt server to a Discord server `
                                 + `by relaying all messages.\n\n`

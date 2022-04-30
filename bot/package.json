@@ -13,7 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@janderedev/revolt.js": "^5.2.8-patch.2",
+    "@janderedev/revolt.js": "^6.0.0-rc.21",
     "@types/monk": "^6.0.0",
     "axios": "^0.22.0",
     "dayjs": "^1.10.7",
