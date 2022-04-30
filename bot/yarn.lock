@@ -600,7 +600,7 @@ require-at@^1.0.6:
   resolved "https://registry.yarnpkg.com/require-at/-/require-at-1.0.6.tgz#9eb7e3c5e00727f5a4744070a7f560d4de4f6e6a"
   integrity sha512-7i1auJbMUrXEAZCOQ0VNJgmcT2VOKPRl2YGJwgpHpC9CE91Mv4/4UYIUm4chGJaI381ZDq1JUicFii64Hapd8g==
 
-revolt-api@0.5.3-rc.15:
+revolt-api@0.5.3-rc.15, revolt-api@^0.5.3-rc.15:
   version "0.5.3-rc.15"
   resolved "https://registry.yarnpkg.com/revolt-api/-/revolt-api-0.5.3-rc.15.tgz#abd08dd8109d0ca31be118461eabbeb6c3b7792e"
   integrity sha512-MYin3U+KoObNkILPf2cz+FPperynExkUu7CjzurMJCRvBncpnhb2czvWDvnhLDKBHlpo8W597xNqzQnaklV4ug==
