@@ -37,10 +37,10 @@
     node-fetch "^2.6.7"
     tslib "^2.3.1"
 
-"@insertish/exponential-backoff@3.1.0-patch.0":
-  version "3.1.0-patch.0"
-  resolved "https://registry.yarnpkg.com/@insertish/exponential-backoff/-/exponential-backoff-3.1.0-patch.0.tgz#1fff134f70fc0906d11d09069d51183b542e42cf"
-  integrity sha512-1qhW81s3GDbssyaxRWdpBAn1cIw5s393HnrdYFjfa2i6rq3SEjQDK6U80g6dq/K0or6JRr2eCn75Wfc1IrGM0g==
+"@insertish/exponential-backoff@3.1.0-patch.2":
+  version "3.1.0-patch.2"
+  resolved "https://registry.yarnpkg.com/@insertish/exponential-backoff/-/exponential-backoff-3.1.0-patch.2.tgz#08310c856b795c783a832f3f608c0feaff262c0d"
+  integrity sha512-0lsMVexkZ7dHpQlPrTZDRsm42hZ4/CzKxP1hbAEJH8IaEwrIEhhTKJuFxPuLOi2TwPImuocncjYHpGpwVNOemQ==
 
 "@insertish/isomorphic-ws@^4.0.1":
   version "4.0.1"
@@ -57,20 +57,31 @@
     axios "^0.26.1"
     openapi-typescript "^5.2.0"
 
-"@janderedev/revolt.js@^5.2.8-patch.2":
-  version "5.2.8-patch.2"
-  resolved "https://registry.yarnpkg.com/@janderedev/revolt.js/-/revolt.js-5.2.8-patch.2.tgz#d74a6500e217a4cb94d139027dec2acb71f73a0f"
-  integrity sha512-2nucMuToKC5F4jsajmTauBaV9Q7oyl1KWKF0ysYYPzEKxK9LfPL560v9bQR/ff1g8GkEv4biAN/A17MCcddAuw==
+"@insertish/oapi@0.1.15":
+  version "0.1.15"
+  resolved "https://registry.yarnpkg.com/@insertish/oapi/-/oapi-0.1.15.tgz#ee58b82d879ed5af54db846699941b8ad0262e7b"
+  integrity sha512-2G8eFxrojF651tBoRutQ8CJOw0u8UjYSlw/LQU+xycw5KpXslhWp/KSR86uIFyDIPddwfMCNA91vwHGCFRA63w==
   dependencies:
-    "@insertish/exponential-backoff" "3.1.0-patch.0"
+    typescript "^4.6.2"
+  optionalDependencies:
+    axios "^0.26.1"
+    openapi-typescript "^5.2.0"
+
+"@janderedev/revolt.js@^6.0.0-rc.21":
+  version "6.0.0-rc.21"
+  resolved "https://registry.yarnpkg.com/@janderedev/revolt.js/-/revolt.js-6.0.0-rc.21.tgz#0629700cd78d0f7db5f4707dc7a8f5ba67482e1a"
+  integrity sha512-uLFXrv6ZjLJ+e9keevv0sUeZY8gDw3RfSg07LNYVUfqi1T64WwmZypz3zc2kTacbfthIgI368K2e6f3q4toc4Q==
+  dependencies:
+    "@insertish/exponential-backoff" "3.1.0-patch.2"
     "@insertish/isomorphic-ws" "^4.0.1"
     axios "^0.21.4"
     eventemitter3 "^4.0.7"
     lodash.defaultsdeep "^4.6.1"
     lodash.flatten "^4.4.0"
     lodash.isequal "^4.5.0"
+    long "^5.2.0"
     mobx "^6.3.2"
-    revolt-api "0.5.3-alpha.12"
+    revolt-api "0.5.3-rc.15"
     ulid "^2.3.0"
     ws "^8.2.2"
 
@@ -337,6 +348,11 @@ log75@^2.2.0:
   dependencies:
     ansi-colors "^4.1.1"
 
+long@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/long/-/long-5.2.0.tgz#2696dadf4b4da2ce3f6f6b89186085d94d52fd61"
+  integrity sha512-9RTUNjK60eJbx3uz+TEGF7fUr29ZDxR5QzXcyDpeSfeH28S9ycINflOgOlppit5U+4kNTe83KQnMEerw7GmE8w==
+
 memory-pager@^1.0.2:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/memory-pager/-/memory-pager-1.5.0.tgz#d8751655d22d384682741c972f2c3d6dfa3e66b5"
@@ -494,10 +510,14 @@ require-at@^1.0.6:
   resolved "https://registry.yarnpkg.com/require-at/-/require-at-1.0.6.tgz#9eb7e3c5e00727f5a4744070a7f560d4de4f6e6a"
   integrity sha512-7i1auJbMUrXEAZCOQ0VNJgmcT2VOKPRl2YGJwgpHpC9CE91Mv4/4UYIUm4chGJaI381ZDq1JUicFii64Hapd8g==
 
-revolt-api@0.5.3-alpha.12:
-  version "0.5.3-alpha.12"
-  resolved "https://registry.yarnpkg.com/revolt-api/-/revolt-api-0.5.3-alpha.12.tgz#78f25b567b840c1fd072595526592a422cb01f25"
-  integrity sha512-MM42oI5+5JJMnAs3JiOwSQOy/SUYzYs3M8YRC5QI4G6HU7CfyB2HNWh5jFsyRlcLdSi13dGazHm31FUPHsxOzw==
+revolt-api@0.5.3-rc.15:
+  version "0.5.3-rc.15"
+  resolved "https://registry.yarnpkg.com/revolt-api/-/revolt-api-0.5.3-rc.15.tgz#abd08dd8109d0ca31be118461eabbeb6c3b7792e"
+  integrity sha512-MYin3U+KoObNkILPf2cz+FPperynExkUu7CjzurMJCRvBncpnhb2czvWDvnhLDKBHlpo8W597xNqzQnaklV4ug==
+  dependencies:
+    "@insertish/oapi" "0.1.15"
+    axios "^0.26.1"
+    lodash.defaultsdeep "^4.6.1"
 
 revolt-api@^0.5.3-rc.8:
   version "0.5.3-rc.8"

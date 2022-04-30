@@ -1,7 +1,6 @@
 import { BRIDGED_MESSAGES, BRIDGE_CONFIG, logger } from "..";
 import { client } from "./client";
 import { AUTUMN_URL, client as revoltClient } from "../revolt/client";
-import { ChannelPermission } from "@janderedev/revolt.js";
 import axios from 'axios';
 import { ulid } from "ulid";
 import GenericEmbed from "../types/GenericEmbed";
@@ -84,11 +83,15 @@ client.on('messageCreate', async message => {
         const channel = revoltClient.channels.get(bridgeCfg.revolt);
         if (!channel) return logger.debug(`Discord: Cannot find associated channel`);
 
-        if (!(channel.permission & ChannelPermission.SendMessage)) {
+        if (!(channel.havePermission('SendMessage'))) {
             return logger.debug(`Discord: Lacking SendMessage permission; refusing to send`);
         }
 
-        if (!(channel.permission & ChannelPermission.Masquerade)) {
+        if (!(channel.havePermission('SendEmbeds'))) {
+            return logger.debug(`Discord: Lacking SendEmbeds permission; refusing to send`);
+        }
+
+        if (!(channel.havePermission('Masquerade'))) {
             return logger.debug(`Discord: Lacking Masquerade permission; refusing to send`);
         }
 

@@ -43,7 +43,7 @@ client.on('message/delete', async id => {
 });
 
 client.on('message/update', async message => {
-    if (message.content && typeof message.content != 'string') return;
+    if (!message.content || typeof message.content != 'string') return;
     if (message.author_id == client.user?._id) return;
 
     try {
