@@ -21,7 +21,8 @@ let client = new AutomodClient({
 //    pongTimeout: 10,
 //    onPongTimeout: 'RECONNECT',
     fixReplyCrash: true,
-    messageTimeoutFix: true
+    messageTimeoutFix: true,
+    apiURL: process.env.API_URL,
 }, db);
 login(client);
 
