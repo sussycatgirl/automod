@@ -55,6 +55,7 @@ services:
       - NODE_ENV=production
       - BRIDGE_METRICS_PORT
       - REVOLT_API_URL=${API_URL}
+      - EMOJI_SERVERS=${BRIDGE_EMOJI_SERVERS}
     # Uncomment if you enabled Prometheus metrics
     #ports:
     #  - 127.0.0.1:${BRIDGE_METRICS_PORT}:${BRIDGE_METRICS_PORT}
