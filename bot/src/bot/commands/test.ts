@@ -12,7 +12,6 @@ export default {
             content: 'Beep boop.',
             embeds: [
                 {
-                    type: "Text",
                     colour: "#ff0000",
                     description: "embed description",
                     title: "embed title",

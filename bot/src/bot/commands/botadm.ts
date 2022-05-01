@@ -10,7 +10,7 @@ import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { adminBotLog } from "../logging";
 import CommandCategory from "../../struct/commands/CommandCategory";
 import { parseUserOrId } from "../util";
-import { ChannelPermission, ServerPermission } from "@janderedev/revolt.js";
+import { Permission } from "@janderedev/revolt.js/dist/permissions/definitions";
 
 const BLACKLIST_BAN_REASON = `This user is globally blacklisted and has been banned automatically. If you wish to opt out of the global blacklist, run '/botctl ignore_blacklist yes'.`;
 const BLACKLIST_MESSAGE = (username: string) => `\`@${username}\` has been banned automatically. Check the ban reason for more info.`;
@@ -172,7 +172,7 @@ export default {
                                 const server = client.servers.get(serverid);
                                 if (!server) continue;
 
-                                if (server.permission & ServerPermission.BanMembers) {
+                                if (server.havePermission('BanMembers')) {
                                     const config = await dbs.SERVERS.findOne({ id: server._id });
                                     if (config?.allowBlacklistedUsers) continue;
 
@@ -184,7 +184,7 @@ export default {
 
                                         if (server.system_messages?.user_banned) {
                                             const channel = server.channels.find(c => c!._id == server.system_messages!.user_banned);
-                                            if (channel && channel.permission & ChannelPermission.SendMessage) {
+                                            if (channel && channel.havePermission('SendMessage')) {
                                                 await channel.sendMessage(BLACKLIST_MESSAGE(target.username));
                                             }
                                         }

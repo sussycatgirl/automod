@@ -73,8 +73,8 @@ async function scanUser(member: Member) {
                         lastLoggedProfile: {
                             username: user.username,
                             nickname: member.nickname || undefined,
-                            profile: profile.content,
-                            status: user.status?.text,
+                            profile: profile.content || undefined,
+                            status: user.status?.text || undefined,
                         }
                     }
                 });

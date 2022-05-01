@@ -15,6 +15,9 @@ export default {
     category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message)) return message.reply(NO_MANAGER_MSG);
+        if (!message.serverContext.havePermission('BanMembers')) {
+            return await message.reply(`Sorry, I do not have \`BanMembers\` permission.`);
+        }
 
         let checkTempBans = async (id: string): Promise<number> => {
             let tempbans = await dbs.TEMPBANS.find({ bannedUser: id, server: message.serverContext._id });

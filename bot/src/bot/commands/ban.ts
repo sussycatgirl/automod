@@ -24,6 +24,9 @@ export default {
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message))
             return message.reply(NO_MANAGER_MSG);
+        if (!message.serverContext.havePermission('BanMembers')) {
+            return await message.reply(`Sorry, I do not have \`BanMembers\` permission.`);
+        }
 
         if (args.length == 0)
             return message.reply(`You need to provide a target user!`);

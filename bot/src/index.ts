@@ -13,6 +13,7 @@ import { VoteEntry } from './bot/commands/votekick';
 import ScannedUser from './struct/ScannedUser';
 import BridgeRequest from './struct/BridgeRequest';
 import BridgeConfig from './struct/BridgeConfig';
+import BridgedMessage from './struct/BridgedMessage';
 
 logger.info('Initializing client');
 
@@ -21,7 +22,8 @@ let client = new AutomodClient({
 //    pongTimeout: 10,
 //    onPongTimeout: 'RECONNECT',
     fixReplyCrash: true,
-    messageTimeoutFix: true
+    messageTimeoutFix: true,
+    apiURL: process.env.API_URL,
 }, db);
 login(client);
 
@@ -35,6 +37,7 @@ const dbs = {
     VOTEKICKS: db.get<VoteEntry>('votekicks'),
     SCANNED_USERS: db.get<ScannedUser>('scanned_users'),
     BRIDGE_CONFIG: db.get<BridgeConfig>('bridge_config'),
+    BRIDGED_MESSAGES: db.get<BridgedMessage>('bridged_messages'),
     BRIDGE_REQUESTS: db.get<BridgeRequest>('bridge_requests'),
 }
 

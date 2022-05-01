@@ -19,10 +19,13 @@ export default {
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message))
             return message.reply(NO_MANAGER_MSG);
-        
+        if (!message.serverContext.havePermission('KickMembers')) {
+            return await message.reply(`Sorry, I do not have \`KickMembers\` permission.`);
+        }
+
         if (args.length == 0)
             return message.reply(`You need to provide a target user!`);
-        
+
         let targetUser = await parseUser(args.shift()!);
         if (!targetUser) return message.reply('Sorry, I can\'t find that user.');
 

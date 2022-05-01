@@ -29,6 +29,7 @@ async function processUnban(ban: TempBan) {
         if (expired.includes(ban.id)) return;
 
         let server = client.servers.get(ban.server) || await client.servers.fetch(ban.server);
+        if (!server.havePermission('BanMembers')) return logger.debug(`No permission to process unbans in ${server._id}, skipping`);
         let serverBans = await server.fetchBans();
 
         if (serverBans.bans.find(b => b._id.user == ban.bannedUser)) {
