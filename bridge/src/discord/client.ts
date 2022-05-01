@@ -24,5 +24,6 @@ const login = () => new Promise((resolve: (value: Discord.Client) => void) => {
 
 import('./events');
 import('./commands');
+import('./bridgeEmojis');
 
 export { client, login }

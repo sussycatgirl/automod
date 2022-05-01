@@ -1,4 +1,4 @@
-import { BRIDGED_MESSAGES, BRIDGE_CONFIG, logger } from "..";
+import { BRIDGED_EMOJIS, BRIDGED_MESSAGES, BRIDGE_CONFIG, logger } from "..";
 import { AUTUMN_URL, client } from "./client";
 import { client as discordClient } from "../discord/client";
 import { MessageEmbed, MessagePayload, TextChannel, WebhookClient, WebhookMessageOptions } from "discord.js";
@@ -7,9 +7,17 @@ import { SendableEmbed } from "revolt-api";
 import { clipText, discordFetchMessage, revoltFetchUser } from "../util";
 import { smartReplace } from "smart-replace";
 import { metrics } from "../metrics";
+import { fetchEmojiList } from "../discord/bridgeEmojis";
 
 const RE_MENTION_USER = /<@[0-9A-HJ-KM-NP-TV-Z]{26}>/g;
 const RE_MENTION_CHANNEL = /<#[0-9A-HJ-KM-NP-TV-Z]{26}>/g;
+const RE_EMOJI = /:[^\s]+/g;
+
+const KNOWN_EMOJI_NAMES: string[] = [];
+
+fetchEmojiList()
+    .then(emojis => Object.keys(emojis).forEach(name => KNOWN_EMOJI_NAMES.push(name)))
+    .catch(e => console.error(e));
 
 client.on('message/delete', async id => {
     try {
@@ -252,7 +260,16 @@ async function renderMessageBody(message: string): Promise<string> {
         return discordChannel ? `<#${discordChannel.id}>` : `#${channel?.name || id}`;
     }, { cacheMatchResults: true, maxMatches: 10 });
 
-    // TODO: fetch emojis and upload them to Discord or smth
+    message = await smartReplace(message, RE_EMOJI, async (match) => {
+        const emojiName = match.replace(/(^:)|(:$)/g, '');
+
+        if (!KNOWN_EMOJI_NAMES.includes(emojiName)) return match;
+
+        const dbEmoji = await BRIDGED_EMOJIS.findOne({ name: emojiName });
+        if (!dbEmoji) return match;
+
+        return `<${dbEmoji.animated ? 'a' : ''}:${emojiName}:${dbEmoji.emojiid}>`;
+    }, { cacheMatchResults: true, maxMatches: 40 });
 
     return message;
 }

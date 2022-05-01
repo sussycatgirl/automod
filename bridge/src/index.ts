@@ -7,6 +7,7 @@ import { ICollection } from 'monk';
 import BridgeConfig from './types/BridgeConfig';
 import BridgedMessage from './types/BridgedMessage';
 import BridgeRequest from './types/BridgeRequest';
+import DiscordBridgedEmoji from './types/DiscordBridgedEmoji';
 
 config();
 
@@ -15,6 +16,7 @@ const db = getDb();
 const BRIDGED_MESSAGES: ICollection<BridgedMessage> = db.get('bridged_messages');
 const BRIDGE_CONFIG: ICollection<BridgeConfig> = db.get('bridge_config');
 const BRIDGE_REQUESTS: ICollection<BridgeRequest> = db.get('bridge_requests');
+const BRIDGED_EMOJIS: ICollection<DiscordBridgedEmoji> = db.get('bridged_emojis');
 
 for (const v of [ 'REVOLT_TOKEN', 'DISCORD_TOKEN', 'DB_STRING' ]) {
     if (!process.env[v]) {
@@ -31,4 +33,4 @@ for (const v of [ 'REVOLT_TOKEN', 'DISCORD_TOKEN', 'DB_STRING' ]) {
     ]);
 })();
 
-export { logger, db, BRIDGED_MESSAGES, BRIDGE_CONFIG, BRIDGE_REQUESTS }
+export { logger, db, BRIDGED_MESSAGES, BRIDGE_CONFIG, BRIDGE_REQUESTS, BRIDGED_EMOJIS }
