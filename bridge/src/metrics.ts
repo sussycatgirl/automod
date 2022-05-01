@@ -1,6 +1,6 @@
 import prom from 'prom-client';
 import http from 'http';
-import { logger } from '.';
+import { BRIDGE_CONFIG, logger } from '.';
 
 const PORT = Number(process.env.BRIDGE_METRICS_PORT);
 
@@ -8,6 +8,7 @@ prom.collectDefaultMetrics({ prefix: 'automod_bridge_' });
 
 const metrics = {
     messages: new prom.Counter({ name: 'messages', help: 'Bridged message events', labelNames: [ 'source', 'type' ] }),
+    bridged_channels: new prom.Gauge({ name: 'bridged_channels', help: 'How many channels are bridged' }),
 }
 
 if (!isNaN(PORT)) {
@@ -27,6 +28,13 @@ if (!isNaN(PORT)) {
     });
 
     server.listen(PORT, () => logger.done(`Prometheus metrics ready`));
+
+    async function updateMetrics() {
+        metrics.bridged_channels.set(await BRIDGE_CONFIG.count({ }));
+    }
+
+    updateMetrics();
+    setInterval(updateMetrics, 1000 * 10);
 }
 
 export { metrics }
