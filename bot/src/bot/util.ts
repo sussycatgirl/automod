@@ -14,6 +14,7 @@ import { Channel } from "@janderedev/revolt.js/dist/maps/Channels";
 import { Permission } from "@janderedev/revolt.js/dist/permissions/definitions";
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { isSudo } from "./commands/botadm";
+import { SendableEmbed } from "revolt-api";
 
 const NO_MANAGER_MSG = '🔒 Missing permission';
 const ULID_REGEX = /^[0-9A-HJ-KM-NP-TV-Z]{26}$/i;
@@ -318,6 +319,33 @@ function sanitizeMessageContent(msg: string): string {
     return str;
 }
 
+enum EmbedColor {
+    Error = "#ff450c",
+    SoftError = "#ff785d",
+    Warning = "#ffda55",
+    Success = "#23ff91",
+}
+
+function embed(content: string, title?: string|null, color?: string|EmbedColor): SendableEmbed {
+    return {
+        description: content,
+        title: title,
+        colour: color,
+    }
+}
+
+function dedupeArray<T>(...arrays: T[][]): T[] {
+    const found: T[] = [];
+
+    for (const array of arrays) {
+        for (const item of array) {
+            if (!found.includes(item)) found.push(item);
+        }
+    }
+
+    return found;
+}
+
 export {
     getAutumnURL,
     hasPerm,
@@ -333,6 +361,9 @@ export {
     uploadFile,
     sanitizeMessageContent,
     sendLogMessage,
+    embed,
+    dedupeArray,
+    EmbedColor,
     NO_MANAGER_MSG,
     ULID_REGEX,
     USER_MENTION_REGEX,
