@@ -4,7 +4,7 @@ import { client as discordClient } from "../discord/client";
 import { MessageEmbed, MessagePayload, TextChannel, WebhookClient, WebhookMessageOptions } from "discord.js";
 import GenericEmbed from "../types/GenericEmbed";
 import { SendableEmbed } from "revolt-api";
-import { clipText, discordFetchMessage, revoltFetchUser } from "../util";
+import { clipText, discordFetchMessage, revoltFetchMessage, revoltFetchUser } from "../util";
 import { smartReplace } from "smart-replace";
 import { metrics } from "../metrics";
 import { fetchEmojiList } from "../discord/bridgeEmojis";
@@ -165,26 +165,38 @@ client.on('message', async message => {
             const embed = new MessageEmbed().setColor('#2f3136');
 
             if (repliedMessages.length == 1) {
-                const replyMsg = await discordFetchMessage(repliedMessages[0]?.discord.messageId, bridgeCfg.discord);
+                const replyMsg = repliedMessages[0]?.origin == 'discord'
+                    ? await discordFetchMessage(repliedMessages[0]?.discord.messageId, bridgeCfg.discord)
+                    : undefined;
                 const author = replyMsg?.author;
 
-                embed.setAuthor({
-                    name: `@${author?.username ?? 'Unknown'}`, // todo: check if @pinging was enabled for reply
-                    iconURL: author?.displayAvatarURL({ size: 64, dynamic: true }),
-                    url: replyMsg?.url,
-                });
-
-                if (replyMsg?.content) embed.setDescription('>>> ' + clipText(replyMsg.content, 200));
+                if (replyMsg) {
+                    embed.setAuthor({
+                        name: `@${author?.username ?? 'Unknown'}`, // todo: check if @pinging was enabled for reply
+                        iconURL: author?.displayAvatarURL({ size: 64, dynamic: true }),
+                        url: replyMsg?.url,
+                    });
+                    if (replyMsg?.content) embed.setDescription('>>> ' + clipText(replyMsg.content, 200));
+                } else {
+                    const msg = await revoltFetchMessage(message.reply_ids?.[0], message.channel);
+                    embed.setAuthor({
+                        name: `@${msg?.author?.username ?? 'Unknown'}`,
+                        iconURL: msg?.author?.generateAvatarURL({ size: 64 }),
+                    });
+                    if (msg?.content) embed.setDescription('>>> ' + clipText(msg.content, 200));
+                }
             } else {
                 const replyMsgs = await Promise.all(
-                    repliedMessages.map(m => discordFetchMessage(m?.discord.messageId, bridgeCfg.discord))
+                    repliedMessages.map(m => m?.origin == 'discord'
+                        ? discordFetchMessage(m?.discord.messageId, bridgeCfg.discord)
+                        : revoltFetchMessage(m?.revolt.messageId, message.channel))
                 );
 
                 embed.setAuthor({ name: repliedMessages.length + ' replies' });
 
                 for (const msg of replyMsgs) {
                     embed.addField(
-                        `@${msg?.author.username ?? 'Unknown'}`,
+                        `@${msg?.author?.username ?? 'Unknown'}`,
                         (msg ? `[Link](${msg.url})\n` : '') +
                             '>>> ' + clipText(msg?.content ?? '\u200b', 100),
                         true,
