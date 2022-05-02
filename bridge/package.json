@@ -27,5 +27,6 @@
     "revolt-api": "^0.5.3-rc.8",
     "smart-replace": "^1.0.2",
     "ulid": "^2.3.0"
-  }
+  },
+  "packageManager": "yarn@1.22.17"
 }

@@ -29,5 +29,6 @@
   },
   "devDependencies": {
     "typescript": "^4.4.3"
-  }
+  },
+  "packageManager": "yarn@1.22.17"
 }
