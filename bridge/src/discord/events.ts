@@ -198,7 +198,7 @@ client.on('messageCreate', async message => {
                 metrics.messages.inc({ source: 'discord', type: 'create' });
             })
             .catch(async e => {
-                console.error(`Failed to send message`, e.response.data);
+                console.error(`Failed to send message: ${e}`);
                 if (reply) {
                     console.info('Reytring without reply');
                     await sendBridgeMessage(undefined);
