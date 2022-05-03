@@ -24,6 +24,7 @@ let client = new AutomodClient({
     fixReplyCrash: true,
     messageTimeoutFix: true,
     apiURL: process.env.API_URL,
+    messageRateLimiter: true,
 }, db);
 login(client);
 

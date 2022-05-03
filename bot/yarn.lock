@@ -47,10 +47,10 @@
     axios "^0.26.1"
     openapi-typescript "^5.2.0"
 
-"@janderedev/revolt.js@^6.0.0-rc.21":
-  version "6.0.0-rc.21"
-  resolved "https://registry.yarnpkg.com/@janderedev/revolt.js/-/revolt.js-6.0.0-rc.21.tgz#0629700cd78d0f7db5f4707dc7a8f5ba67482e1a"
-  integrity sha512-uLFXrv6ZjLJ+e9keevv0sUeZY8gDw3RfSg07LNYVUfqi1T64WwmZypz3zc2kTacbfthIgI368K2e6f3q4toc4Q==
+"@janderedev/revolt.js@^6.0.0-rc.21-patch.1":
+  version "6.0.0-rc.21-patch.1"
+  resolved "https://registry.yarnpkg.com/@janderedev/revolt.js/-/revolt.js-6.0.0-rc.21-patch.1.tgz#d69ac2c084c8c8869d7139a93dfd37cd0c26d891"
+  integrity sha512-eJDYkJDEOFAIjINfghzMARkY00kOPBbmO7u6eTnryDIfzb004Lbm2fhrwID809q/Cfo1sJ6iKKX2XUMcIUCqOg==
   dependencies:
     "@insertish/exponential-backoff" "3.1.0-patch.2"
     "@insertish/isomorphic-ws" "^4.0.1"
