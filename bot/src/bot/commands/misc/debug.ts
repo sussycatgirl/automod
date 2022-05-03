@@ -1,8 +1,8 @@
 import { decodeTime } from "ulid";
-import CommandCategory from "../../struct/commands/CommandCategory";
-import SimpleCommand from "../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import { ULID_REGEX } from "../util";
+import CommandCategory from "../../../struct/commands/CommandCategory";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { ULID_REGEX } from "../../util";
 
 export default {
     name: 'debug',

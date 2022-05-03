@@ -1,13 +1,12 @@
 import { FindResult } from "monk";
 import { ulid } from "ulid";
-import { client, dbs } from "../..";
-import CommandCategory from "../../struct/commands/CommandCategory";
-import SimpleCommand from "../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import ServerConfig from "../../struct/ServerConfig";
-import { logModAction } from "../modules/mod_logs";
-import { storeTempBan } from "../modules/tempbans";
-import { getPermissionLevel, isModerator, parseUser } from "../util";
+import { client, dbs } from "../../../";
+import CommandCategory from "../../../struct/commands/CommandCategory";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { logModAction } from "../../modules/mod_logs";
+import { storeTempBan } from "../../modules/tempbans";
+import { getPermissionLevel, isModerator, parseUser } from "../../util";
 
 type VoteEntry = {
     id: string;

@@ -1,6 +1,6 @@
-import CommandCategory from "../../struct/commands/CommandCategory";
-import SimpleCommand from "../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../struct/MessageCommandContext";
+import CommandCategory from "../../../struct/commands/CommandCategory";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
 
 export default {
     name: 'test',

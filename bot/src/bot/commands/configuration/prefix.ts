@@ -1,10 +1,9 @@
-import SimpleCommand from "../../struct/commands/SimpleCommand";
-import { client, dbs } from "../..";
-import ServerConfig from "../../struct/ServerConfig";
-import { DEFAULT_PREFIX } from "../modules/command_handler";
-import { isBotManager, NO_MANAGER_MSG } from "../util";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import CommandCategory from "../../struct/commands/CommandCategory";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import { client, dbs } from "../../..";
+import { DEFAULT_PREFIX } from "../../modules/command_handler";
+import { isBotManager, NO_MANAGER_MSG } from "../../util";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import CommandCategory from "../../../struct/commands/CommandCategory";
 
 const SYNTAX = '/prefix set [new prefix]; /prefix get; prefix clear';
 const MENTION_TEXT = 'You can also @mention me instead of using the prefix.';

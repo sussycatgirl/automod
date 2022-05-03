@@ -1,11 +1,11 @@
 import { FindOneResult } from "monk";
-import { client, dbs } from "../..";
-import CommandCategory from "../../struct/commands/CommandCategory";
-import SimpleCommand from "../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import ServerConfig from "../../struct/ServerConfig";
-import { scanServer } from "../modules/user_scan";
-import { isBotManager, NO_MANAGER_MSG } from "../util";
+import { dbs } from "../../..";
+import CommandCategory from "../../../struct/commands/CommandCategory";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import ServerConfig from "../../../struct/ServerConfig";
+import { scanServer } from "../../modules/user_scan";
+import { isBotManager, NO_MANAGER_MSG } from "../../util";
 
 let userscans: string[] = [];
 

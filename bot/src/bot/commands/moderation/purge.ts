@@ -1,9 +1,9 @@
-import SimpleCommand from "../../struct/commands/SimpleCommand";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { decodeTime } from 'ulid';
-import { isModerator, parseUser } from "../util";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import CommandCategory from "../../struct/commands/CommandCategory";
+import { isModerator, parseUser } from "../../util";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import CommandCategory from "../../../struct/commands/CommandCategory";
 
 const SYNTAX = '/purge [SELECTOR] [@user?[, @user?[, ...]]]; where SELECTOR: [number] || [messageID]-[messageID]';
 const MAX_PURGE_AMOUNT = 100;

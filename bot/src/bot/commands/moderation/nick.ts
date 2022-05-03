@@ -1,9 +1,9 @@
 import { Member } from "@janderedev/revolt.js/dist/maps/Members";
 import axios from "axios";
-import CommandCategory from "../../struct/commands/CommandCategory";
-import SimpleCommand from "../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import { hasPerm, isModerator, NO_MANAGER_MSG, parseUser } from "../util";
+import CommandCategory from "../../../struct/commands/CommandCategory";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { hasPerm, isModerator, NO_MANAGER_MSG, parseUser } from "../../util";
 
 export default {
     name: 'nick',

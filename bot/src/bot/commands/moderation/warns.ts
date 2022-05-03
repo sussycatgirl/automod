@@ -1,14 +1,14 @@
-import SimpleCommand from "../../struct/commands/SimpleCommand";
-import { client, dbs } from "../..";
-import Infraction from "../../struct/antispam/Infraction";
-import InfractionType from "../../struct/antispam/InfractionType";
-import { isModerator, NO_MANAGER_MSG, parseUserOrId, uploadFile } from "../util";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import { client, dbs } from "../../..";
+import Infraction from "../../../struct/antispam/Infraction";
+import InfractionType from "../../../struct/antispam/InfractionType";
+import { isModerator, NO_MANAGER_MSG, parseUserOrId, uploadFile } from "../../util";
 import Day from 'dayjs';
 import RelativeTime from 'dayjs/plugin/relativeTime';
 import Xlsx from 'xlsx';
-import { fetchUsername } from "../modules/mod_logs";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import CommandCategory from "../../struct/commands/CommandCategory";
+import { fetchUsername } from "../../modules/mod_logs";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import CommandCategory from "../../../struct/commands/CommandCategory";
 
 Day.extend(RelativeTime);
 

@@ -1,11 +1,9 @@
-import { FindResult } from "monk";
-import { client, dbs } from "../..";
-import CommandCategory from "../../struct/commands/CommandCategory";
-import SimpleCommand from "../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import TempBan from "../../struct/TempBan";
-import { removeTempBan } from "../modules/tempbans";
-import { isModerator, NO_MANAGER_MSG, parseUser, ULID_REGEX, USER_MENTION_REGEX } from "../util";
+import { dbs } from "../../../";
+import CommandCategory from "../../../struct/commands/CommandCategory";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { removeTempBan } from "../../modules/tempbans";
+import { isModerator, NO_MANAGER_MSG, parseUser, ULID_REGEX, USER_MENTION_REGEX } from "../../util";
 
 export default {
     name: 'unban',

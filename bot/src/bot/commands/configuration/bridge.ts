@@ -1,12 +1,12 @@
 import { Message } from "@janderedev/revolt.js";
 import { ulid } from "ulid";
 import { SendableEmbed } from "revolt-api";
-import { dbs } from "../..";
-import CommandCategory from "../../struct/commands/CommandCategory";
-import SimpleCommand from "../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import { DEFAULT_PREFIX } from "../modules/command_handler";
-import { isBotManager, isModerator, NO_MANAGER_MSG } from "../util";
+import { dbs } from "../../..";
+import CommandCategory from "../../../struct/commands/CommandCategory";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { DEFAULT_PREFIX } from "../../modules/command_handler";
+import { isBotManager, isModerator, NO_MANAGER_MSG } from "../../util";
 
 const DISCORD_INVITE_URL = 'https://discord.com/api/oauth2/authorize?client_id=965692929643524136&permissions=536996864&scope=bot%20applications.commands'; // todo: read this from env or smth
 

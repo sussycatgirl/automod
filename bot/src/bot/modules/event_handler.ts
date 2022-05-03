@@ -1,9 +1,8 @@
-import { Permission } from "@janderedev/revolt.js/dist/permissions/definitions";
 import { ulid } from "ulid";
 import { client, dbs } from "../..";
 import Infraction from "../../struct/antispam/Infraction";
 import InfractionType from "../../struct/antispam/InfractionType";
-import { BLACKLIST_BAN_REASON, BLACKLIST_MESSAGE } from "../commands/botadm";
+import { BLACKLIST_BAN_REASON, BLACKLIST_MESSAGE } from "../commands/admin/botadm";
 import logger from "../logger";
 import { hasPermForChannel, storeInfraction } from "../util";
 import { DEFAULT_PREFIX } from "./command_handler";

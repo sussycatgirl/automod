@@ -1,7 +1,7 @@
-import Command from "../../struct/commands/SimpleCommand";
-import { commands, DEFAULT_PREFIX, ownerIDs } from "../modules/command_handler";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import CommandCategory from "../../struct/commands/CommandCategory";
+import Command from "../../../struct/commands/SimpleCommand";
+import { commands, DEFAULT_PREFIX, ownerIDs } from "../../modules/command_handler";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import CommandCategory from "../../../struct/commands/CommandCategory";
 
 const categories: { [key in CommandCategory]: {
     friendlyName: string,

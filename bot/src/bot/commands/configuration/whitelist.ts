@@ -1,10 +1,10 @@
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
-import { client, dbs } from "../..";
-import CommandCategory from "../../struct/commands/CommandCategory";
-import SimpleCommand from "../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import ServerConfig from "../../struct/ServerConfig";
-import { isBotManager, NO_MANAGER_MSG, parseUser } from "../util";
+import { client, dbs } from "../../..";
+import CommandCategory from "../../../struct/commands/CommandCategory";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import ServerConfig from "../../../struct/ServerConfig";
+import { isBotManager, NO_MANAGER_MSG, parseUser } from "../../util";
 
 const SYNTAX = '/whitelist add @user; /whitelist remove @user; /whitelist list';
 

@@ -13,7 +13,7 @@ import { ulid } from "ulid";
 import { Channel } from "@janderedev/revolt.js/dist/maps/Channels";
 import { Permission } from "@janderedev/revolt.js/dist/permissions/definitions";
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
-import { isSudo } from "./commands/botadm";
+import { isSudo } from "./commands/admin/botadm";
 import { SendableEmbed } from "revolt-api";
 
 const NO_MANAGER_MSG = '🔒 Missing permission';

@@ -1,10 +1,8 @@
-import { FindOneResult, FindResult } from "monk";
-import { client, dbs } from "../..";
-import CommandCategory from "../../struct/commands/CommandCategory";
-import SimpleCommand from "../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import PendingLogin from "../../struct/PendingLogin";
-import { DEFAULT_PREFIX } from "../modules/command_handler";
+import { dbs } from "../../..";
+import CommandCategory from "../../../struct/commands/CommandCategory";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { DEFAULT_PREFIX } from "../../modules/command_handler";
 
 export default {
     name: 'logout',

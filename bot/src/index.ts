@@ -9,7 +9,7 @@ import ServerConfig from './struct/ServerConfig';
 import Infraction from './struct/antispam/Infraction';
 import PendingLogin from './struct/PendingLogin';
 import TempBan from './struct/TempBan';
-import { VoteEntry } from './bot/commands/votekick';
+import { VoteEntry } from './bot/commands/moderation/votekick';
 import ScannedUser from './struct/ScannedUser';
 import BridgeRequest from './struct/BridgeRequest';
 import BridgeConfig from './struct/BridgeConfig';

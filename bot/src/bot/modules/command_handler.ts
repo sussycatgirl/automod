@@ -3,13 +3,12 @@ import logger from "../logger";
 import { client, dbs } from "../../index";
 import fs from 'fs';
 import path from 'path';
-import ServerConfig from "../../struct/ServerConfig";
 import { antispam } from "./antispam";
 import checkCustomRules from "./custom_rules/custom_rules";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import { fileURLToPath } from 'url';
 import { getOwnMemberInServer, hasPermForChannel } from "../util";
-import { isSudo, updateSudoTimeout } from "../commands/botadm";
+import { isSudo, updateSudoTimeout } from "../commands/admin/botadm";
 import { metrics } from "./metrics";
 
 // thanks a lot esm
@@ -26,9 +25,9 @@ let commands: SimpleCommand[];
 
 (async () => {
     commands = (await Promise.all(
-        fs.readdirSync(path.join(dirname, '..', 'commands'))
+        dirTreeSync(path.join(dirname, '..', 'commands'))
             .filter(file => file.endsWith('.js'))
-            .map(async file => await import(path.join(dirname, '..', 'commands', file)) as SimpleCommand)
+            .map(async file => await import(file) as SimpleCommand)
         )).map(c => (c as any).default)
 
     client.on('message/update', async msg => {
@@ -143,5 +142,20 @@ let commands: SimpleCommand[];
         }
     });
 })();
+
+function dirTreeSync(dir: string): string[] {
+    const paths: string[] = [];
+
+    const files = fs.readdirSync(dir, { withFileTypes: true });
+    for (const file of files) {
+        if (file.isDirectory()) {
+            paths.push(...dirTreeSync(path.join(dir, file.name)));
+        } else if (file.isFile()) {
+            paths.push(path.join(dir, file.name));
+        }
+    }
+
+    return paths;
+}
 
 export { DEFAULT_PREFIX, commands, ownerIDs }

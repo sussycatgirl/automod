@@ -1,8 +1,7 @@
-import SimpleCommand from "../../struct/commands/SimpleCommand";
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
-import { client } from "../..";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import CommandCategory from "../../struct/commands/CommandCategory";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import { client } from "../../..";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import CommandCategory from "../../../struct/commands/CommandCategory";
 
 export default {
     name: 'ping',

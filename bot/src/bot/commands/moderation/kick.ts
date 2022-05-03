@@ -1,13 +1,13 @@
 import { Member } from "@janderedev/revolt.js/dist/maps/Members";
 import { ulid } from "ulid";
-import { client } from "../..";
-import Infraction from "../../struct/antispam/Infraction";
-import InfractionType from "../../struct/antispam/InfractionType";
-import CommandCategory from "../../struct/commands/CommandCategory";
-import SimpleCommand from "../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import { logModAction } from "../modules/mod_logs";
-import { isModerator, NO_MANAGER_MSG, parseUser, storeInfraction } from "../util";
+import { client } from "../../../";
+import Infraction from "../../../struct/antispam/Infraction";
+import InfractionType from "../../../struct/antispam/InfractionType";
+import CommandCategory from "../../../struct/commands/CommandCategory";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { logModAction } from "../../modules/mod_logs";
+import { isModerator, NO_MANAGER_MSG, parseUser, storeInfraction } from "../../util";
 
 export default {
     name: 'kick',

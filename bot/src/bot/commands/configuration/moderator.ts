@@ -1,11 +1,9 @@
-import SimpleCommand from "../../struct/commands/SimpleCommand";
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
-import { isBotManager, NO_MANAGER_MSG, parseUser } from "../util";
-import ServerConfig from "../../struct/ServerConfig";
-import { client, dbs } from "../..";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import { isBotManager, NO_MANAGER_MSG, parseUser } from "../../util";
+import { client, dbs } from "../../..";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import CommandCategory from "../../struct/commands/CommandCategory";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import CommandCategory from "../../../struct/commands/CommandCategory";
 
 const SYNTAX = '/mod add @user; /mod remove @user; /mod list';
 

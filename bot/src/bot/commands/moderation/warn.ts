@@ -1,11 +1,11 @@
-import SimpleCommand from "../../struct/commands/SimpleCommand";
-import { dedupeArray, embed, EmbedColor, isModerator, NO_MANAGER_MSG, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../util";
-import Infraction from "../../struct/antispam/Infraction";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import { dedupeArray, embed, EmbedColor, isModerator, NO_MANAGER_MSG, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
+import Infraction from "../../../struct/antispam/Infraction";
 import { ulid } from "ulid";
-import InfractionType from "../../struct/antispam/InfractionType";
-import { fetchUsername, logModAction } from "../modules/mod_logs";
-import MessageCommandContext from "../../struct/MessageCommandContext";
-import CommandCategory from "../../struct/commands/CommandCategory";
+import InfractionType from "../../../struct/antispam/InfractionType";
+import { fetchUsername, logModAction } from "../../modules/mod_logs";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import CommandCategory from "../../../struct/commands/CommandCategory";
 import { SendableEmbed } from "revolt-api";
 import { User } from "@janderedev/revolt.js";
 
