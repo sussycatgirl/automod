@@ -37,10 +37,10 @@ const Dashboard: FunctionComponent = () => {
     useEffect(() => { loadServers() }, []);
 
     return (
-        <div>
-            <H1>dashbord</H1>
+        <div style={{ marginLeft: '12px', padding: '16px 0' }}>
+            <H1>Dashboard</H1>
             <br/>
-            <p hidden={!loading}>loading</p>
+            <p hidden={!loading}>Loading...</p>
             {
                 servers.map(server => <div className="server-card" style={{ paddingTop: '10px' }} key={server.id}>
                     <img

@@ -48,8 +48,8 @@ const Login: FunctionComponent = () => {
     }, [ nonce, code, username ]);
 
     return (
-        <div>
-            <H1>log in</H1>
+        <div style={{ marginLeft: '12px', padding: '16px 0' }}>
+            <H1>Log in</H1>
             {statusMsg.length ? <a>{statusMsg}</a> : <br/>}
             <div hidden={!showInitial}>
                 <InputBox

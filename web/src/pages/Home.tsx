@@ -14,9 +14,16 @@ const Home: FunctionComponent = () => {
                 This is a <b>work-in-progress</b> Web UI for the Automod Revolt bot.
                 <br />
                 <Link to='/dashboard'>
-                    Open Dashboard
+                    Open the dashboard
                 </Link> or <a href="https://app.revolt.chat/bot/01FHGJ3NPP7XANQQH8C2BE44ZY" target='_blank'>
                     add the bot to your server.
+                </a>
+                <br />
+                <br />
+                You can also view usage stats and metrics for the bot <a href="https://grafana.janderedev.xyz/d/lC_-g_-nz/automod" target='_blank'>
+                    here
+                </a>, or check out <a href="https://github.com/janderedev/automod" target='_blank'>
+                    its GitHub repository.
                 </a>
             </span>
         </div>
