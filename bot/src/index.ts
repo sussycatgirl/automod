@@ -44,6 +44,14 @@ const dbs = {
 
 export { client, dbs }
 
+logger.info(`\
+    _          _         __  __           _ 
+   / \\   _   _| |_  ___ |  \\/  | ___   __| |
+  / _ \\ | | | | __|/ _ \\| |\\/| |/ _ \\ / _\` |
+ / ___ \\| |_| | |_| (_) | |  | | (_) | (_| |
+/_/   \\_\\\\__,_|\\__|\\___/|_|  |_|\\___/ \\__,_|
+`);
+
 (async () => {
     // Wait for a database query to succeed before loading the rest
     logger.info('Connecting to database...');
