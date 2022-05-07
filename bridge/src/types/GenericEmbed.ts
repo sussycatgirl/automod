@@ -9,7 +9,6 @@ export default class GenericEmbed {
 
             if (embed.url) this.url = embed.url;
             else if (embed.author?.url) this.url = embed.author.url;
-            if (!this.icon?.match(/^http(s)?\:\/\//)) this.url = undefined;
 
             if (this.title && embed.author?.iconURL) this.icon = embed.author.iconURL;
 
@@ -58,7 +57,7 @@ export default class GenericEmbed {
         embed.icon_url = this.icon;
         embed.url = this.url;
         embed.colour = this.color?.toString();
-        
+
         // todo: embed.media needs to be an autumn url. we might
         // want to download and reupload the attachment.
 
