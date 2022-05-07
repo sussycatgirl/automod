@@ -89,16 +89,13 @@ client.on('messageCreate', async message => {
             return logger.debug(`Discord: Lacking SendMessage permission; refusing to send`);
         }
 
-        if (!(channel.havePermission('SendEmbeds'))) {
-            return logger.debug(`Discord: Lacking SendEmbeds permission; refusing to send`);
-        }
-
-        if (!(channel.havePermission('UploadFiles'))) {
-            return logger.debug(`Discord: Lacking UploadFiles permission; refusing to send`);
-        }
-
-        if (!(channel.havePermission('Masquerade'))) {
-            return logger.debug(`Discord: Lacking Masquerade permission; refusing to send`);
+        for (const perm of [ 'SendEmbeds', 'UploadFiles', 'Masquerade' ]) {
+            if (!(channel.havePermission(perm as any))) {
+                // todo: maybe don't spam this on every message?
+                await channel.sendMessage(`Missing permission: I don't have the \`${perm}\` permission `
+                    + `which is required to bridge a message sent by \`${message.author.tag}\` on Discord.`);
+                return logger.debug(`Discord: Lacking ${perm} permission; refusing to send`);
+            }
         }
 
         // Setting a known nonce allows us to ignore bridged
