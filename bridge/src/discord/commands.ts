@@ -32,6 +32,11 @@ const COMMANDS: any[] = [
                 description: 'Unbridge the current channel',
                 type: 1,
             },
+            {
+                name: 'help',
+                description: 'Usage instructions',
+                type: 1,
+            }
         ],
     },
     {
@@ -73,7 +78,9 @@ client.on('interactionCreate', async interaction => {
             // The revolutionary Jan command handler
             switch(interaction.commandName) {
                 case 'bridge':
-                    if (!interaction.memberPermissions?.has('MANAGE_GUILD')) {
+                    if (!interaction.memberPermissions?.has('MANAGE_GUILD') &&
+                        interaction.options.getSubcommand(true) != 'help'
+                    ) {
                         return await interaction.reply(`\`MANAGE_GUILD\` permission is required for this.`);
                     }
 
@@ -119,6 +126,39 @@ client.on('interactionCreate', async interaction => {
                             else await interaction.reply('This channel is not bridged.');
 
                             break;
+
+                        case 'help':
+                            const isPrivileged = !!interaction.memberPermissions?.has('MANAGE_GUILD');
+                            const INVITE_URL = `https://discord.com/api/oauth2/authorize?client_id=${client.user?.id}&permissions=536996864&scope=bot%20applications.commands`;
+                            const embed = new MessageEmbed()
+                                .setColor('#ff6e6d')
+                                .setAuthor({ name: 'AutoMod Revolt Bridge', iconURL: client.user?.displayAvatarURL() });
+
+                            embed.setDescription(
+                                '[AutoMod](https://automod.me) is a utility and moderation bot for [Revolt](https://revolt.chat). ' +
+                                'This Discord bot allows you to link your Discord servers to your Revolt servers ' +
+                                'by mirroring messages between text channels.'
+                            );
+
+                            embed.addField(
+                                'Setting up a bridge',
+                                isPrivileged
+                                  ? 'The bridge process is initialized by running the `/bridge link` command in the Revolt ' +
+                                    'channel you wish to bridge.\n' +
+                                    'Afterwards you can run the `/bridge confirm` command in the correct Discord channel to finish the link.'
+                                  : 'You don\'t have `Manage Messages` permission - Please ask a moderator to configure the bridge.'
+                            );
+
+                            embed.addField(
+                                'Adding AutoMod to your server',
+                                `You can add the Revolt bot to your server ` +
+                                `[here](https://app.revolt.chat/bot/${revoltClient.user?._id} "Open Revolt"). To add the Discord counterpart, ` +
+                                `click [here](${INVITE_URL} "Add Discord bot").`
+                            );
+
+                            await interaction.reply({ embeds: [ embed ], ephemeral: true });
+                            break;
+
                         default: await interaction.reply('Unknown subcommand');
                     }
 
