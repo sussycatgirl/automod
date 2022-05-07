@@ -182,6 +182,7 @@ client.on('message', async message => {
                     embed.setAuthor({
                         name: `@${msg?.author?.username ?? 'Unknown'}`,
                         iconURL: msg?.author?.generateAvatarURL({ size: 64 }),
+                        url: msg?.url,
                     });
                     if (msg?.content) embed.setDescription('>>> ' + clipText(msg.content, 200));
                 }
