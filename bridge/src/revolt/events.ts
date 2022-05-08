@@ -1,7 +1,7 @@
 import { BRIDGED_EMOJIS, BRIDGED_MESSAGES, BRIDGE_CONFIG, logger } from "..";
 import { AUTUMN_URL, client } from "./client";
 import { client as discordClient } from "../discord/client";
-import { MessageEmbed, MessagePayload, TextChannel, WebhookClient, WebhookMessageOptions } from "discord.js";
+import { Channel as DiscordChannel, Message as DiscordMessage, MessageEmbed, MessagePayload, TextChannel, WebhookClient, WebhookMessageOptions } from "discord.js";
 import GenericEmbed from "../types/GenericEmbed";
 import { SendableEmbed } from "revolt-api";
 import { clipText, discordFetchMessage, revoltFetchMessage, revoltFetchUser } from "../util";
@@ -94,7 +94,7 @@ client.on('message', async message => {
             logger.debug(`Revolt: No Discord webhook stored; Creating new Webhook`);
 
             try {
-                const channel = await discordClient.channels.fetch(bridgeCfg.discord);
+                const channel = await discordClient.channels.fetch(bridgeCfg.discord) as TextChannel;
                 if (!channel || !channel.isText()) throw 'Error: Unable to fetch channel';
                 const ownPerms = (channel as TextChannel).permissionsFor(discordClient.user!);
                 if (!ownPerms?.has('MANAGE_WEBHOOKS')) throw 'Error: Bot user does not have MANAGE_WEBHOOKS permission';
@@ -144,6 +144,7 @@ client.on('message', async message => {
             { upsert: true }
         );
 
+        const channel = await discordClient.channels.fetch(bridgeCfg.discord) as TextChannel;
         const client = new WebhookClient({
             id: bridgeCfg.discordWebhook!.id,
             token: bridgeCfg.discordWebhook!.token,
@@ -179,10 +180,11 @@ client.on('message', async message => {
                     if (replyMsg?.content) embed.setDescription('>>> ' + clipText(replyMsg.content, 200));
                 } else {
                     const msg = await revoltFetchMessage(message.reply_ids?.[0], message.channel);
+                    const brMsg = repliedMessages.find(m => m?.revolt.messageId == msg?._id);
                     embed.setAuthor({
                         name: `@${msg?.author?.username ?? 'Unknown'}`,
                         iconURL: msg?.author?.generateAvatarURL({ size: 64 }),
-                        url: msg?.url,
+                        url: brMsg ? `https://discord.com/channels/${channel.guildId}/${brMsg.channels?.discord || channel.id}/${brMsg.discord.messageId}` : undefined,
                     });
                     if (msg?.content) embed.setDescription('>>> ' + clipText(msg.content, 200));
                 }
@@ -196,9 +198,17 @@ client.on('message', async message => {
                 embed.setAuthor({ name: repliedMessages.length + ' replies' });
 
                 for (const msg of replyMsgs) {
+                    let msgUrl = '';
+                    if (msg instanceof DiscordMessage) {
+                        msgUrl = msg.url;
+                    } else {
+                        const brMsg = repliedMessages.find(m => m?.revolt.messageId == msg?._id);
+                        if (brMsg) msgUrl = `https://discord.com/channels/${channel.guildId}/${brMsg.channels?.discord || channel.id}/${brMsg.discord.messageId}`;
+                    }
+
                     embed.addField(
                         `@${msg?.author?.username ?? 'Unknown'}`,
-                        (msg ? `[Link](${msg.url})\n` : '') +
+                        (msg ? `[Link](${msgUrl})\n` : '') +
                             '>>> ' + clipText(msg?.content ?? '\u200b', 100),
                         true,
                     );
