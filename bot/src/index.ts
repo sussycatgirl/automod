@@ -68,5 +68,4 @@ logger.info(`\
     import('./bot/modules/metrics');
     import('./bot/modules/bot_status');
     import('./bot/modules/fetch_all');
-    import('./bot/modules/event_fix');
 })();

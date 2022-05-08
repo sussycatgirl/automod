@@ -346,11 +346,6 @@ function dedupeArray<T>(...arrays: T[][]): T[] {
     return found;
 }
 
-const awaitClient = () => new Promise<void>(async resolve => {
-    if (!client.user) client.once('ready', () => resolve());
-    else resolve();
-});
-
 export {
     getAutumnURL,
     hasPerm,
@@ -368,7 +363,6 @@ export {
     sendLogMessage,
     embed,
     dedupeArray,
-    awaitClient,
     EmbedColor,
     NO_MANAGER_MSG,
     ULID_REGEX,
