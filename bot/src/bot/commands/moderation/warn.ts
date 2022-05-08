@@ -18,8 +18,8 @@ export default {
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isModerator(message)) return message.reply(NO_MANAGER_MSG);
 
-        const userInput = args.shift();
-        if (!userInput) return message.reply({ embeds: [
+        const userInput = args.shift() || '';
+        if (!userInput && !message.reply_ids?.length) return message.reply({ embeds: [
             embed(
                 `Please specify one or more users by replying to their message while running this command or ` +
                   `by specifying a comma-separated list of usernames.`,
