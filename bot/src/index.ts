@@ -10,7 +10,6 @@ import Infraction from './struct/antispam/Infraction';
 import PendingLogin from './struct/PendingLogin';
 import TempBan from './struct/TempBan';
 import { VoteEntry } from './bot/commands/moderation/votekick';
-import ScannedUser from './struct/ScannedUser';
 import BridgeRequest from './struct/BridgeRequest';
 import BridgeConfig from './struct/BridgeConfig';
 import BridgedMessage from './struct/BridgedMessage';
@@ -36,7 +35,6 @@ const dbs = {
     SESSIONS: db.get('sessions'),
     TEMPBANS: db.get<TempBan>('tempbans'),
     VOTEKICKS: db.get<VoteEntry>('votekicks'),
-    SCANNED_USERS: db.get<ScannedUser>('scanned_users'),
     BRIDGE_CONFIG: db.get<BridgeConfig>('bridge_config'),
     BRIDGED_MESSAGES: db.get<BridgedMessage>('bridged_messages'),
     BRIDGE_REQUESTS: db.get<BridgeRequest>('bridge_requests'),
@@ -63,7 +61,6 @@ logger.info(`\
     import('./bot/modules/mod_logs');
     import('./bot/modules/event_handler');
     import('./bot/modules/tempbans');
-    import('./bot/modules/user_scan');
     import('./bot/modules/api_communication');
     import('./bot/modules/metrics');
     import('./bot/modules/bot_status');

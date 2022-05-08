@@ -23,9 +23,7 @@ class ServerConfig {
     logs?: {
         messageUpdate?: LogConfig,  // Message edited or deleted
         modAction?: LogConfig,      // User warned, kicked or banned
-        userScan?: LogConfig        // User profile matched word list
     };
-    enableUserScan?: boolean;
     allowBlacklistedUsers?: boolean; // Whether the server explicitly allows users that are globally blacklisted
 }
 
