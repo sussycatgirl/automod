@@ -47,7 +47,7 @@ async function setNick(member: Member, newName: string|null) {
         `${member.client.apiURL}/servers/${member.server!._id}/members/${member._id.user}`,
         {
             nickname: newName || undefined,
-            remove: !newName ? "Nickname" : undefined,
+            remove: !newName ? [ "Nickname" ] : undefined,
         },
         {
             headers: {

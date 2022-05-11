@@ -53,7 +53,7 @@ async function clearAvatar(member: Member) {
     await axios.patch(
         `${member.client.apiURL}/servers/${member.server!._id}/members/${member._id.user}`,
         {
-            remove: "Avatar",
+            remove: [ "Avatar" ],
         },
         {
             headers: {
