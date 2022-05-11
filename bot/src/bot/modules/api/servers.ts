@@ -1,6 +1,6 @@
 import { User } from '@janderedev/revolt.js/dist/maps/Users';
 import { client } from '../../..';
-import { getPermissionLevel, isBotManager } from '../../util';
+import { getMutualServers, getPermissionLevel } from '../../util';
 import { wsEvents, WSResponse } from '../api_communication';
 
 type ReqData = { user: string }
@@ -15,20 +15,19 @@ wsEvents.on('req:getUserServers', async (data: ReqData, cb: (data: WSResponse) =
             return;
         }
 
-        const mutuals = await user.fetchMutual();
+        const mutuals = getMutualServers(user);
 
         type ServerResponse = { id: string, perms: 0|1|2|3, name: string, iconURL?: string, bannerURL?: string }
 
         const promises: Promise<ServerResponse>[] = [];
 
-        for (const sid of mutuals.servers) {
+        for (const server of mutuals) {
             promises.push(new Promise(async (resolve, reject) => {
                 try {
-                    const server = client.servers.get(sid);
                     if (!server) return reject('Server not found');
                     const perms = await getPermissionLevel(user, server);
                     resolve({
-                        id: sid,
+                        id: server._id,
                         perms,
                         name: server.name,
                         bannerURL: server.generateBannerURL(),

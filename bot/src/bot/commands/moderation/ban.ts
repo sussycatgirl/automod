@@ -4,13 +4,14 @@ import Infraction from "../../../struct/antispam/Infraction";
 import InfractionType from "../../../struct/antispam/InfractionType";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import TempBan from "../../../struct/TempBan";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
 import { storeTempBan } from "../../modules/tempbans";
-import { isModerator, NO_MANAGER_MSG, parseUserOrId, storeInfraction } from "../../util";
+import { dedupeArray, embed, EmbedColor, isModerator, NO_MANAGER_MSG, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
 import Day from 'dayjs';
 import RelativeTime from 'dayjs/plugin/relativeTime';
 import CommandCategory from "../../../struct/commands/CommandCategory";
+import { SendableEmbed } from "@janderedev/revolt.js/node_modules/revolt-api";
+import { User } from "@janderedev/revolt.js";
 
 Day.extend(RelativeTime);
 
@@ -25,23 +26,20 @@ export default {
         if (!await isModerator(message))
             return message.reply(NO_MANAGER_MSG);
         if (!message.serverContext.havePermission('BanMembers')) {
-            return await message.reply(`Sorry, I do not have \`BanMembers\` permission.`);
+            return await message.reply({ embeds: [
+                embed(`Sorry, I do not have \`BanMembers\` permission.`, '', EmbedColor.SoftError)
+            ] });
         }
 
-        if (args.length == 0)
-            return message.reply(`You need to provide a target user!`);
-
-        const targetUser = await parseUserOrId(args.shift()!);
-        if (!targetUser) return message.reply('Sorry, I can\'t find that user.');
-        const targetName = await fetchUsername(targetUser._id);
-
-        if (targetUser._id == message.author_id) {
-            return message.reply('nah');
-        }
-
-        if (targetUser._id == client.user!._id) {
-            return message.reply('lol no');
-        }
+        const userInput = args.shift() || '';
+        if (!userInput && !message.reply_ids?.length) return message.reply({ embeds: [
+            embed(
+                `Please specify one or more users by replying to their message while running this command or ` +
+                  `by specifying a comma-separated list of usernames.`,
+                'No target user specified',
+                EmbedColor.SoftError,
+            ),
+        ] });
 
         let banDuration = 0;
         let durationStr = args.shift();
@@ -65,66 +63,190 @@ export default {
 
                 banDuration += num * multiplier;
             }
-        } else if (durationStr) args.splice(0, 0, durationStr);
+        } else if (durationStr) args.unshift(durationStr);
 
-        let reason = args.join(' ') || 'No reason provided';
+        let reason = args.join(' ')
+            ?.replace(new RegExp('`', 'g'), '\'')
+            ?.replace(new RegExp('\n', 'g'), ' ');
 
-        if (banDuration == 0) {
-            let infId = ulid();
-            let infraction: Infraction = {
-                _id: infId,
-                createdBy: message.author_id,
-                date: Date.now(),
-                reason: reason,
-                server: message.serverContext._id,
-                type: InfractionType.Manual,
-                user: targetUser._id,
-                actionType: 'ban',
+        if (reason.length > 200) return message.reply({
+            embeds: [ embed('Ban reason may not be longer than 200 characters.', null, EmbedColor.SoftError) ]
+        });
+
+        const embeds: SendableEmbed[] = [];
+        const handledUsers: string[] = [];
+        const targetUsers: User|{ _id: string }[] = [];
+
+        const targetInput = dedupeArray(
+            // Replied messages
+            (await Promise.allSettled(
+                (message.reply_ids ?? []).map(msg => message.channel?.fetchMessage(msg))
+            ))
+            .filter(m => m.status == 'fulfilled').map(m => (m as any).value.author_id),
+            // Provided users
+            userInput.split(','),
+        );
+
+        for (const userStr of targetInput) {
+            try {
+                let user = await parseUserOrId(userStr);
+                if (!user) {
+                    if (message.reply_ids?.length && userStr == userInput) {
+                        reason = reason ? `${userInput} ${reason}` : userInput;
+                    }
+                    else {
+                        embeds.push(embed(`I can't resolve \`${sanitizeMessageContent(userStr).trim()}\` to a user.`, null, '#ff785d'));
+                    }
+                    continue;
+                }
+
+                // Silently ignore duplicates
+                if (handledUsers.includes(user._id)) continue;
+                handledUsers.push(user._id);
+
+                if (user._id == message.author_id) {
+                    embeds.push(embed('I recommend against banning yourself :yeahokayyy:', null, EmbedColor.Warning));
+                    continue;
+                }
+
+                if (user._id == client.user!._id) {
+                    embeds.push(embed('I\'m not going to ban myself :flushee:', null, EmbedColor.Warning));
+                    continue;
+                }
+
+                targetUsers.push(user);
+            } catch(e) {
+                console.error(e);
+                embeds.push(embed(
+                    `Failed to ban target \`${sanitizeMessageContent(userStr).trim()}\`: ${e}`,
+                    `Failed to ban: An error has occurred`,
+                    EmbedColor.Error,
+                ));
             }
-            let { userWarnCount } = await storeInfraction(infraction);
+        }
 
-            message.serverContext.banUser(targetUser._id, {
-                reason: reason + ` (by ${await fetchUsername(message.author_id)} ${message.author_id})`
-            })
-            .catch(e => message.reply(`Failed to ban user: \`${e}\``));
+        const members = await message.serverContext.fetchMembers();
 
-            await Promise.all([
-                message.reply(`### ${targetName} has been ${Math.random() > 0.8 ? 'ejected' : 'banned'}.\n`
-                        + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`),
-                logModAction('ban', message.serverContext, message.member!, targetUser._id, reason, infraction._id, `Ban duration: **Permanent**`),
-            ]);
-        } else {
-            let banUntil = Date.now() + banDuration;
-            let infId = ulid();
-            let infraction: Infraction = {
-                _id: infId,
-                createdBy: message.author_id,
-                date: Date.now(),
-                reason: reason + ` (${durationStr})`,
-                server: message.serverContext._id,
-                type: InfractionType.Manual,
-                user: targetUser._id,
-                actionType: 'ban',
+        for (const user of targetUsers) {
+            try {
+                if (banDuration == 0) {
+                    const infId = ulid();
+                    const infraction: Infraction = {
+                        _id: infId,
+                        createdBy: message.author_id,
+                        date: Date.now(),
+                        reason: reason || 'No reason provided',
+                        server: message.serverContext._id,
+                        type: InfractionType.Manual,
+                        user: user._id,
+                        actionType: 'ban',
+                    }
+                    const { userWarnCount } = await storeInfraction(infraction);
+
+                    const member = members.members.find(m => m._id.user == user._id);
+
+                    if (member && message.member && !member.inferiorTo(message.member)) {
+                        embeds.push(embed(
+                            `\`${member.user?.username}\` has an equally or higher ranked role than you; refusing to ban.`,
+                            'Missing permission',
+                            EmbedColor.SoftError
+                        ));
+                        continue;
+                    }
+
+                    if (member && !member.bannable) {
+                        embeds.push(embed(
+                            `I don't have permission to ban \`${member?.user?.username || user._id}\`.`,
+                            null,
+                            EmbedColor.SoftError
+                        ));
+                        continue;
+                    }
+
+                    await message.serverContext.banUser(user._id, {
+                        reason: reason + ` (by ${await fetchUsername(message.author_id)} ${message.author_id})`
+                    });
+
+                    await logModAction('ban', message.serverContext, message.member!, user._id, reason, infraction._id, `Ban duration: **Permanent**`);
+
+                    embeds.push({
+                        title: `User ${Math.random() > 0.8 ? 'ejected' : 'banned'}`,
+                        icon_url: user instanceof User ? user.generateAvatarURL() : undefined,
+                        colour: EmbedColor.Success,
+                        description: `This is ${userWarnCount == 1 ? '**the first infraction**' : `infraction number **${userWarnCount}**`}` +
+                            ` for ${await fetchUsername(user._id)}.\n` +
+                            `**Infraction ID:** \`${infraction._id}\`\n` +
+                            `**Reason:** \`${infraction.reason}\``
+                    });
+                } else {
+                    const banUntil = Date.now() + banDuration;
+                    const banDurationFancy = Day(banUntil).fromNow(true);
+                    const infId = ulid();
+                    const infraction: Infraction = {
+                        _id: infId,
+                        createdBy: message.author_id,
+                        date: Date.now(),
+                        reason: (reason || 'No reason provided') + ` (${durationStr})`,
+                        server: message.serverContext._id,
+                        type: InfractionType.Manual,
+                        user: user._id,
+                        actionType: 'ban',
+                    }
+                    const { userWarnCount } = await storeInfraction(infraction);
+
+                    await message.serverContext.banUser(user._id, {
+                        reason: reason + ` (by ${await fetchUsername(message.author_id)} ${message.author_id}) (${durationStr})`
+                    });
+
+                    await Promise.all([
+                        storeTempBan({
+                            id: infId,
+                            bannedUser: user._id,
+                            server: message.serverContext._id,
+                            until: banUntil,
+                        }),
+                        logModAction(
+                            'ban',
+                            message.serverContext,
+                            message.member!,
+                            user._id,
+                            reason,
+                            infraction._id,
+                            `Ban duration: **${banDurationFancy}**`
+                        ),
+                    ]);
+
+                    embeds.push({
+                        title: `User temporarily banned`,
+                        icon_url: user instanceof User ? user.generateAvatarURL() : undefined,
+                        colour: EmbedColor.Success,
+                        description: `This is ${userWarnCount == 1 ? '**the first infraction**' : `infraction number **${userWarnCount}**`}` +
+                            ` for ${await fetchUsername(user._id)}.\n` +
+                            `**Ban duration:** ` +
+                            `**Infraction ID:** \`${infraction._id}\`\n` +
+                            `**Reason:** \`${infraction.reason}\``
+                    });
+                }
+            } catch(e) {
+                console.error(e);
+                embeds.push(embed(
+                    `Failed to ban target \`${await fetchUsername(user._id, user._id)}\`: ${e}`,
+                    'Failed to ban: An error has occurred',
+                    EmbedColor.Error,
+                ));
             }
-            let { userWarnCount } = await storeInfraction(infraction);
+        }
 
-            message.serverContext.banUser(targetUser._id, {
-                reason: reason + ` (by ${await fetchUsername(message.author_id)} ${message.author_id}) (${durationStr})`
-            })
-            .catch(e => message.reply(`Failed to ban user: \`${e}\``));
+        let firstMsg = true;
+        while (embeds.length > 0) {
+            const targetEmbeds = embeds.splice(0, 10);
 
-            await storeTempBan({
-                id: infId,
-                bannedUser: targetUser._id,
-                server: message.serverContext._id,
-                until: banUntil,
-            } as TempBan);
-
-            await Promise.all([
-                message.reply(`### ${targetName} has been temporarily banned.\n`
-                        + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`),
-                logModAction('ban', message.serverContext, message.member!, targetUser._id, reason, infraction._id, `Ban duration: **${Day(banUntil).fromNow(true)}**`),
-            ]);
+            if (firstMsg) {
+                await message.reply({ embeds: targetEmbeds, content: 'Operation completed.' }, false);
+            } else {
+                await message.channel?.sendMessage({ embeds: targetEmbeds });
+            }
+            firstMsg = false;
         }
     }
 } as SimpleCommand;

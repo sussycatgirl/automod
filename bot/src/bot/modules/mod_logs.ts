@@ -149,11 +149,11 @@ async function logModAction(type: 'warn'|'kick'|'ban'|'votekick', server: Server
 }
 
 
-let fetchUsername = async (id: string) => {
+let fetchUsername = async (id: string, fallbackText?: string) => {
     try {
         let u = client.users.get(id) || await client.users.fetch(id);
         return `@${u.username}`;
-    } catch(e) { return 'Unknown user' }
+    } catch(e) { return fallbackText || 'Unknown user' }
 }
 
 export { fetchUsername, logModAction }

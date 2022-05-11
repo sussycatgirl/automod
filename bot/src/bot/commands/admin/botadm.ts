@@ -5,11 +5,10 @@ import { commands, DEFAULT_PREFIX, ownerIDs } from "../../modules/command_handle
 import child_process from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { wordlist } from "../../modules/user_scan";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { adminBotLog } from "../../logging";
 import CommandCategory from "../../../struct/commands/CommandCategory";
-import { parseUserOrId } from "../../util";
+import { getMutualServers, parseUserOrId } from "../../util";
 
 const BLACKLIST_BAN_REASON = `This user is globally blacklisted and has been banned automatically. If you wish to opt out of the global blacklist, run '/botctl ignore_blacklist yes'.`;
 const BLACKLIST_MESSAGE = (username: string) => `\`@${username}\` has been banned automatically. Check the ban reason for more info.`;
@@ -76,8 +75,7 @@ export default {
                             + `Heartbeat: \`${client.heartbeat}\`\n`
                             + `Ping: \`${client.websocket.ping ?? 'Unknown'}\`\n`
                             + `### Bot configuration\n`
-                            + `Owners: \`${ownerIDs.length}\` (${ownerIDs.join(', ')})\n`
-                            + `Wordlist loaded: \`${wordlist ? `Yes (${wordlist.length} line${wordlist.length == 1 ? '' : 's'})` : 'No'}\`\n`;
+                            + `Owners: \`${ownerIDs.length}\` (${ownerIDs.join(', ')})\n`;
 
                     await message.reply(msg, false);
                     break;
@@ -166,11 +164,8 @@ export default {
                             const msg = await message.reply(`User update stored.`);
                             let bannedServers = 0;
 
-                            const mutuals = await target.fetchMutual();
-                            for (const serverid of mutuals.servers) {
-                                const server = client.servers.get(serverid);
-                                if (!server) continue;
-
+                            const mutuals = getMutualServers(target);
+                            for (const server of mutuals) {
                                 if (server.havePermission('BanMembers')) {
                                     const config = await dbs.SERVERS.findOne({ id: server._id });
                                     if (config?.allowBlacklistedUsers) continue;
@@ -188,7 +183,7 @@ export default {
                                             }
                                         }
                                     } catch(e) {
-                                        console.error(`Failed to ban in ${serverid}: ${e}`);
+                                        console.error(`Failed to ban in ${server._id}: ${e}`);
                                     }
                                 }
                             }

@@ -47,10 +47,10 @@
     axios "^0.26.1"
     openapi-typescript "^5.2.0"
 
-"@janderedev/revolt.js@^6.0.0-rc.24-patch.1":
-  version "6.0.0-rc.24-patch.1"
-  resolved "https://registry.yarnpkg.com/@janderedev/revolt.js/-/revolt.js-6.0.0-rc.24-patch.1.tgz#58a9762fc887db16d34874d1e8a9c032112f6c83"
-  integrity sha512-+1Q94zNWj+OhRrBa4kVyFaG1U7OC2XwOrXqIk6Jiult8krH2lqKOjSqsxaKKITQLJ+8xIpM2TmMWVoXY52OdWQ==
+"@janderedev/revolt.js@^6.0.0-patch.3":
+  version "6.0.0-patch.3"
+  resolved "https://registry.yarnpkg.com/@janderedev/revolt.js/-/revolt.js-6.0.0-patch.3.tgz#7d9ad66e5a0d54fb2f5f0f8887cbd1382c69d301"
+  integrity sha512-aZ1vubm8+l10lTy5HwO3vAc7E2/bm3+hfFhNqU7l+9QKecIAm6f45p7RNC19afSYChIZiyhtGPtWTuVJ9pa0RA==
   dependencies:
     "@insertish/exponential-backoff" "3.1.0-patch.2"
     "@insertish/isomorphic-ws" "^4.0.1"
@@ -61,7 +61,7 @@
     lodash.isequal "^4.5.0"
     long "^5.2.0"
     mobx "^6.3.2"
-    revolt-api "0.5.3-rc.15"
+    revolt-api "0.5.3"
     ulid "^2.3.0"
     ws "^8.2.2"
 
@@ -600,7 +600,16 @@ require-at@^1.0.6:
   resolved "https://registry.yarnpkg.com/require-at/-/require-at-1.0.6.tgz#9eb7e3c5e00727f5a4744070a7f560d4de4f6e6a"
   integrity sha512-7i1auJbMUrXEAZCOQ0VNJgmcT2VOKPRl2YGJwgpHpC9CE91Mv4/4UYIUm4chGJaI381ZDq1JUicFii64Hapd8g==
 
-revolt-api@0.5.3-rc.15, revolt-api@^0.5.3-rc.15:
+revolt-api@0.5.3:
+  version "0.5.3"
+  resolved "https://registry.yarnpkg.com/revolt-api/-/revolt-api-0.5.3.tgz#e0ec2dcf812ea4338247b2eb77d67fc731d71b8a"
+  integrity sha512-hYdyStQiDZFvD+0dlf6SgQSiOk+JiEmQo0qIQHaqYRtrFN6FQBbGVNaiv7b5LzHHMPq7vks6ZVVA7hSNpcwlkA==
+  dependencies:
+    "@insertish/oapi" "0.1.15"
+    axios "^0.26.1"
+    lodash.defaultsdeep "^4.6.1"
+
+revolt-api@^0.5.3-rc.15:
   version "0.5.3-rc.15"
   resolved "https://registry.yarnpkg.com/revolt-api/-/revolt-api-0.5.3-rc.15.tgz#abd08dd8109d0ca31be118461eabbeb6c3b7792e"
   integrity sha512-MYin3U+KoObNkILPf2cz+FPperynExkUu7CjzurMJCRvBncpnhb2czvWDvnhLDKBHlpo8W597xNqzQnaklV4ug==

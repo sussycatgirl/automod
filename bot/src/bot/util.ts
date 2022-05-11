@@ -346,6 +346,19 @@ function dedupeArray<T>(...arrays: T[][]): T[] {
     return found;
 }
 
+function getMutualServers(user: User) {
+    const servers: Server[] = [];
+    for (const member of client.members) {
+        if (member[1]._id.user == user._id && member[1].server) servers.push(member[1].server);
+    }
+    return servers;
+}
+
+const awaitClient = () => new Promise<void>(async resolve => {
+    if (!client.user) client.once('ready', () => resolve());
+    else resolve();
+});
+
 export {
     getAutumnURL,
     hasPerm,
@@ -363,6 +376,8 @@ export {
     sendLogMessage,
     embed,
     dedupeArray,
+    awaitClient,
+    getMutualServers,
     EmbedColor,
     NO_MANAGER_MSG,
     ULID_REGEX,
