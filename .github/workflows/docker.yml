@@ -34,7 +34,9 @@ jobs:
           context: ./api
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/janderedev/automod:api
+          tags: |
+            ghcr.io/janderedev/automod-api:latest
+            ghcr.io/janderedev/automod-api:$(git rev-parse --short "$GITHUB_SHA")
 
   publish_web:
     runs-on: ubuntu-latest
@@ -61,7 +63,9 @@ jobs:
           context: ./web
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/janderedev/automod:web
+          tags: |
+            ghcr.io/janderedev/automod-web:latest
+            ghcr.io/janderedev/automod-web:$(git rev-parse --short "$GITHUB_SHA")
 
   publish_bridge:
     runs-on: ubuntu-latest
@@ -88,7 +92,9 @@ jobs:
           context: ./bridge
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/janderedev/automod:bridge
+          tags: |
+            ghcr.io/janderedev/automod-bridge:latest
+            ghcr.io/janderedev/automod-bridge:$(git rev-parse --short "$GITHUB_SHA")
           
   publish_bot:
     runs-on: ubuntu-latest
@@ -115,4 +121,6 @@ jobs:
           context: ./bot
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/janderedev/automod:bot
+          tags: |
+            ghcr.io/janderedev/automod-bot:latest
+            ghcr.io/janderedev/automod-bot:$(git rev-parse --short "$GITHUB_SHA")
