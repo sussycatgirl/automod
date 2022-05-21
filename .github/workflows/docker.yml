@@ -15,6 +15,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       -
+        name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          # list of Docker images to use as base name for tags
+          images: ghcr.io/janderedev/automod-api
+          # generate Docker tags based on branch and short commit SHA
+          tags: |
+            type=ref,event=branch
+            type=sha
+      -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       -
@@ -33,16 +44,26 @@ jobs:
         with:
           context: ./api
           platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ghcr.io/janderedev/automod-api:latest
-            ghcr.io/janderedev/automod-api:${{ GITHUB_SHA }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   publish_web:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      -
+        name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          # list of Docker images to use as base name for tags
+          images: ghcr.io/janderedev/automod-web
+          # generate Docker tags based on branch and short commit SHA
+          tags: |
+            type=ref,event=branch
+            type=sha
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -62,16 +83,26 @@ jobs:
         with:
           context: ./web
           platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ghcr.io/janderedev/automod-web:latest
-            ghcr.io/janderedev/automod-web:${{ GITHUB_SHA }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   publish_bridge:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      -
+        name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          # list of Docker images to use as base name for tags
+          images: ghcr.io/janderedev/automod-bridge
+          # generate Docker tags based on branch and short commit SHA
+          tags: |
+            type=ref,event=branch
+            type=sha
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -91,16 +122,26 @@ jobs:
         with:
           context: ./bridge
           platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ghcr.io/janderedev/automod-bridge:latest
-            ghcr.io/janderedev/automod-bridge:${{ GITHUB_SHA }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           
   publish_bot:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      -
+        name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          # list of Docker images to use as base name for tags
+          images: ghcr.io/janderedev/automod-bot
+          # generate Docker tags based on branch and short commit SHA
+          tags: |
+            type=ref,event=branch
+            type=sha
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -120,7 +161,6 @@ jobs:
         with:
           context: ./bot
           platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ghcr.io/janderedev/automod-bot:latest
-            ghcr.io/janderedev/automod-bot:${{ GITHUB_SHA }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
