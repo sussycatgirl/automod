@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: automod-bot-deployment
+  labels:
+    app: automod
+    service: bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: automod
+      service: bot
+  template:
+    metadata:
+      labels:
+        app: automod
+        service: bot
+    spec:
+      containers:
+      - name: automod-bot
+        image: ghcr.io/janderedev/automod-bot:sha-8e538df@sha256:c63c3bfd81940e61b9fb3f1f156283c8e5705e5546cc5ddd6076f57c3b0dc499
+        imagePullPolicy: "Always"
+        resources:
+          limits:
+            cpu: "2"
+            memory: "1024M"
