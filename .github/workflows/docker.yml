@@ -11,6 +11,9 @@ on:
 jobs:
   publish_api:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        architecture: [linux/amd64, linux/arm64]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -32,11 +35,15 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./api
+          platforms: ${{ matrix.architecture }}
           push: true
-          tags: ghcr.io/janderedev/automod:api
+          tags: ghcr.io/janderedev/automod:api-${{ matrix.architecture }}
 
   publish_web:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        architecture: [linux/amd64, linux/arm64]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -58,11 +65,15 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./web
+          platforms: ${{ matrix.architecture }}
           push: true
-          tags: ghcr.io/janderedev/automod:web
+          tags: ghcr.io/janderedev/automod:web-${{ matrix.architecture }}
 
   publish_bridge:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        architecture: [linux/amd64, linux/arm64]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -84,11 +95,15 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./bridge
+          platforms: ${{ matrix.architecture }}
           push: true
-          tags: ghcr.io/janderedev/automod:bridge
+          tags: ghcr.io/janderedev/automod:bridge-${{ matrix.architecture }}
           
   publish_bot:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        architecture: [linux/amd64, linux/arm64]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -110,5 +125,6 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./bot
+          platforms: ${{ matrix.architecture }}
           push: true
-          tags: ghcr.io/janderedev/automod:bot
+          tags: ghcr.io/janderedev/automod:bot-${{ matrix.architecture }}
