@@ -42,9 +42,6 @@ client.on('packet', async (packet) => {
                         discord: {
                             description: `Author: @${m?.author?.username || m?.author_id || "Unknown"} | Channel: ${channel?.name || channel?._id}`
                         },
-                        revoltRvembed: {
-                            description: `Author: @${m?.author?.username || m?.author_id || "Unknown"} | Channel: ${channel?.name || channel?._id}`
-                        }
                     }
                 }
 
@@ -88,9 +85,6 @@ client.on('packet', async (packet) => {
                         discord: {
                             description: `Author: @${message.author?.username || message.author_id} | Channel: ${message.channel?.name || message.channel_id}`
                         },
-                        revoltRvembed: {
-                            description: `Author: @${message.author?.username || message.author_id} | Channel: ${message.channel?.name || message.channel_id}`
-                        }
                     }
                 }
 
@@ -132,15 +126,7 @@ async function logModAction(type: 'warn'|'kick'|'ban'|'votekick', server: Server
                            + `**Warn ID**: \`${infractionID}\`\n`
                            + (extraText ?? ''),
                 color: embedColor,
-                overrides: {
-                    revoltRvembed: {
-                        description: `@${mod.user?.username} ${aType} `
-                           + `${await fetchUsername(target)}${type == 'warn' ? '.' : ` from ${server.name}.`}\n`
-                           + `Reason: ${reason ? reason : 'No reason provided.'}\n`
-                           + `Warn ID: ${infractionID}\n`
-                           + (extraText ?? ''),
-                    }
-                }
+                overrides: {},
             });
         }
     } catch(e) {
