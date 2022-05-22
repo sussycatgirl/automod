@@ -106,6 +106,33 @@ client.on('packet', async (packet) => {
             console.error(e);
         }
     }
+
+    if (packet.type == 'BulkMessageDelete') {
+        const channel = client.channels.get(packet.channel);
+        if (!channel) return;
+
+        try {
+            let config = await dbs.SERVERS.findOne({ id: channel.server?._id });
+            if (config?.logs?.messageUpdate) {
+                let embed: LogMessage = {
+                    title: `Bulk delete in in ${channel.server?.name}`,
+                    description: `${packet.ids.length} messages deleted in ` + 
+                        `[#${channel.name}](/server/${channel.server_id}/channel/${channel._id})`,
+                    fields: [],
+                    color: '#ff392b',
+                    overrides: {
+                        discord: {
+                            description: `${packet.ids.length} messages deleted in #${channel.name}`,
+                        }
+                    }
+                }
+
+                await sendLogMessage(config.logs.messageUpdate, embed);
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
 });
 
 async function logModAction(type: 'warn'|'kick'|'ban'|'votekick', server: Server, mod: Member, target: string, reason: string|null, infractionID: string, extraText?: string): Promise<void> {

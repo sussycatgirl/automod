@@ -85,8 +85,12 @@ export default {
                 .catch(console.error);
 
             setTimeout(async () => {
-                await replyMsg?.delete();
-                if (!messages.find(m => m._id == message._id)) await message.delete();
+                try {
+                    await message.channel?.deleteMessages([
+                        replyMsg!._id,
+                        message._id,
+                    ]);
+                } catch(e) { console.error(e) }
             }, 6000);
         } catch(e) {
             console.error(e);
