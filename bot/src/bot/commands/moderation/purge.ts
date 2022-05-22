@@ -26,7 +26,8 @@ export default {
                 if (amount > MAX_PURGE_AMOUNT) return message.reply(`Message count exceeds the limit of ${MAX_PURGE_AMOUNT}.`);
 
                 messages = await message.channel!.fetchMessages({
-                    limit: amount
+                    limit: amount,
+                    before: message._id,
                 });
             }
             // delete messages between [id] and [id]
@@ -78,15 +79,17 @@ export default {
                 messages = messages.filter(m => users.find(u => u?._id == m.author_id));
             }
 
-            let m = await (message.channel?.sendMessage(`Deleting ${messages.length} messages...`)?.catch(console.error));
-            let res = await Promise.allSettled(messages.map(m => m.delete()));
+            await message.channel?.deleteMessages(messages.map(m => m._id));
 
-            let failures = res.filter(r => r.status == 'rejected').length;
-
-            await m?.edit({ content: `Deleted ${messages.length} messages.`
-                + `${failures > 0 ? `\n${failures} message${failures == 1 ? '' : 's'} failed to delete.` : ''}` })
+            const replyMsg = await message.channel?.sendMessage({ content: `Deleted ${messages.length} messages.` })
                 .catch(console.error);
+
+            setTimeout(async () => {
+                await replyMsg?.delete();
+                if (!messages.find(m => m._id == message._id)) await message.delete();
+            }, 6000);
         } catch(e) {
+            console.error(e);
             message.channel?.sendMessage(`An error has occurred: ${e}`);
         }
     }
