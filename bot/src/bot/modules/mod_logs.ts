@@ -42,9 +42,6 @@ client.on('packet', async (packet) => {
                         discord: {
                             description: `Author: @${m?.author?.username || m?.author_id || "Unknown"} | Channel: ${channel?.name || channel?._id}`
                         },
-                        revoltRvembed: {
-                            description: `Author: @${m?.author?.username || m?.author_id || "Unknown"} | Channel: ${channel?.name || channel?._id}`
-                        }
                     }
                 }
 
@@ -88,9 +85,6 @@ client.on('packet', async (packet) => {
                         discord: {
                             description: `Author: @${message.author?.username || message.author_id} | Channel: ${message.channel?.name || message.channel_id}`
                         },
-                        revoltRvembed: {
-                            description: `Author: @${message.author?.username || message.author_id} | Channel: ${message.channel?.name || message.channel_id}`
-                        }
                     }
                 }
 
@@ -104,6 +98,33 @@ client.on('packet', async (packet) => {
                     let autumnURL = await getAutumnURL();
                     embed.fields!.push({ title: 'Attachments', content: message.attachments.map(a => 
                         `[\\[${a.filename}\\]](<${autumnURL}/${a.tag}/${a._id}/${a.filename}>)`).join(' | ') })
+                }
+
+                await sendLogMessage(config.logs.messageUpdate, embed);
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    if (packet.type == 'BulkMessageDelete') {
+        const channel = client.channels.get(packet.channel);
+        if (!channel) return;
+
+        try {
+            let config = await dbs.SERVERS.findOne({ id: channel.server?._id });
+            if (config?.logs?.messageUpdate) {
+                let embed: LogMessage = {
+                    title: `Bulk delete in in ${channel.server?.name}`,
+                    description: `${packet.ids.length} messages deleted in ` + 
+                        `[#${channel.name}](/server/${channel.server_id}/channel/${channel._id})`,
+                    fields: [],
+                    color: '#ff392b',
+                    overrides: {
+                        discord: {
+                            description: `${packet.ids.length} messages deleted in #${channel.name}`,
+                        }
+                    }
                 }
 
                 await sendLogMessage(config.logs.messageUpdate, embed);
@@ -132,15 +153,7 @@ async function logModAction(type: 'warn'|'kick'|'ban'|'votekick', server: Server
                            + `**Warn ID**: \`${infractionID}\`\n`
                            + (extraText ?? ''),
                 color: embedColor,
-                overrides: {
-                    revoltRvembed: {
-                        description: `@${mod.user?.username} ${aType} `
-                           + `${await fetchUsername(target)}${type == 'warn' ? '.' : ` from ${server.name}.`}\n`
-                           + `Reason: ${reason ? reason : 'No reason provided.'}\n`
-                           + `Warn ID: ${infractionID}\n`
-                           + (extraText ?? ''),
-                    }
-                }
+                overrides: {},
             });
         }
     } catch(e) {

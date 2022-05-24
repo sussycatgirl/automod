@@ -218,36 +218,23 @@ async function sendLogMessage(config: LogConfig, content: LogMessage) {
             const channel = client.channels.get(config.revolt.channel) || await client.channels.fetch(config.revolt.channel);
 
             let message = '';
+            let embed: SendableEmbed|undefined = undefined;
             switch(config.revolt.type) {
-                case 'RVEMBED':
-                case 'DYNAMIC':
-                    c = { ...c, ...content.overrides?.revoltRvembed };
-                    let url = `https://rvembed.janderedev.xyz/embed`;
-                    let args = [];
+                case 'EMBED':
+                    c = { ...c, ...content.overrides?.revoltEmbed };
+                    embed = {
+                        title: c.title,
+                        description: c.description,
+                        colour: c.color,
+                    }
 
-                    let description = (c.description ?? '');
                     if (c.fields?.length) {
                         for (const field of c.fields) {
-                            description += `\n${field.title}\n` +
-                                        `${field.content}`;
+                            embed.description += `\n#### ${field.title}\n${field.content}`;
                         }
                     }
+                    break;
 
-                    description = description.trim();
-
-                    if (c.title) args.push(`title=${encodeURIComponent(c.title)}`);
-                    if (description) args.push(`description=${encodeURIComponent(description)}`);
-                    if (c.color) args.push(`color=${encodeURIComponent(c.color)}`);
-                    if (c.image) {
-                        args.push(`image=${encodeURIComponent(c.image.url)}`);
-                        args.push(`image_large=true`);
-                    }
-
-                    if (!(config.revolt.type == 'DYNAMIC' && (description.length > 1000 || description.split('\n').length > 6))) {
-                        for (const i in args) url += `${i == '0' ? '?' : '&'}${args[i]}`;
-                        message = `[\u200b](${url})`;
-                        break;
-                    }
                 default: // QUOTEBLOCK, PLAIN or unspecified
 
                     // please disregard this mess
@@ -271,6 +258,7 @@ async function sendLogMessage(config: LogConfig, content: LogMessage) {
 
             channel.sendMessage({
                 content: message,
+                embeds: embed ? [ embed ] : undefined,
                 attachments: content.attachments ?
                     await Promise.all(content.attachments?.map(a => uploadFile(a.content, a.name))) :
                     undefined

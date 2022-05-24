@@ -11,7 +11,7 @@ export default class LogMessage {
     attachments?: { name: string, content: Buffer }[];
     overrides?: {
         // These take priority over `revolt`
-        revoltRvembed?: Override,
+        revoltEmbed?: Override,
         revoltQuoteblock?: Override,
 
         revolt?: Override,
