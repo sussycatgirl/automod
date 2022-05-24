@@ -31,7 +31,7 @@ export default {
             ] });
         }
 
-        const userInput = args.shift() || '';
+        const userInput = !message.reply_ids?.length ? args.shift() || '' : undefined;
         if (!userInput && !message.reply_ids?.length) return message.reply({ embeds: [
             embed(
                 `Please specify one or more users by replying to their message while running this command or ` +
@@ -78,25 +78,19 @@ export default {
         const targetUsers: User|{ _id: string }[] = [];
 
         const targetInput = dedupeArray(
-            // Replied messages
-            (await Promise.allSettled(
-                (message.reply_ids ?? []).map(msg => message.channel?.fetchMessage(msg))
-            ))
-            .filter(m => m.status == 'fulfilled').map(m => (m as any).value.author_id),
-            // Provided users
-            userInput.split(','),
+            message.reply_ids?.length
+                ? (await Promise.allSettled(
+                    message.reply_ids.map(msg => message.channel?.fetchMessage(msg))
+                ))
+                .filter(m => m.status == 'fulfilled').map(m => (m as any).value.author_id)
+                : userInput!.split(','),
         );
 
         for (const userStr of targetInput) {
             try {
                 let user = await parseUserOrId(userStr);
                 if (!user) {
-                    if (message.reply_ids?.length && userStr == userInput) {
-                        reason = reason ? `${userInput} ${reason}` : userInput;
-                    }
-                    else {
-                        embeds.push(embed(`I can't resolve \`${sanitizeMessageContent(userStr).trim()}\` to a user.`, null, '#ff785d'));
-                    }
+                    embeds.push(embed(`I can't resolve \`${sanitizeMessageContent(userStr).trim()}\` to a user.`, null, '#ff785d'));
                     continue;
                 }
 
@@ -175,6 +169,7 @@ export default {
                         colour: EmbedColor.Success,
                         description: `This is ${userWarnCount == 1 ? '**the first infraction**' : `infraction number **${userWarnCount}**`}` +
                             ` for ${await fetchUsername(user._id)}.\n` +
+                            `**User ID:** \`${user._id}\`\n` +
                             `**Infraction ID:** \`${infraction._id}\`\n` +
                             `**Reason:** \`${infraction.reason}\``
                     });
@@ -222,7 +217,8 @@ export default {
                         colour: EmbedColor.Success,
                         description: `This is ${userWarnCount == 1 ? '**the first infraction**' : `infraction number **${userWarnCount}**`}` +
                             ` for ${await fetchUsername(user._id)}.\n` +
-                            `**Ban duration:** ` +
+                            `**Ban duration:** ${banDurationFancy}\n` +
+                            `**User ID:** \`${user._id}\`\n` +
                             `**Infraction ID:** \`${infraction._id}\`\n` +
                             `**Reason:** \`${infraction.reason}\``
                     });

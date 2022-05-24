@@ -7,6 +7,9 @@ class Infraction {
     user: string;
     createdBy: string|null;
     server: string;
+    channel?: string;
+    message?: string;
+    targetMessages?: string[];
     reason: string;
     date: number;
 }
