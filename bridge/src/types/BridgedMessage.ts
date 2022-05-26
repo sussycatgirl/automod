@@ -15,4 +15,6 @@ export default class {
         discord: string;
         revolt: string;
     }
+
+    ignore?: boolean;
 }

@@ -3,7 +3,7 @@
 import { client } from "./client";
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
-import { BRIDGED_MESSAGES, BRIDGE_CONFIG, BRIDGE_REQUESTS, logger } from "..";
+import { BRIDGED_MESSAGES, BRIDGE_CONFIG, BRIDGE_REQUESTS, BRIDGE_USER_CONFIG, logger } from "..";
 import { MessageEmbed, TextChannel } from "discord.js";
 import { revoltFetchMessage, revoltFetchUser } from "../util";
 import { client as revoltClient } from "../revolt/client";
@@ -36,7 +36,20 @@ const COMMANDS: any[] = [
                 name: 'help',
                 description: 'Usage instructions',
                 type: 1,
-            }
+            },
+            {
+                name: 'opt_out',
+                description: 'Opt out of having your messages bridged',
+                type: 1,
+                options: [
+                    {
+                        name: 'opt_out',
+                        description: 'Whether you wish to opt out of having your messages bridged',
+                        optional: true,
+                        type: 5 // Boolean
+                    },
+                ],
+            },
         ],
     },
     {
@@ -166,6 +179,46 @@ client.on('interactionCreate', async interaction => {
                             );
 
                             await interaction.reply({ embeds: [ embed ], ephemeral: true });
+                            break;
+
+                        case 'opt_out':
+                            const optOut = interaction.options.getBoolean('opt_out', false);
+                            if (optOut == null) {
+                                const userConfig = await BRIDGE_USER_CONFIG.findOne({ id: interaction.user.id });
+                                if (userConfig?.optOut) {
+                                    return await interaction.reply({
+                                        ephemeral: true,
+                                        content: 'You are currently **opted out** of message bridging. ' +
+                                            'Users on Revolt **will not** see your username, avatar or message content.'
+                                    });
+                                } else {
+                                    return await interaction.reply({
+                                        ephemeral: true,
+                                        content: 'You are currently **not** opted out of message bridging. ' +
+                                            'All your messages in a bridged channel will be sent to the associated Revolt channel.'
+                                    });
+                                }
+                            } else {
+                                await BRIDGE_USER_CONFIG.update(
+                                    { id: interaction.user.id },
+                                    {
+                                        $setOnInsert: { id: interaction.user.id },
+                                        $set: { optOut },
+                                    },
+                                    { upsert: true }
+                                );
+
+                                return await interaction.reply({
+                                    ephemeral: true,
+                                    content: `You have **opted ${optOut ? 'out of' : 'into'}** message bridging. `
+                                        + (
+                                            optOut
+                                                ? 'Your username, avatar and message content will no longer be visible on Revolt.\n' +
+                                                  'Please note that some servers may be configured to automatically delete your messages.'
+                                                : 'All your messages in a bridged channel will be sent to the associated Revolt channel.'
+                                        ),
+                                });
+                            }
                             break;
 
                         default: await interaction.reply('Unknown subcommand');

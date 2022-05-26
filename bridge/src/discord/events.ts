@@ -1,4 +1,4 @@
-import { BRIDGED_MESSAGES, BRIDGE_CONFIG, logger } from "..";
+import { BRIDGED_MESSAGES, BRIDGE_CONFIG, BRIDGE_USER_CONFIG, logger } from "..";
 import { client } from "./client";
 import { AUTUMN_URL, client as revoltClient } from "../revolt/client";
 import axios from 'axios';
@@ -27,6 +27,7 @@ client.on('messageDelete', async message => {
         ]);
 
         if (!bridgedMsg?.revolt) return logger.debug(`Discord: Message has not been bridged; ignoring deletion`);
+        if (!bridgedMsg.ignore) return logger.debug(`Discord: Message marked as ignore`);
         if (!bridgeCfg?.revolt) return logger.debug(`Discord: No Revolt channel associated`);
 
         const targetMsg = await revoltFetchMessage(bridgedMsg.revolt.messageId, revoltClient.channels.get(bridgeCfg.revolt));
@@ -51,6 +52,7 @@ client.on('messageUpdate', async (oldMsg, newMsg) => {
         ]);
 
         if (!bridgedMsg) return logger.debug(`Discord: Message has not been bridged; ignoring edit`);
+        if (!bridgedMsg.ignore) return logger.debug(`Discord: Message marked as ignore`);
         if (!bridgeCfg?.revolt) return logger.debug(`Discord: No Revolt channel associated`);
         if (newMsg.webhookId && newMsg.webhookId == bridgeCfg.discordWebhook?.id) {
             return logger.debug(`Discord: Message was sent by bridge; ignoring edit`);
@@ -69,12 +71,13 @@ client.on('messageUpdate', async (oldMsg, newMsg) => {
 client.on('messageCreate', async message => {
     try {
         logger.debug(`[M] Discord: ${message.content}`);
-        const [ bridgeCfg, bridgedReply ] = await Promise.all([
+        const [ bridgeCfg, bridgedReply, userConfig ] = await Promise.all([
             BRIDGE_CONFIG.findOne({ discord: message.channelId }),
             (message.reference?.messageId
                 ? BRIDGED_MESSAGES.findOne({ "discord.messageId": message.reference.messageId })
                 : undefined
             ),
+            BRIDGE_USER_CONFIG.findOne({ id: message.author.id }),
         ]);
 
         if (message.webhookId && bridgeCfg?.discordWebhook?.id == message.webhookId) {
@@ -98,6 +101,11 @@ client.on('messageCreate', async message => {
             }
         }
 
+        if (bridgeCfg.disallowIfOptedOut && userConfig?.optOut && message.deletable) {
+            await message.delete();
+            return;
+        }
+
         // Setting a known nonce allows us to ignore bridged
         // messages while still letting other AutoMod messages pass.
         const nonce = ulid();
@@ -105,7 +113,7 @@ client.on('messageCreate', async message => {
         await BRIDGED_MESSAGES.update(
             { "discord.messageId": message.id },
             {
-                $setOnInsert: {
+                $setOnInsert: userConfig?.optOut ? {} : {
                     origin: 'discord',
                     discord: {
                         messageId: message.id,
@@ -116,11 +124,31 @@ client.on('messageCreate', async message => {
                     channels: {
                         discord: message.channelId,
                         revolt: bridgeCfg.revolt,
-                    }
+                    },
+                    ignore: userConfig?.optOut,
                 }
             },
             { upsert: true }
         );
+
+        if (userConfig?.optOut) {
+            const msg = await channel.sendMessage({
+                content: `$\\color{#565656}\\small{\\textsf{Message content redacted}}$`,
+                masquerade: {
+                    name: 'AutoMod Bridge',
+                },
+                nonce: nonce,
+            });
+
+            await BRIDGED_MESSAGES.update(
+                { "discord.messageId": message.id },
+                {
+                    $set: { "revolt.messageId": msg._id },
+                }
+            );
+
+            return;
+        }
 
         const autumnUrls: string[] = [];
 

@@ -10,4 +10,7 @@ export default class {
         id: string;
         token: string;
     }
+
+    // If true, messages by users who have opted out of bridging will be deleted.
+    disallowIfOptedOut?: boolean;
 }
