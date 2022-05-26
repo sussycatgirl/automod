@@ -6,7 +6,6 @@ const client = new Discord.Client({
         'GUILDS',
         'GUILD_EMOJIS_AND_STICKERS',
         'GUILD_MESSAGES',
-        'GUILD_MEMBERS',
         'GUILD_WEBHOOKS',
     ],
     partials: [
