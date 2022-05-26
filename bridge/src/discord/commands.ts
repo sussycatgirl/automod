@@ -156,6 +156,15 @@ client.on('interactionCreate', async interaction => {
                                 `click [here](${INVITE_URL} "Add Discord bot").`
                             );
 
+                            embed.addField(
+                                'Contact',
+                                `If you have any questions regarding this bot or the Revolt counterpart, feel free to join ` +
+                                `[this](https://discord.gg/4pZgvqgYJ8) Discord server or [this](https://rvlt.gg/jan) Revolt server.\n` +
+                                `If you want to report a bug, suggest a feature or browse the source code, ` +
+                                `feel free to do so [on GitHub](https://github.com/janderedev/automod).\n` +
+                                `For other inquiries, please contact \`contact@automod.me\`.`
+                            );
+
                             await interaction.reply({ embeds: [ embed ], ephemeral: true });
                             break;
 
