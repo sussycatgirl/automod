@@ -8,6 +8,8 @@ import { MessageEmbed, TextChannel } from "discord.js";
 import { revoltFetchMessage, revoltFetchUser } from "../util";
 import { client as revoltClient } from "../revolt/client";
 
+const PRIVACY_POLICY_URL = 'https://github.com/janderedev/automod/wiki/Privacy-Policy';
+
 const COMMANDS: any[] = [
     {
         name: 'bridge',
@@ -50,6 +52,11 @@ const COMMANDS: any[] = [
                     },
                 ],
             },
+            {
+                name: 'status',
+                description: 'Find out whether this channel is bridged to Revolt',
+                type: 1
+            }
         ],
     },
     {
@@ -175,7 +182,8 @@ client.on('interactionCreate', async interaction => {
                                 `[this](https://discord.gg/4pZgvqgYJ8) Discord server or [this](https://rvlt.gg/jan) Revolt server.\n` +
                                 `If you want to report a bug, suggest a feature or browse the source code, ` +
                                 `feel free to do so [on GitHub](https://github.com/janderedev/automod).\n` +
-                                `For other inquiries, please contact \`contact@automod.me\`.`
+                                `For other inquiries, please contact \`contact@automod.me\`.\n\n` +
+                                `Before using this bot, please read the [Privacy Policy](${PRIVACY_POLICY_URL})!`
                             );
 
                             await interaction.reply({ embeds: [ embed ], ephemeral: true });
@@ -219,6 +227,26 @@ client.on('interactionCreate', async interaction => {
                                         ),
                                 });
                             }
+                            break;
+
+                        case 'status':
+                            const bridgeConfig = await BRIDGE_CONFIG.findOne({ discord: interaction.channelId });
+
+                            if (!bridgeConfig?.revolt) {
+                                return await interaction.reply({
+                                    ephemeral: true,
+                                    content: 'This channel is **not** bridged. No message content data will be processed.',
+                                });
+                            }
+                            else {
+                                return await interaction.reply({
+                                    ephemeral: true,
+                                    content: 'This channel is **bridged to Revolt**. Your messages will ' +
+                                        'be processed and sent to [Revolt](<https://revolt.chat>) according to AutoMod\'s ' +
+                                        `[Privacy Policy](<${PRIVACY_POLICY_URL}>).`,
+                                });
+                            }
+
                             break;
 
                         default: await interaction.reply('Unknown subcommand');
