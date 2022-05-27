@@ -6,7 +6,7 @@ import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { DEFAULT_PREFIX } from "../../modules/command_handler";
-import { isBotManager, isModerator, NO_MANAGER_MSG } from "../../util";
+import { embed, EmbedColor, isBotManager, isModerator, NO_MANAGER_MSG } from "../../util";
 
 const DISCORD_INVITE_URL = 'https://discord.com/api/oauth2/authorize?client_id=965692929643524136&permissions=536996864&scope=bot%20applications.commands'; // todo: read this from env or smth
 
@@ -157,6 +157,28 @@ export default {
                     message.reply(''+e)?.catch(() => {});
                 }
                 break;
+            }
+            case 'status': {
+                const link = await dbs.BRIDGE_CONFIG.findOne({ revolt: message.channel_id });
+
+                if (!link) return await message.reply({
+                    embeds: [
+                        embed(
+                            'This channel is **not** bridged, and no message data is being sent to Discord.',
+                            'Bridge status',
+                            EmbedColor.Success
+                        )
+                    ]
+                });
+                else return await message.reply({
+                    embeds: [
+                        embed(
+                            'This channel is bridged to Discord. Please refer to the [Privacy Policy](<https://github.com/janderedev/automod/wiki/Privacy-Policy>) for more info.',
+                            'Bridge Status',
+                            EmbedColor.Success,
+                        )
+                    ]
+                });
             }
             case 'help': {
                 await message.reply({
