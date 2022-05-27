@@ -6,7 +6,7 @@ import { ulid } from "ulid";
 import GenericEmbed from "../types/GenericEmbed";
 import FormData from 'form-data';
 import { discordFetchUser, revoltFetchMessage } from "../util";
-import { TextChannel } from "discord.js";
+import { MessageEmbed, TextChannel } from "discord.js";
 import { smartReplace } from "smart-replace";
 import { metrics } from "../metrics";
 
@@ -232,6 +232,43 @@ client.on('messageCreate', async message => {
         }
 
         await sendBridgeMessage(bridgedReply?.revolt?.messageId);
+    } catch(e) {
+        console.error(e);
+    }
+});
+
+client.on('guildCreate', async server => {
+    try {
+        const me = server.me || await server.members.fetch({ user: client.user!.id });
+        const channels = Array.from(server.channels.cache.filter(
+            c => c.permissionsFor(me).has('SEND_MESSAGES') && c.isText()
+        ));
+
+        if (!channels.length) return;
+
+        const channel = (channels.find(c => c[0] == server.systemChannel?.id) || channels[0])?.[1] as TextChannel;
+
+        const message =
+            ':wave: Hi there!\n\n' +
+            'Thanks for adding AutoMod to this server! Please note that despite it\'s name, this bot only provides ' +
+            'bridge integration with the AutoMod bot on Revolt (<https://revolt.chat>) and does not offer any moderation ' +
+            'features on Discord. To get started, run the `/bridge help` command!\n\n' +
+            'Before using AutoMod, please make sure you have read the privacy policy: <https://github.com/janderedev/automod/wiki/Privacy-Policy>\n\n' +
+            'A note to this server\'s administrators: When using the bridge, please make sure to also provide your members ' +
+            'with a link to AutoMod\'s privacy policy in an accessible place like your rules channel.';
+
+            if (channel.permissionsFor(me).has('EMBED_LINKS')) {
+                await channel.send({
+                    embeds: [
+                        new MessageEmbed()
+                            .setDescription(message)
+                            .setColor('#ff6e6d')
+                    ]
+                });
+            }
+            else {
+                await channel.send(message);
+            }
     } catch(e) {
         console.error(e);
     }
