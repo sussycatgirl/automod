@@ -257,18 +257,18 @@ client.on('guildCreate', async server => {
             'A note to this server\'s administrators: When using the bridge, please make sure to also provide your members ' +
             'with a link to AutoMod\'s privacy policy in an accessible place like your rules channel.';
 
-            if (channel.permissionsFor(me).has('EMBED_LINKS')) {
-                await channel.send({
-                    embeds: [
-                        new MessageEmbed()
-                            .setDescription(message)
-                            .setColor('#ff6e6d')
-                    ]
-                });
-            }
-            else {
-                await channel.send(message);
-            }
+        if (channel.permissionsFor(me).has('EMBED_LINKS')) {
+            await channel.send({
+                embeds: [
+                    new MessageEmbed()
+                        .setDescription(message)
+                        .setColor('#ff6e6d')
+                ]
+            });
+        }
+        else {
+            await channel.send(message);
+        }
     } catch(e) {
         console.error(e);
     }
