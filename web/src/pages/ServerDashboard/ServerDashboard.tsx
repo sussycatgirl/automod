@@ -29,6 +29,9 @@ type Server = {
     serverConfig?: { [key: string]: any },
     users: User[],
     channels: Channel[],
+    dmOnKick?: boolean,
+    dmOnWarn?: boolean,
+    contact?: string,
 }
 
 type AntispamRule = {
@@ -51,10 +54,19 @@ const ServerDashboard: FunctionComponent = () => {
     const [serverInfo, setServerInfo] = useState({} as Server);
     const [status, setStatus] = useState('');
 
-    const [changed, setChanged] = useState({} as { prefix?: boolean, prefixAllowSpace?: boolean });
+    const [changed, setChanged] = useState({} as {
+        prefix?: boolean,
+        prefixAllowSpace?: boolean,
+        dmOnKick?: boolean,
+        dmOnWarn?: boolean,
+        contact?: boolean,
+    });
     const [prefix, setPrefix] = useState('' as string|undefined);
     const [prefixAllowSpace, setPrefixAllowSpace] = useState(false);
-    
+    const [dmOnKick, setDmOnKick] = useState(false);
+    const [dmOnWarn, setDmOnWarn] = useState(false);
+    const [contact, setContact] = useState('');
+
     const [botManagers, setBotManagers] = useState([] as string[]);
     const [moderators, setModerators] = useState([] as string[]);
 
@@ -68,6 +80,9 @@ const ServerDashboard: FunctionComponent = () => {
         const payload = {
             ...(changed.prefix ? { prefix } : undefined),
             ...(changed.prefixAllowSpace ? { spaceAfterPrefix: prefixAllowSpace } : undefined),
+            ...(changed.dmOnKick ? { dmOnKick } : undefined),
+            ...(changed.dmOnWarn ? { dmOnWarn } : undefined),
+            ...(changed.contact ? { contact: contact || null } : undefined),
         }
 
         const res = await axios.put(
@@ -91,6 +106,9 @@ const ServerDashboard: FunctionComponent = () => {
 
             setPrefix(server.serverConfig?.prefix || '');
             setPrefixAllowSpace(!!server.serverConfig?.spaceAfterPrefix);
+            setDmOnKick(!!server.serverConfig?.dmOnKick);
+            setDmOnWarn(!!server.serverConfig?.dmOnWarn);
+            setContact(server.serverConfig?.contact || '');
 
             setBotManagers(server.serverConfig?.botManagers ?? []);
             setModerators(server.serverConfig?.moderators ?? []);
@@ -190,10 +208,6 @@ const ServerDashboard: FunctionComponent = () => {
                                     title="Allow space after prefix"
                                     description={'Whether the bot recognizes a command if the prefix is followed by a space. Enable if your prefix is a word.'}
                                 />
-                                <Button
-                                    style={{ marginTop: "16px" }}
-                                    onClick={saveConfig}
-                                >Save</Button>
                             </>
 
                             <LineDivider />
@@ -230,6 +244,47 @@ const ServerDashboard: FunctionComponent = () => {
                                         <UserListAddField type='MOD' />
                                     </UserListContainer>
                                 </UserListTypeContainer>
+                            </>
+
+                            <LineDivider />
+
+                            <>
+                                <H3>Infraction DMs</H3>
+                                <Checkbox
+                                    title="DM on kick/ban"
+                                    description="If enabled, users will receive a DM when getting kicked or banned"
+                                    value={dmOnKick}
+                                    onChange={() => { setDmOnKick(!dmOnKick); setChanged({ ...changed, dmOnKick: true }) }}
+                                />
+
+                                <Checkbox
+                                    title="DM on warn"
+                                    description="If enabled, users will receive a DM when getting warned"
+                                    value={dmOnWarn}
+                                    onChange={() => { setDmOnWarn(!dmOnWarn); setChanged({ ...changed, dmOnWarn: true }) }}
+                                />
+
+                                <H3>Contact info</H3>
+                                <H4>
+                                    Provide a link, email address or instructions for users on how to contact you.
+                                    If provided, this data will be sent along with warn/kick/ban DM messages.
+                                </H4>
+                                <InputBox
+                                    style={{ margin: '8px', width: 'calc(100% - 16px)' }}
+                                    title='Contact info'
+                                    placeholder='http/https URL, mailto link or custom text...'
+                                    value={contact}
+                                    onChange={e => { setContact(e.currentTarget.value); setChanged({ ...changed, contact: true }) }}
+                                />
+
+                                <Button
+                                    style={{
+                                        position: "fixed",
+                                        right: '8px',
+                                        bottom: Object.values(changed).filter(i => i).length ? '8px' : '-40px',
+                                    }}
+                                    onClick={saveConfig}
+                                >Save</Button>
                             </>
                         </div>
                     )}

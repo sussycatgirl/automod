@@ -16,6 +16,9 @@ type ServerDetails = {
     serverConfig: any,
     users: User[],
     channels: Channel[],
+    dmOnKick?: boolean,
+    dmOnWarn?: boolean,
+    contact?: string,
 }
 
 app.get('/dash/server/:server', requireAuth({ permission: 0 }), async (req: Request, res: Response) => {
@@ -118,10 +121,16 @@ app.put('/dash/server/:server/:option', async (req: Request, res: Response) => {
                 type RequestBody = {
                     prefix?: string,
                     spaceAfterPrefix?: boolean,
+                    dmOnKick?: boolean,
+                    dmOnWarn?: boolean,
+                    contact?: boolean,
                 }
 
                 if (!validateField('prefix', ['string'], 2) ||
-                    !validateField('spaceAfterPrefix', ['boolean'], 2)
+                    !validateField('spaceAfterPrefix', ['boolean'], 2) ||
+                    !validateField('dmOnKick', ['boolean'], 2) ||
+                    !validateField('dmOnWarn', ['boolean'], 2) ||
+                    !validateField('contact', ['string'], 2)
                 ) return;
 
                 const body: RequestBody = req.body;
@@ -130,6 +139,9 @@ app.put('/dash/server/:server/:option', async (req: Request, res: Response) => {
                     $set: JSON.parse(JSON.stringify({ // Get rid of undefined fields
                         prefix: body.prefix == '' ? null : body.prefix,
                         spaceAfterPrefix: body.spaceAfterPrefix,
+                        dmOnKick: body.dmOnKick,
+                        dmOnWarn: body.dmOnWarn,
+                        contact: body.contact,
                     })),
                 });
 

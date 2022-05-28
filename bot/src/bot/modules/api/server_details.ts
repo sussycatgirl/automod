@@ -19,6 +19,9 @@ type ServerDetails = {
     serverConfig?: ServerConfig,
     users: APIUser[],
     channels: APIChannel[],
+    dmOnKick?: boolean,
+    dmOnWarn?: boolean,
+    contact?: string,
 }
 
 wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSResponse) => void) => {
@@ -80,6 +83,9 @@ wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSRespo
                 type: c!.channel_type == 'VoiceChannel' ? 'VOICE' : 'TEXT',
                 icon: c!.generateIconURL(),
             })),
+            dmOnKick: serverConfig?.dmOnKick,
+            dmOnWarn: serverConfig?.dmOnWarn,
+            contact: serverConfig?.contact,
         }
 
         cb({ success: true, server: response });
