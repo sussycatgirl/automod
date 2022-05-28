@@ -1,5 +1,6 @@
 import CommandCategory from "./CommandCategory";
 import MessageCommandContext from "../MessageCommandContext";
+import ServerConfig from "../ServerConfig";
 
 /**
  * A basic command, consisting of basic attributes
@@ -26,7 +27,7 @@ class SimpleCommand {
     removeEmptyArgs?: boolean | null;
 
     // This is executed whenever the command is ran.
-    run: (message: MessageCommandContext, args: string[]) => Promise<any>;
+    run: (message: MessageCommandContext, args: string[], serverConfig?: ServerConfig|null) => Promise<any>;
 
     // The category the command belongs to, used for /help.
     category: CommandCategory;

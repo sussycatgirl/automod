@@ -3,15 +3,15 @@ import { client } from "../../../index";
 import Infraction from "../../../struct/antispam/Infraction";
 import InfractionType from "../../../struct/antispam/InfractionType";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
 import { storeTempBan } from "../../modules/tempbans";
-import { dedupeArray, embed, EmbedColor, isModerator, NO_MANAGER_MSG, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
+import { dedupeArray, embed, EmbedColor, generateInfractionDMEmbed, getDmChannel, isModerator, NO_MANAGER_MSG, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
 import Day from 'dayjs';
 import RelativeTime from 'dayjs/plugin/relativeTime';
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import { SendableEmbed } from "@janderedev/revolt.js/node_modules/revolt-api";
 import { User } from "@janderedev/revolt.js";
+import logger from "../../logger";
 
 Day.extend(RelativeTime);
 
@@ -22,7 +22,7 @@ export default {
     syntax: '/ban @username [10m|1h|...?] [reason?]',
     removeEmptyArgs: true,
     category: CommandCategory.Moderation,
-    run: async (message: MessageCommandContext, args: string[]) => {
+    run: async (message, args, serverConfig) => {
         if (!await isModerator(message))
             return message.reply(NO_MANAGER_MSG);
         if (!message.serverContext.havePermission('BanMembers')) {
@@ -134,6 +134,7 @@ export default {
                         type: InfractionType.Manual,
                         user: user._id,
                         actionType: 'ban',
+                        expires: Infinity,
                     }
                     const { userWarnCount } = await storeInfraction(infraction);
 
@@ -155,6 +156,20 @@ export default {
                             EmbedColor.SoftError
                         ));
                         continue;
+                    }
+
+                    if (serverConfig?.dmOnKick) {
+                        try {
+                            const embed = generateInfractionDMEmbed(message.serverContext, serverConfig, infraction, message);
+                            const dmChannel = await getDmChannel(user);
+    
+                            if (dmChannel.havePermission('SendMessage') || dmChannel.havePermission('SendEmbeds')) {
+                                await dmChannel.sendMessage({ embeds: [ embed ] });
+                            }
+                            else logger.warn('Missing permission to DM user.');
+                        } catch(e) {
+                            console.error(e);
+                        }
                     }
 
                     await message.serverContext.banUser(user._id, {
@@ -186,8 +201,23 @@ export default {
                         type: InfractionType.Manual,
                         user: user._id,
                         actionType: 'ban',
+                        expires: banUntil,
                     }
                     const { userWarnCount } = await storeInfraction(infraction);
+
+                    if (serverConfig?.dmOnKick) {
+                        try {
+                            const embed = generateInfractionDMEmbed(message.serverContext, serverConfig, infraction, message);
+                            const dmChannel = await getDmChannel(user);
+    
+                            if (dmChannel.havePermission('SendMessage') || dmChannel.havePermission('SendEmbeds')) {
+                                await dmChannel.sendMessage({ embeds: [ embed ] });
+                            }
+                            else logger.warn('Missing permission to DM user.');
+                        } catch(e) {
+                            console.error(e);
+                        }
+                    }
 
                     await message.serverContext.banUser(user._id, {
                         reason: reason + ` (by ${await fetchUsername(message.author_id)} ${message.author_id}) (${durationStr})`

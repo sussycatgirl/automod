@@ -136,7 +136,7 @@ let commands: SimpleCommand[];
         }
 
         try {
-            await cmd.run(message, args);
+            await cmd.run(message, args, config);
         } catch(e) {
             console.error(e);
             message.reply(`### An error has occurred:\n\`\`\`js\n${e}\n\`\`\``);

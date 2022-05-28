@@ -1,5 +1,4 @@
 import { User } from "@janderedev/revolt.js";
-import { Member } from "@janderedev/revolt.js/dist/maps/Members";
 import { SendableEmbed } from "revolt-api";
 import { ulid } from "ulid";
 import { client } from "../../../";
@@ -7,9 +6,9 @@ import Infraction from "../../../struct/antispam/Infraction";
 import InfractionType from "../../../struct/antispam/InfractionType";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../../struct/MessageCommandContext";
+import logger from "../../logger";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
-import { dedupeArray, embed, EmbedColor, isModerator, NO_MANAGER_MSG, parseUser, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
+import { dedupeArray, embed, EmbedColor, generateInfractionDMEmbed, getDmChannel, isModerator, NO_MANAGER_MSG, parseUser, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
 
 export default {
     name: 'kick',
@@ -18,7 +17,7 @@ export default {
     syntax: '/kick @username [reason?]',
     removeEmptyArgs: true,
     category: CommandCategory.Moderation,
-    run: async (message: MessageCommandContext, args: string[]) => {
+    run: async (message, args, serverConfig) => {
         if (!await isModerator(message))
             return message.reply(NO_MANAGER_MSG);
         if (!message.serverContext.havePermission('KickMembers')) {
@@ -104,11 +103,25 @@ export default {
                     _id: infId,
                     createdBy: message.author_id,
                     date: Date.now(),
-                    reason: reason,
+                    reason: reason || 'No reason provided',
                     server: message.serverContext._id,
                     type: InfractionType.Manual,
                     user: user._id,
                     actionType: 'kick',
+                }
+
+                if (serverConfig?.dmOnKick) {
+                    try {
+                        const embed = generateInfractionDMEmbed(message.serverContext, serverConfig, infraction, message);
+                        const dmChannel = await getDmChannel(user);
+
+                        if (dmChannel.havePermission('SendMessage') || dmChannel.havePermission('SendEmbeds')) {
+                            await dmChannel.sendMessage({ embeds: [ embed ] });
+                        }
+                        else logger.warn('Missing permission to DM user.');
+                    } catch(e) {
+                        console.error(e);
+                    }
                 }
 
                 let [ { userWarnCount } ] = await Promise.all([

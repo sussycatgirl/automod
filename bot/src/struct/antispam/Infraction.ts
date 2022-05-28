@@ -12,6 +12,7 @@ class Infraction {
     targetMessages?: string[];
     reason: string;
     date: number;
+    expires?: number; // Only applies to bans
 }
 
 export default Infraction;

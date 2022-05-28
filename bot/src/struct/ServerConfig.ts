@@ -25,6 +25,9 @@ class ServerConfig {
         modAction?: LogConfig,      // User warned, kicked or banned
     };
     allowBlacklistedUsers?: boolean; // Whether the server explicitly allows users that are globally blacklisted
+    dmOnKick?: boolean; // Whether users should receive a DM when kicked/banned. Default false
+    dmOnWarn?: boolean; // Whether users should receive a DM when warned. Default false
+    contact?: string;   // How to contact the server staff. Sent on kick/ban/warn DMs. http(s)/mailto link or normal text.
 }
 
 export default ServerConfig;

@@ -15,11 +15,16 @@ import { Permission } from "@janderedev/revolt.js/dist/permissions/definitions";
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { isSudo } from "./commands/admin/botadm";
 import { SendableEmbed } from "revolt-api";
+import MessageCommandContext from "../struct/MessageCommandContext";
+import ServerConfig from "../struct/ServerConfig";
 
 const NO_MANAGER_MSG = '🔒 Missing permission';
 const ULID_REGEX = /^[0-9A-HJ-KM-NP-TV-Z]{26}$/i;
 const USER_MENTION_REGEX = /^<@[0-9A-HJ-KM-NP-TV-Z]{26}>$/i;
 const CHANNEL_MENTION_REGEX = /^<#[0-9A-HJ-KM-NP-TV-Z]{26}>$/i;
+const RE_HTTP_URI = /^http(s?):\/\//g;
+const RE_MAILTO_URI = /^mailto:/g;
+
 let autumn_url: string|null = null;
 let apiConfig: any = axios.get(client.apiURL).then(res => {
     autumn_url = (res.data as any).features.autumn.url;
@@ -347,6 +352,52 @@ const awaitClient = () => new Promise<void>(async resolve => {
     else resolve();
 });
 
+const getDmChannel = async (user: string|{_id: string}|User) => {
+    if (typeof user == 'string') user = client.users.get(user) || await client.users.fetch(user);
+    if (!(user instanceof User)) user = client.users.get(user._id) || await client.users.fetch(user._id);
+
+    return Array.from(client.channels).find(
+        c => c[1].channel_type == 'DirectMessage' && c[1].recipient?._id == (user as User)._id
+    )?.[1] || await (user as User).openDM();
+}
+
+const generateInfractionDMEmbed = (server: Server, serverConfig: ServerConfig, infraction: Infraction, message: MessageCommandContext) => {
+    const embed: SendableEmbed = {
+        title: message.serverContext.name,
+        icon_url: message.serverContext.generateIconURL({ max_side: 128 }),
+        colour: '#ff9e2f',
+        url: message.url,
+        description: 'You have been ' +
+            (infraction.actionType
+                ? `**${infraction.actionType == 'ban' ? 'banned' : 'kicked'}** from `
+                : `**warned** in `) +
+            `'${sanitizeMessageContent(message.serverContext.name).trim()}' <t:${Math.round(infraction.date / 1000)}:R>.\n` +
+            `**Reason:** ${infraction.reason}\n` +
+            `**Moderator:** [@${sanitizeMessageContent(message.author?.username || 'Unknown')}](/@${message.author_id})\n` +
+            `**Infraction ID:** \`${infraction._id}\`` +
+            (infraction.actionType == 'ban' && infraction.expires
+                ? (infraction.expires == Infinity
+                    ? '\n**Ban duration:** Permanent'
+                    : `\n**Ban expires** <t:${Math.round(infraction.expires / 1000)}:R>`)
+                : '')
+    }
+
+    if (serverConfig.contact) {
+        if (RE_MAILTO_URI.test(serverConfig.contact)) {
+            embed.description += `\n\nIf you wish to appeal this decision, you may contact the server's moderation team at ` +
+                `[${serverConfig.contact.replace(RE_MAILTO_URI, '')}](${serverConfig.contact}).`
+        }
+        else if (RE_HTTP_URI.test(serverConfig.contact)) {
+            embed.description += `\n\nIf you wish to appeal this decision, you may do so [here](${serverConfig.contact}).`
+        }
+        else {
+            embed.description += `\n\n${serverConfig.contact}`;
+        }
+    }
+
+    return embed;
+}
+
 export {
     getAutumnURL,
     hasPerm,
@@ -366,6 +417,8 @@ export {
     dedupeArray,
     awaitClient,
     getMutualServers,
+    getDmChannel,
+    generateInfractionDMEmbed,
     EmbedColor,
     NO_MANAGER_MSG,
     ULID_REGEX,

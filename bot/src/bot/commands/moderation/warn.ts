@@ -1,13 +1,13 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import { dedupeArray, embed, EmbedColor, isModerator, NO_MANAGER_MSG, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
+import { dedupeArray, embed, EmbedColor, generateInfractionDMEmbed, getDmChannel, isModerator, NO_MANAGER_MSG, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
 import Infraction from "../../../struct/antispam/Infraction";
 import { ulid } from "ulid";
 import InfractionType from "../../../struct/antispam/InfractionType";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
-import MessageCommandContext from "../../../struct/MessageCommandContext";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import { SendableEmbed } from "revolt-api";
 import { User } from "@janderedev/revolt.js";
+import logger from "../../logger";
 
 export default {
     name: 'warn',
@@ -15,7 +15,7 @@ export default {
     removeEmptyArgs: false,
     description: 'add an infraction to an user\'s record',
     category: CommandCategory.Moderation,
-    run: async (message: MessageCommandContext, args: string[]) => {
+    run: async (message, args, serverConfig) => {
         if (!await isModerator(message)) return message.reply(NO_MANAGER_MSG);
 
         const userInput = args.shift() || '';
@@ -94,15 +94,32 @@ export default {
             } as Infraction;
 
             let { userWarnCount } = await storeInfraction(infraction);
-            await logModAction(
-                'warn',
-                message.serverContext,
-                message.member!,
-                user._id,
-                reason || 'No reason provided',
-                infraction._id,
-                `This is warn number ${userWarnCount} for this user.`
-            );
+            await Promise.all([
+                logModAction(
+                    'warn',
+                    message.serverContext,
+                    message.member!,
+                    user._id,
+                    reason || 'No reason provided',
+                    infraction._id,
+                    `This is warn number ${userWarnCount} for this user.`
+                ),
+                (async () => {
+                    if (serverConfig?.dmOnWarn) {
+                        try {
+                            const embed = generateInfractionDMEmbed(message.serverContext, serverConfig, infraction, message);
+                            const dmChannel = await getDmChannel(user);
+    
+                            if (dmChannel.havePermission('SendMessage') || dmChannel.havePermission('SendEmbeds')) {
+                                await dmChannel.sendMessage({ embeds: [ embed ] });
+                            }
+                            else logger.warn('Missing permission to DM user.');
+                        } catch(e) {
+                            console.error(e);
+                        }
+                    }
+                })(),
+            ]);
 
             embeds.push({
                 title: `User warned`,
