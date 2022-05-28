@@ -1,4 +1,6 @@
+import { User } from "@janderedev/revolt.js";
 import { Member } from "@janderedev/revolt.js/dist/maps/Members";
+import { SendableEmbed } from "revolt-api";
 import { ulid } from "ulid";
 import { client } from "../../../";
 import Infraction from "../../../struct/antispam/Infraction";
@@ -6,13 +8,13 @@ import InfractionType from "../../../struct/antispam/InfractionType";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { logModAction } from "../../modules/mod_logs";
-import { isModerator, NO_MANAGER_MSG, parseUser, storeInfraction } from "../../util";
+import { fetchUsername, logModAction } from "../../modules/mod_logs";
+import { dedupeArray, embed, EmbedColor, isModerator, NO_MANAGER_MSG, parseUser, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
 
 export default {
     name: 'kick',
     aliases: [ 'yeet', 'vent' ],
-    description: 'Eject a member from the server',
+    description: 'Kick a member from the server',
     syntax: '/kick @username [reason?]',
     removeEmptyArgs: true,
     category: CommandCategory.Moderation,
@@ -23,52 +25,123 @@ export default {
             return await message.reply(`Sorry, I do not have \`KickMembers\` permission.`);
         }
 
-        if (args.length == 0)
-            return message.reply(`You need to provide a target user!`);
+        const userInput = !message.reply_ids?.length ? args.shift() || '' : undefined;
+        if (!userInput && !message.reply_ids?.length) return message.reply({ embeds: [
+            embed(
+                `Please specify one or more users by replying to their message while running this command or ` +
+                  `by specifying a comma-separated list of usernames.`,
+                'No target user specified',
+                EmbedColor.SoftError,
+            ),
+        ] });
+        
+        let reason = args.join(' ')
+        ?.replace(new RegExp('`', 'g'), '\'')
+        ?.replace(new RegExp('\n', 'g'), ' ');
 
-        let targetUser = await parseUser(args.shift()!);
-        if (!targetUser) return message.reply('Sorry, I can\'t find that user.');
+        if (reason.length > 200) return message.reply({
+            embeds: [ embed('Kick reason may not be longer than 200 characters.', null, EmbedColor.SoftError) ]
+        });
 
-        if (targetUser._id == message.author_id) {
-            return message.reply('nah');
+        const embeds: SendableEmbed[] = [];
+        const handledUsers: string[] = [];
+        const targetUsers: User|{ _id: string }[] = [];
+
+        const targetInput = dedupeArray(
+            message.reply_ids?.length
+                ? (await Promise.allSettled(
+                    message.reply_ids.map(msg => message.channel?.fetchMessage(msg))
+                ))
+                .filter(m => m.status == 'fulfilled').map(m => (m as any).value.author_id)
+                : userInput!.split(','),
+        );
+
+        for (const userStr of targetInput) {
+            try {
+                let user = await parseUserOrId(userStr);
+                if (!user) {
+                    embeds.push(embed(`I can't resolve \`${sanitizeMessageContent(userStr).trim()}\` to a user.`, null, '#ff785d'));
+                    continue;
+                }
+
+                // Silently ignore duplicates
+                if (handledUsers.includes(user._id)) continue;
+                handledUsers.push(user._id);
+
+                if (user._id == message.author_id) {
+                    embeds.push(embed('You might want to avoid kicking yourself...', null, EmbedColor.Warning));
+                    continue;
+                }
+
+                if (user._id == client.user!._id) {
+                    embeds.push(embed('I won\'t allow you to get rid of me this easily :trol:', null, EmbedColor.Warning));
+                    continue;
+                }
+
+                targetUsers.push(user);
+            } catch(e) {
+                console.error(e);
+                embeds.push(embed(
+                    `Failed to kick target \`${sanitizeMessageContent(userStr).trim()}\`: ${e}`,
+                    `Failed to kick: An error has occurred`,
+                    EmbedColor.Error,
+                ));
+            }
         }
 
-        if (targetUser._id == client.user!._id) {
-            return message.reply('lol no');
+        const members = await message.serverContext.fetchMembers();
+
+        for (const user of targetUsers) {
+            try {
+                const member = members.members.find(m => m._id.user == user._id);
+                if (!member) {
+                    embeds.push(embed(''));
+                    continue;
+                }
+
+                let infId = ulid();
+                let infraction: Infraction = {
+                    _id: infId,
+                    createdBy: message.author_id,
+                    date: Date.now(),
+                    reason: reason,
+                    server: message.serverContext._id,
+                    type: InfractionType.Manual,
+                    user: user._id,
+                    actionType: 'kick',
+                }
+
+                let [ { userWarnCount } ] = await Promise.all([
+                    storeInfraction(infraction),
+                    logModAction('kick', message.serverContext, message.member!, user._id, reason, infraction._id),
+                    member.kick(),
+                ]);
+
+                embeds.push({
+                    title: `User kicked`,
+                    icon_url: user instanceof User ? user.generateAvatarURL() : undefined,
+                    colour: EmbedColor.Success,
+                    description: `This is ${userWarnCount == 1 ? '**the first infraction**' : `infraction number **${userWarnCount}**`}` +
+                        ` for ${await fetchUsername(user._id)}.\n` +
+                        `**User ID:** \`${user._id}\`\n` +
+                        `**Infraction ID:** \`${infraction._id}\`\n` +
+                        `**Reason:** \`${infraction.reason}\``
+                });
+            } catch(e) {
+                embeds.push(embed(`Failed to kick user ${await fetchUsername(user._id)}: ${e}`, 'Failed to kick user', EmbedColor.Error));
+            }
         }
 
-        let reason = args.join(' ') || 'No reason provided';
+        let firstMsg = true;
+        while (embeds.length > 0) {
+            const targetEmbeds = embeds.splice(0, 10);
 
-        let targetMember: Member;
-        try {
-            targetMember = await message.serverContext.fetchMember(targetUser._id);
-        } catch(e) {
-            return message.reply(`Failed to fetch member: \`${e}\``);
+            if (firstMsg) {
+                await message.reply({ embeds: targetEmbeds, content: 'Operation completed.' }, false);
+            } else {
+                await message.channel?.sendMessage({ embeds: targetEmbeds });
+            }
+            firstMsg = false;
         }
-
-        let infId = ulid();
-        let infraction: Infraction = {
-            _id: infId,
-            createdBy: message.author_id,
-            date: Date.now(),
-            reason: reason,
-            server: message.serverContext._id,
-            type: InfractionType.Manual,
-            user: targetUser._id,
-            actionType: 'kick',
-        }
-        let { userWarnCount } = await storeInfraction(infraction);
-
-        try {
-            await targetMember.kick();
-        } catch(e) {
-            return message.reply(`Failed to kick user: \`${e}\``);
-        }
-
-        await Promise.all([
-            message.reply(`### @${targetUser.username} has been ${Math.random() > 0.8 ? 'yeeted' : 'kicked'}.\n`
-                    + `Infraction ID: \`${infId}\` (**#${userWarnCount}** for this user)`),
-            logModAction('kick', message.serverContext, message.member!, targetUser._id, reason, infraction._id),
-        ]);
     }
 } as SimpleCommand;
