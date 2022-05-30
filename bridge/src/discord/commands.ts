@@ -99,9 +99,9 @@ client.on('interactionCreate', async interaction => {
             switch(interaction.commandName) {
                 case 'bridge':
                     if (!interaction.memberPermissions?.has('MANAGE_GUILD') &&
-                        interaction.options.getSubcommand(true) != 'help'
+                        ['confirm', 'unlink'].includes(interaction.options.getSubcommand(true))
                     ) {
-                        return await interaction.reply(`\`MANAGE_GUILD\` permission is required for this.`);
+                        return await interaction.reply({ content: `\`MANAGE_GUILD\` permission is required for this.`, ephemeral: true });
                     }
 
                     const ownPerms = (interaction.channel as TextChannel).permissionsFor(client.user!)!;
