@@ -27,7 +27,7 @@ client.on('messageDelete', async message => {
         ]);
 
         if (!bridgedMsg?.revolt) return logger.debug(`Discord: Message has not been bridged; ignoring deletion`);
-        if (!bridgedMsg.ignore) return logger.debug(`Discord: Message marked as ignore`);
+        if (bridgedMsg.ignore) return logger.debug(`Discord: Message marked as ignore`);
         if (!bridgeCfg?.revolt) return logger.debug(`Discord: No Revolt channel associated`);
 
         const targetMsg = await revoltFetchMessage(bridgedMsg.revolt.messageId, revoltClient.channels.get(bridgeCfg.revolt));
@@ -52,7 +52,7 @@ client.on('messageUpdate', async (oldMsg, newMsg) => {
         ]);
 
         if (!bridgedMsg) return logger.debug(`Discord: Message has not been bridged; ignoring edit`);
-        if (!bridgedMsg.ignore) return logger.debug(`Discord: Message marked as ignore`);
+        if (bridgedMsg.ignore) return logger.debug(`Discord: Message marked as ignore`);
         if (!bridgeCfg?.revolt) return logger.debug(`Discord: No Revolt channel associated`);
         if (newMsg.webhookId && newMsg.webhookId == bridgeCfg.discordWebhook?.id) {
             return logger.debug(`Discord: Message was sent by bridge; ignoring edit`);
