@@ -74,6 +74,8 @@ const ServerDashboard: FunctionComponent = () => {
 
     const { serverid } = useParams();
 
+    const embedded = !!(new URLSearchParams(window.location.search).get('embedded'));
+
     const saveConfig = useCallback(async () => {
         if (Object.values(changed).filter(i => i).length == 0) return;
 
@@ -135,43 +137,45 @@ const ServerDashboard: FunctionComponent = () => {
     return (
         <>
             {status.length ? <a>{status}</a> : <></>}
-            <div
-                style={{
-                    marginTop: '8px',
-                    marginLeft: '8px',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    color: 'var(--secondary-foreground)',
-                    maxWidth: 'calc(100% - 20px)',
-                }}
-            >
-                <Link to='/dashboard' style={{ float: 'left' }}>
-                    <div style={{ display: 'flex' }}>
-                        <Icon path={mdiChevronLeft} style={{ height: '25px' }} />
-                        <span>Back</span>
-                    </div>
-                </Link>
-                <span
+            {!embedded && (
+                <div
                     style={{
-                        color: 'var(--foreground)',
+                        marginTop: '8px',
                         marginLeft: '8px',
-                    }}
-                >
-                    {serverInfo?.name ?? 'Loading...'}
-                </span>
-                <span style={{ color: 'var(--secondary-foreground)', marginLeft: '6px' }}>
-                    •
-                </span>
-                <span
-                    style={{
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
                         color: 'var(--secondary-foreground)',
-                        marginLeft: '6px',
+                        maxWidth: 'calc(100% - 20px)',
                     }}
                 >
-                    {serverInfo.description || <i>No server description set</i>}
-                </span>
-            </div>
+                    <Link to='/dashboard' style={{ float: 'left' }}>
+                        <div style={{ display: 'flex' }}>
+                            <Icon path={mdiChevronLeft} style={{ height: '25px' }} />
+                            <span>Back</span>
+                        </div>
+                    </Link>
+                    <span
+                        style={{
+                            color: 'var(--foreground)',
+                            marginLeft: '8px',
+                        }}
+                    >
+                        {serverInfo?.name ?? 'Loading...'}
+                    </span>
+                    <span style={{ color: 'var(--secondary-foreground)', marginLeft: '6px' }}>
+                        •
+                    </span>
+                    <span
+                        style={{
+                            color: 'var(--secondary-foreground)',
+                            marginLeft: '6px',
+                        }}
+                    >
+                        {serverInfo.description || <i>No server description set</i>}
+                    </span>
+                </div>
+            )}
 
             <CategorySelector
                 keys={[

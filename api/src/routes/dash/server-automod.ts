@@ -34,7 +34,7 @@ app.get('/dash/server/:server/automod',requireAuth({ permission: 2 }) , async (r
     const serverConfig: FindOneResult<any> = await db.get('servers').findOne({ id: server });
     
     const result = {
-        antispam: (serverConfig.automodSettings?.spam as AntispamRule[]|undefined)
+        antispam: (serverConfig?.automodSettings?.spam as AntispamRule[]|undefined)
             ?.map(r => ({                // Removing unwanted fields from response
                 action: r.action,
                 channels: r.channels,

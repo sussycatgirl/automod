@@ -1,4 +1,5 @@
 import { ulid } from "ulid";
+import crypto from "crypto";
 import { client, dbs } from "../..";
 import Infraction from "../../struct/antispam/Infraction";
 import InfractionType from "../../struct/antispam/InfractionType";
@@ -6,6 +7,8 @@ import { BLACKLIST_BAN_REASON, BLACKLIST_MESSAGE } from "../commands/admin/botad
 import logger from "../logger";
 import { hasPermForChannel, storeInfraction } from "../util";
 import { DEFAULT_PREFIX } from "./command_handler";
+
+const DM_SESSION_LIFETIME = 1000 * 60 * 60 * 24 * 30;
 
 // Listen to system messages
 client.on('message', async message => {
@@ -80,6 +83,36 @@ client.on('message', async message => {
         case 'user_left'  : break;
     }
 });
+
+// DM message based API session token retrieval
+client.on('message', async message => {
+    console.log(message.channel?.channel_type, message.nonce, message.content)
+    if (
+        message.channel?.channel_type == "DirectMessage" &&
+        message.nonce?.startsWith("REQUEST_SESSION_TOKEN-") &&
+        message.content?.toLowerCase().startsWith("requesting session token.")
+    ) {
+        logger.info('Received session token request in DMs.');
+    
+        const token = crypto.randomBytes(48).toString('base64').replace(/=/g, '');
+    
+        await client.db.get('sessions').insert({
+            user: message.author_id,
+            token: token,
+            nonce: message.nonce,
+            invalid: false,
+            expires: Date.now() + DM_SESSION_LIFETIME,
+        })
+
+        // Don't need to risk exposing the user to the token, so we'll send it in the nonce
+        await message.channel.sendMessage({
+            content: 'Token request granted.',
+            nonce: `${ulid()}; TOKEN:${token}`,
+            replies: [ { id: message.author_id, mention: false } ],
+        });
+        return;
+    }
+})
 
 // Send a message when added to a server
 client.on('member/join', (member) => {
