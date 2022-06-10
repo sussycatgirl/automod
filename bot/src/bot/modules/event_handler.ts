@@ -86,33 +86,36 @@ client.on('message', async message => {
 
 // DM message based API session token retrieval
 client.on('message', async message => {
-    console.log(message.channel?.channel_type, message.nonce, message.content)
-    if (
-        message.channel?.channel_type == "DirectMessage" &&
-        message.nonce?.startsWith("REQUEST_SESSION_TOKEN-") &&
-        message.content?.toLowerCase().startsWith("requesting session token.")
-    ) {
-        logger.info('Received session token request in DMs.');
-    
-        const token = crypto.randomBytes(48).toString('base64').replace(/=/g, '');
-    
-        await client.db.get('sessions').insert({
-            user: message.author_id,
-            token: token,
-            nonce: message.nonce,
-            invalid: false,
-            expires: Date.now() + DM_SESSION_LIFETIME,
-        })
+    try {
+        if (
+            message.channel?.channel_type == "DirectMessage" &&
+            message.nonce?.startsWith("REQUEST_SESSION_TOKEN-") &&
+            message.content?.toLowerCase().startsWith("requesting session token.")
+        ) {
+            logger.info('Received session token request in DMs.');
+        
+            const token = crypto.randomBytes(48).toString('base64').replace(/=/g, '');
+        
+            await client.db.get('sessions').insert({
+                user: message.author_id,
+                token: token,
+                nonce: message.nonce,
+                invalid: false,
+                expires: Date.now() + DM_SESSION_LIFETIME,
+            })
 
-        // Don't need to risk exposing the user to the token, so we'll send it in the nonce
-        await message.channel.sendMessage({
-            content: 'Token request granted.',
-            nonce: `${ulid()}; TOKEN:${token}`,
-            replies: [ { id: message.author_id, mention: false } ],
-        });
-        return;
+            // Don't need to risk exposing the user to the token, so we'll send it in the nonce
+            await message.channel.sendMessage({
+                content: 'Token request granted.',
+                nonce: `${ulid()}; TOKEN:${token}`,
+                replies: [ { id: message._id, mention: false } ],
+            });
+            return;
+        }
+    } catch(e) {
+        console.error(e);
     }
-})
+});
 
 // Send a message when added to a server
 client.on('member/join', (member) => {
