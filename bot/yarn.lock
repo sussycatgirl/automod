@@ -609,10 +609,10 @@ revolt-api@0.5.3-5-patch.3:
     axios "^0.26.1"
     lodash.defaultsdeep "^4.6.1"
 
-revolt-api@^0.5.3-rc.15:
-  version "0.5.3-rc.15"
-  resolved "https://registry.yarnpkg.com/revolt-api/-/revolt-api-0.5.3-rc.15.tgz#abd08dd8109d0ca31be118461eabbeb6c3b7792e"
-  integrity sha512-MYin3U+KoObNkILPf2cz+FPperynExkUu7CjzurMJCRvBncpnhb2czvWDvnhLDKBHlpo8W597xNqzQnaklV4ug==
+revolt-api@^0.5.3:
+  version "0.5.3"
+  resolved "https://registry.yarnpkg.com/revolt-api/-/revolt-api-0.5.3.tgz#e0ec2dcf812ea4338247b2eb77d67fc731d71b8a"
+  integrity sha512-hYdyStQiDZFvD+0dlf6SgQSiOk+JiEmQo0qIQHaqYRtrFN6FQBbGVNaiv7b5LzHHMPq7vks6ZVVA7hSNpcwlkA==
   dependencies:
     "@insertish/oapi" "0.1.15"
     axios "^0.26.1"
