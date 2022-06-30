@@ -28,5 +28,5 @@
     "smart-replace": "^1.0.2",
     "ulid": "^2.3.0"
   },
-  "packageManager": "yarn@1.22.17"
+  "packageManager": "yarn@3.2.1"
 }
