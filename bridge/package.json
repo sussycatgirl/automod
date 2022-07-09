@@ -28,5 +28,8 @@
     "smart-replace": "^1.0.2",
     "ulid": "^2.3.0"
   },
-  "packageManager": "yarn@3.2.1"
+  "packageManager": "yarn@3.2.1",
+  "devDependencies": {
+    "typescript": "^4.7.4"
+  }
 }
