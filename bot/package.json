@@ -15,6 +15,7 @@
   "dependencies": {
     "@janderedev/revolt.js": "^6.0.0-2-patch.1",
     "@types/monk": "^6.0.0",
+    "automod": "^0.1.0",
     "axios": "^0.22.0",
     "dayjs": "^1.10.7",
     "discord.js": "^13.3.1",
@@ -30,5 +31,8 @@
   "devDependencies": {
     "typescript": "^4.4.3"
   },
-  "packageManager": "yarn@3.2.1"
+  "packageManager": "yarn@3.2.1",
+  "resolutions": {
+    "automod": "portal:../lib"
+  }
 }

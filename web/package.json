@@ -13,6 +13,7 @@
     "@types/axios": "^0.14.0",
     "@types/core-js": "^2.5.5",
     "@types/styled-components": "^5.1.21",
+    "automod": "^0.1.0",
     "axios": "^0.25.0",
     "core-js": "^3.20.3",
     "localforage": "^1.10.0",
@@ -29,5 +30,8 @@
     "typescript": "^4.4.4",
     "vite": "^2.7.2"
   },
-  "packageManager": "yarn@3.2.1"
+  "packageManager": "yarn@3.2.1",
+  "resolutions": {
+    "automod": "portal:../lib"
+  }
 }

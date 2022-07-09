@@ -643,6 +643,12 @@ __metadata:
   languageName: node
   linkType: hard
 
+"automod@portal:../lib::locator=web%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "automod@portal:../lib::locator=web%40workspace%3A."
+  languageName: node
+  linkType: soft
+
 "axios@npm:*, axios@npm:^0.25.0":
   version: 0.25.0
   resolution: "axios@npm:0.25.0"
@@ -2242,6 +2248,7 @@ __metadata:
     "@types/react-dom": ^17.0.10
     "@types/styled-components": ^5.1.21
     "@vitejs/plugin-react": ^1.0.7
+    automod: ^0.1.0
     axios: ^0.25.0
     core-js: ^3.20.3
     localforage: ^1.10.0
