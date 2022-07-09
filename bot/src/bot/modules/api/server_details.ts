@@ -1,7 +1,7 @@
 import { Member } from "@janderedev/revolt.js/dist/maps/Members";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { client, dbs } from "../../..";
-import ServerConfig from "../../../struct/ServerConfig";
+import ServerConfig from "automod/types/ServerConfig";
 import { getPermissionLevel } from "../../util";
 import { wsEvents, WSResponse } from "../api_communication";
 

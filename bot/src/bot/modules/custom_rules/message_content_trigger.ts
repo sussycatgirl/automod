@@ -1,6 +1,6 @@
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { client } from "../../..";
-import CustomRuleTrigger from "../../../struct/antispam/CustomRuleTrigger";
+import CustomRuleTrigger from "automod/types/antispam/CustomRuleTrigger";
 import VM from 'vm';
 
 let ruleTimeouts: Map<string, number> = new Map();

@@ -1,7 +1,7 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import { client, dbs } from "../../..";
-import Infraction from "../../../struct/antispam/Infraction";
-import InfractionType from "../../../struct/antispam/InfractionType";
+import { dbs } from "../../..";
+import Infraction from "automod/types/antispam/Infraction";
+import InfractionType from "automod/types/antispam/InfractionType";
 import { isModerator, NO_MANAGER_MSG, parseUserOrId, uploadFile } from "../../util";
 import Day from 'dayjs';
 import RelativeTime from 'dayjs/plugin/relativeTime';

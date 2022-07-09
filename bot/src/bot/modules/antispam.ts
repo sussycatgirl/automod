@@ -1,10 +1,10 @@
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { ulid } from "ulid";
 import { dbs } from "../..";
-import AntispamRule from "../../struct/antispam/AntispamRule";
-import Infraction from "../../struct/antispam/Infraction";
-import InfractionType from "../../struct/antispam/InfractionType";
-import ModerationAction from "../../struct/antispam/ModerationAction";
+import AntispamRule from "automod/types/antispam/AntispamRule";
+import Infraction from "automod/types/antispam/Infraction";
+import InfractionType from "automod/types/antispam/InfractionType";
+import ModerationAction from "automod/types/antispam/ModerationAction";
 import logger from "../logger";
 import { isModerator, storeInfraction } from "../util";
 

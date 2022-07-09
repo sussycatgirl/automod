@@ -1,9 +1,9 @@
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
-import CustomRuleAction from "../../../../struct/antispam/CustomRuleAction";
+import CustomRuleAction from "automod/types/antispam/CustomRuleAction";
 import { storeInfraction } from '../../../util';
-import Infraction from "../../../../struct/antispam/Infraction";
+import Infraction from "automod/types/antispam/Infraction";
 import { ulid } from "ulid";
-import InfractionType from "../../../../struct/antispam/InfractionType";
+import InfractionType from "automod/types/antispam/InfractionType";
 
 async function execute(message: Message, action: CustomRuleAction) {
     let warnMsg = action.text

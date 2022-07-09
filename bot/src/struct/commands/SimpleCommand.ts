@@ -1,6 +1,6 @@
 import CommandCategory from "./CommandCategory";
 import MessageCommandContext from "../MessageCommandContext";
-import ServerConfig from "../ServerConfig";
+import ServerConfig from "automod/types/ServerConfig";
 
 /**
  * A basic command, consisting of basic attributes

@@ -1,8 +1,8 @@
 import { ulid } from "ulid";
 import crypto from "crypto";
 import { client, dbs } from "../..";
-import Infraction from "../../struct/antispam/Infraction";
-import InfractionType from "../../struct/antispam/InfractionType";
+import Infraction from "automod/types/antispam/Infraction";
+import InfractionType from "automod/types/antispam/InfractionType";
 import { BLACKLIST_BAN_REASON, BLACKLIST_MESSAGE } from "../commands/admin/botadm";
 import logger from "../logger";
 import { hasPermForChannel, storeInfraction } from "../util";
