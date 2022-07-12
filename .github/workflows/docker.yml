@@ -42,7 +42,8 @@ jobs:
         name: Build and push - API
         uses: docker/build-push-action@v3
         with:
-          context: ./api
+          context: .
+          dockerfile: ./api/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -81,7 +82,8 @@ jobs:
         name: Build and push - Web
         uses: docker/build-push-action@v3
         with:
-          context: ./web
+          context: .
+          dockerfile: ./web/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -120,7 +122,8 @@ jobs:
         name: Build and push - Bridge
         uses: docker/build-push-action@v3
         with:
-          context: ./bridge
+          context: .
+          dockerfile: ./bridge/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -159,7 +162,8 @@ jobs:
         name: Build and push - Bot
         uses: docker/build-push-action@v3
         with:
-          context: ./bot
+          context: .
+          dockerfile: ./bot/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
