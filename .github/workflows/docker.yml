@@ -43,7 +43,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          dockerfile: ./api/Dockerfile
+          file: ./api/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -83,7 +83,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          dockerfile: ./web/Dockerfile
+          file: ./web/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -123,7 +123,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          dockerfile: ./bridge/Dockerfile
+          file: ./bridge/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -163,7 +163,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          dockerfile: ./bot/Dockerfile
+          file: ./bot/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
