@@ -1,15 +1,17 @@
 FROM node:16 as build
-WORKDIR /build/
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn ./.yarn
+WORKDIR /build/app
+COPY api/package.json api/yarn.lock api/.yarnrc.yml ./
+COPY api/.yarn ./.yarn
+COPY lib ../lib
 RUN yarn install --immutable
-COPY . .
+COPY ./api .
 RUN yarn build
 
 FROM node:16 as prod
-WORKDIR /app/
-COPY --from=build /build/package.json /build/yarn.lock /build/.yarnrc.yml ./
-COPY --from=build /build/.yarn ./.yarn
-COPY --from=build /build/dist ./dist
+WORKDIR /app/api
+COPY --from=build /build/app/package.json /build/app/yarn.lock /build/app/.yarnrc.yml ./
+COPY --from=build /build/app/.yarn ./.yarn
+COPY --from=build /build/app/dist ./dist
+COPY ./lib ../lib
 RUN yarn install --immutable
 CMD ["yarn", "start"]

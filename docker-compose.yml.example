@@ -5,7 +5,9 @@ version: "3.1"
 
 services:
   bot:
-    build: ./bot
+    build:
+      context: .
+      dockerfile: ./bot/Dockerfile
     environment:
       - DB_HOST=mongo:27017
       - DB_USERNAME=mogus
@@ -33,7 +35,9 @@ services:
     restart: unless-stopped
 
   api:
-    build: ./api
+    build:
+      context: .
+      dockerfile: ./api/Dockerfile
     environment:
       - BOT_API_TOKEN=${INTERNAL_API_TOKEN}
       - DB_HOST=mongo:27017
@@ -47,7 +51,9 @@ services:
     restart: unless-stopped
 
   bridge:
-    build: ./bridge
+    build:
+      context: .
+      dockerfile: ./bridge/Dockerfile
     environment:
       - REVOLT_TOKEN=${BOT_TOKEN}
       - DISCORD_TOKEN=${BOT_TOKEN_DISCORD}
@@ -67,7 +73,8 @@ services:
   # platform like Vercel, you can remove this part.
   web:
     build:
-      context: ./web
+      context: .
+      dockerfile: ./web/Dockerfile
       args:
         - VITE_API_URL=${PUBLIC_API_URL}
         - VITE_BOT_PREFIX=${BOT_PREFIX}
