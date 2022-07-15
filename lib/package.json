@@ -1,5 +1,4 @@
 {
-  "private": "true",
   "name": "automod",
   "version": "1.0.0",
   "description": "Shared code for AutoMod",
