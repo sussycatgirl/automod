@@ -1,7 +1,7 @@
 import { ulid } from "ulid";
 import { client } from "../../../index";
-import Infraction from "automod/types/antispam/Infraction";
-import InfractionType from "automod/types/antispam/InfractionType";
+import Infraction from "automod/dist/types/antispam/Infraction";
+import InfractionType from "automod/dist/types/antispam/InfractionType";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
 import { storeTempBan } from "../../modules/tempbans";

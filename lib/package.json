@@ -3,7 +3,13 @@
   "name": "automod",
   "version": "1.0.0",
   "description": "Shared code for AutoMod",
+  "scripts": {
+    "build": "rm -rf dist && tsc"
+  },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.0.4"
+  }
 }

@@ -1,6 +1,6 @@
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { client } from "../../../..";
-import CustomRuleAction from "automod/types/antispam/CustomRuleAction";
+import CustomRuleAction from "automod/dist/types/antispam/CustomRuleAction";
 
 async function execute(message: Message, action: CustomRuleAction) {
     let text = action.text || "Error: No text specified for `sendMessage` action";

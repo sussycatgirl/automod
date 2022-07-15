@@ -1,17 +1,7 @@
 import { Request, Response } from "express";
-import { FindOneResult } from "monk";
-import { app, db, logger } from "..";
-
-const ratelimits = db.get('ratelimits');
-
-type RateLimitObject = {
-    ip: string,
-    requests: { route: string, time: number }[],
-    lastActivity: number,
-}
-
-// Might use redis here later, idk
-// I am also aware that there's better ways to do this
+import { ulid } from "ulid";
+import { app, logger } from "..";
+import { redis } from "../db";
 
 class RateLimiter {
     route: string;
@@ -27,25 +17,14 @@ class RateLimiter {
     async execute(req: Request, res: Response, next: () => void) {
         try {
             const ip = req.ip;
-            const now = Date.now();
+            const reqId = ulid();
 
-            const entry: FindOneResult<RateLimitObject> = await ratelimits.findOne({ ip });
-            if (!entry) {
-                logger.debug('Ratelimiter: Request from new IP address, creating new document');
-                next();
-                await ratelimits.insert({
-                    ip,
-                    lastActivity: now,
-                    requests: [{ route: this.route, time: now }],
-                });
-                return;
-            }
+            // ratelimit:ip_address_base64:route_base64
+            const redisKey = `ratelimit:${Buffer.from(ip).toString('base64')}:${Buffer.from(this.route).toString('base64')}`;
 
-            const reqs = entry.requests.filter(
-                r => r.route == this.route && r.time > now - (this.timeframe * 1000)
-            );
+            const reqs = await redis.SCARD(redisKey);
 
-            if (reqs.length >= this.limit) {
+            if (reqs >= this.limit) {
                 logger.debug(`Ratelimiter: IP address exceeded ratelimit for ${this.route} [${this.limit}/${this.timeframe}]`);
                 res
                     .status(429)
@@ -54,56 +33,15 @@ class RateLimiter {
                         limit: this.limit,
                         timeframe: this.timeframe,
                     });
-            } else next();
-
-            // Can't put a $push and $pull into the same query
-            await Promise.all([
-                ratelimits.update({ ip }, {
-                    $push: {
-                        requests: { route: this.route, time: now }
-                    },
-                    $set: {
-                        lastActivity: now
-                    }
-                }),
-                ratelimits.update({ ip }, {
-                    $pull: {
-                        requests: {
-                            route: this.route,
-                            time: {
-                                $lt: now - (this.timeframe * 1000)
-                            }
-                        }
-                    }
-                }),
-            ]);
+            } else {
+                next();
+                await redis.SADD(redisKey, reqId);
+                await redis.sendCommand([ 'EXPIREMEMBER', redisKey, reqId, this.timeframe.toString() ]);
+            }
         } catch(e) { console.error(e) }
     }
 }
 
 app.use('*', (...args) => (new RateLimiter('*', { limit: 20, timeframe: 1 })).execute(...args));
-
-// Delete all documents where the last
-// activity was more than 24 hours ago.
-// This ensures that we don't store
-// personally identifying data for longer
-// than required.
-
-const cleanDocuments = async () => {
-    try {
-        logger.info('Ratelimiter: Deleting old documents');
-
-        const { deletedCount } = await ratelimits.remove({
-            lastActivity: { $lt: Date.now() - 1000 * 60 * 60 * 24 }
-        }, { multi: true });
-
-        logger.done(`Ratelimiter: Deleted ${deletedCount ?? '??'} documents.`);
-    } catch(e) {
-        console.error(e);
-    }
-}
-
-setTimeout(cleanDocuments, 1000 * 10);
-setInterval(cleanDocuments, 10000 * 60 * 60);
 
 export { RateLimiter }

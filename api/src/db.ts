@@ -1,11 +1,16 @@
 import Monk, { IMonkManager } from 'monk';
+import Redis from 'redis';
 import { logger } from '.';
 
 export default (): IMonkManager => {
-        let dburl = getDBUrl();
-        let db = Monk(dburl);
-        return db;
+    let dburl = getDBUrl();
+    let db = Monk(dburl);
+    return db;
 };
+
+const redis = Redis.createClient({ url: process.env.REDIS_URL });
+
+export { redis }
 
 // Checks if all required env vars were supplied, and returns the mongo db URL
 function getDBUrl() {

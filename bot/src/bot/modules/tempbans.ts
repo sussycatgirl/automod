@@ -1,6 +1,6 @@
 import { FindResult } from "monk";
 import { client, dbs } from "../..";
-import TempBan from "automod/types/TempBan";
+import TempBan from "automod/dist/types/TempBan";
 import logger from "../logger";
 
 // Array of ban IDs which should not get processed in this session

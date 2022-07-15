@@ -44,6 +44,7 @@ services:
       - DB_USERNAME=mogus
       - DB_PASS
       - DB_NAME=admin
+      - REDIS_URL
     expose:
       - 9000
     ports:
@@ -95,3 +96,7 @@ services:
     volumes:
       - ./db:/data/db:rw
     restart: unless-stopped
+
+  redis:
+    image: eqalpha/keydb
+    restart: always

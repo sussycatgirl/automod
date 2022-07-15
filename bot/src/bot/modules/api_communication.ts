@@ -8,7 +8,7 @@ import crypto from 'crypto';
 import { client as bot, dbs } from '../..';
 import { EventEmitter } from "events";
 import { parseUser } from "../util";
-import PendingLogin from "automod/types/PendingLogin";
+import PendingLogin from "automod/dist/types/PendingLogin";
 import { ulid } from "ulid";
 
 const wsEvents = new EventEmitter();

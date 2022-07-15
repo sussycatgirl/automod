@@ -3,7 +3,7 @@ import { client, dbs } from "../../..";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import PendingLogin from "automod/types/PendingLogin";
+import PendingLogin from "automod/dist/types/PendingLogin";
 import logger from "../../logger";
 import { DEFAULT_PREFIX } from "../../modules/command_handler";
 

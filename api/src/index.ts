@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import Express from "express";
 import Log75, { LogLevel } from 'log75';
-import buildDBClient from './db';
+import buildDBClient, { redis } from './db';
 
 config();
 
@@ -19,6 +19,8 @@ app.use(Express.json());
 export { logger, app, db, PORT, SESSION_LIFETIME }
 
 (async () => {
+    await redis.connect();
+
     const promises = [
         import('./middlewares/log'),
         import('./middlewares/updateTokenExpiry'),

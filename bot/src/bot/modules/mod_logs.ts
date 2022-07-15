@@ -1,7 +1,7 @@
 import { Member } from "@janderedev/revolt.js/dist/maps/Members";
 import { Server } from "@janderedev/revolt.js/dist/maps/Servers";
 import { client, dbs } from "../..";
-import LogMessage from "automod/types/LogMessage";
+import LogMessage from "automod/dist/types/LogMessage";
 import logger from "../logger";
 import { getAutumnURL, sanitizeMessageContent, sendLogMessage } from "../util";
 

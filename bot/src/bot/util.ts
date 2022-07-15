@@ -1,12 +1,12 @@
 import { Member } from "@janderedev/revolt.js/dist/maps/Members";
 import { User } from "@janderedev/revolt.js/dist/maps/Users";
 import { client, dbs } from "..";
-import Infraction from "automod/types/antispam/Infraction";
+import Infraction from "automod/dist/types/antispam/Infraction";
 import FormData from 'form-data';
 import axios from 'axios';
 import { Server } from "@janderedev/revolt.js/dist/maps/Servers";
-import LogConfig from "automod/types/LogConfig";
-import LogMessage from "automod/types/LogMessage";
+import LogConfig from "automod/dist/types/LogConfig";
+import LogMessage from "automod/dist/types/LogMessage";
 import { ColorResolvable, MessageEmbed } from "discord.js";
 import logger from "./logger";
 import { ulid } from "ulid";
@@ -16,7 +16,7 @@ import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { isSudo } from "./commands/admin/botadm";
 import { SendableEmbed } from "revolt-api";
 import MessageCommandContext from "../struct/MessageCommandContext";
-import ServerConfig from "automod/types/ServerConfig";
+import ServerConfig from "automod/dist/types/ServerConfig";
 
 const NO_MANAGER_MSG = '🔒 Missing permission';
 const ULID_REGEX = /^[0-9A-HJ-KM-NP-TV-Z]{26}$/i;

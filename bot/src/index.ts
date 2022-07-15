@@ -4,15 +4,15 @@ config();
 import logger from './bot/logger';
 import AutomodClient, { login } from './struct/AutomodClient';
 import MongoDB from './bot/db';
-import DbUser from 'automod/types/DbUser';
-import ServerConfig from 'automod/types/ServerConfig';
-import Infraction from 'automod/types/antispam/Infraction';
-import PendingLogin from 'automod/types/PendingLogin';
-import TempBan from 'automod/types/TempBan';
+import DbUser from 'automod/dist/types/DbUser';
+import ServerConfig from 'automod/dist/types/ServerConfig';
+import Infraction from 'automod/dist/types/antispam/Infraction';
+import PendingLogin from 'automod/dist/types/PendingLogin';
+import TempBan from 'automod/dist/types/TempBan';
 import { VoteEntry } from './bot/commands/moderation/votekick';
-import BridgeRequest from 'automod/types/BridgeRequest';
-import BridgeConfig from 'automod/types/BridgeConfig';
-import BridgedMessage from 'automod/types/BridgedMessage';
+import BridgeRequest from 'automod/dist/types/BridgeRequest';
+import BridgeConfig from 'automod/dist/types/BridgeConfig';
+import BridgedMessage from 'automod/dist/types/BridgedMessage';
 
 logger.info('Initializing client');
 
