@@ -5,6 +5,7 @@ WORKDIR /build/app
 COPY web/package.json web/yarn.lock web/.yarnrc.yml ./
 COPY web/.yarn ./.yarn
 COPY lib ../lib
+RUN yarn --cwd ../lib --immutable
 RUN yarn --cwd ../lib build
 RUN yarn install --immutable
 COPY web .

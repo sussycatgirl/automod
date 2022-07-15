@@ -3,6 +3,7 @@ WORKDIR /build/app
 COPY api/package.json api/yarn.lock api/.yarnrc.yml ./
 COPY api/.yarn ./.yarn
 COPY lib ../lib
+RUN yarn --cwd ../lib --immutable
 RUN yarn --cwd ../lib build
 RUN yarn install --immutable
 COPY ./api .

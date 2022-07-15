@@ -3,6 +3,7 @@ WORKDIR /build/app
 COPY bridge/package.json bridge/yarn.lock bridge/.yarnrc.yml ./
 COPY bridge/.yarn ./.yarn
 COPY lib ../lib
+RUN yarn --cwd ../lib --immutable
 RUN yarn --cwd ../lib build
 RUN yarn install --immutable
 COPY ./bridge .
