@@ -200,9 +200,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"automod@link:../lib::locator=revolt-automod%40workspace%3A.":
+"automod@portal:../lib::locator=revolt-automod%40workspace%3A.":
   version: 0.0.0-use.local
-  resolution: "automod@link:../lib::locator=revolt-automod%40workspace%3A."
+  resolution: "automod@portal:../lib::locator=revolt-automod%40workspace%3A."
   languageName: node
   linkType: soft
 
@@ -874,7 +874,7 @@ __metadata:
   dependencies:
     "@janderedev/revolt.js": ^6.0.0-2-patch.1
     "@types/monk": ^6.0.0
-    automod: "link:../lib"
+    automod: ^0.1.0
     axios: ^0.22.0
     dayjs: ^1.10.7
     discord.js: ^13.3.1
