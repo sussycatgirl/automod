@@ -11,7 +11,10 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^18.0.4",
+    "monk": "^7.3.4",
+    "redis": "^4.2.0",
     "tsc-watch": "^5.0.3",
     "typescript": "^4.7.4"
-  }
+  },
+  "packageManager": "yarn@3.2.1"
 }
