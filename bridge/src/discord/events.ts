@@ -196,6 +196,11 @@ client.on('messageCreate', async message => {
                 masquerade: {
                     name: message.author.username,
                     avatar: message.author.displayAvatarURL({ size: 128 }),
+                    colour: channel.server?.havePermission('ManageRole')
+                        ? message.member?.displayColor // Discord.js returns black or 0 instead of undefined when no role color is set
+                            ? message.member?.displayHexColor
+                            : 'var(--foreground)'
+                        : undefined,
                 },
                 embeds: message.embeds.length
                     ? message.embeds.map(e => new GenericEmbed(e).toRevolt())
