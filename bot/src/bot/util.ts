@@ -313,10 +313,10 @@ function sanitizeMessageContent(msg: string): string {
 }
 
 enum EmbedColor {
-    Error = "#ff450c",
-    SoftError = "#ff785d",
-    Warning = "#ffda55",
-    Success = "#23ff91",
+    Error = "var(--error)",
+    SoftError = "var(--warning)",
+    Warning = "var(--warning)",
+    Success = "var(--success)",
 }
 
 function embed(content: string, title?: string|null, color?: string|EmbedColor): SendableEmbed {

@@ -58,7 +58,7 @@ export default {
                         reason = reason ? `${userInput} ${reason}` : userInput;
                     }
                     else {
-                        embeds.push(embed(`I can't resolve \`${sanitizeMessageContent(userStr).trim()}\` to a user.`, null, '#ff785d'));
+                        embeds.push(embed(`I can't resolve \`${sanitizeMessageContent(userStr).trim()}\` to a user.`, null, EmbedColor.SoftError));
                     }
                     continue;
                 }
