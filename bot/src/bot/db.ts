@@ -1,4 +1,5 @@
-import Monk, { IMonkManager } from 'monk';
+import Monk, { ICollection, IMonkManager } from 'monk';
+import { dbs } from '..';
 import logger from './logger';
 
 export default (): IMonkManager => {
@@ -27,3 +28,32 @@ function getDBUrl() {
 
     return dburl;
 }
+
+async function databaseMigrations() {
+    async function setIndexes(collection: ICollection, toIndex: string[]) {
+        try {
+            const indexes = await collection.indexes();
+            for (const index of toIndex) {
+                if (!Object.values(indexes).find(v => v[0][0] == index)) {
+                    logger.info(`Creating index ${index} on ${collection.name}`);
+                    await collection.createIndex(index);
+                }
+            }
+        } catch(e) {
+            logger.warn(`Failed to run migrations for ${collection.name}: ${e}`);
+        }
+    }
+
+    await setIndexes(dbs.BRIDGE_CONFIG, [ 'discord', 'revolt' ]);
+    await setIndexes(dbs.BRIDGE_REQUESTS, [ 'id', 'revolt' ]);
+    await setIndexes(dbs.BRIDGED_MESSAGES, [ 'discord.messageId', 'revolt.messageId', 'revolt.nonce' ]);
+    await setIndexes(dbs.INFRACTIONS, [ 'createdBy', 'user', 'server' ]);
+    await setIndexes(dbs.PENDING_LOGINS, [ 'code', 'user' ]);
+    await setIndexes(dbs.SERVERS, [ 'id' ]);
+    await setIndexes(dbs.SESSIONS, [ 'user', 'token' ]);
+    await setIndexes(dbs.TEMPBANS, [ 'id', 'until' ]);
+    await setIndexes(dbs.USERS, [ 'id' ]);
+    await setIndexes(dbs.VOTEKICKS, [ 'id', 'server', 'target' ]);
+}
+
+export { databaseMigrations }
