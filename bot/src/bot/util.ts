@@ -191,7 +191,7 @@ async function sendLogMessage(config: LogConfig, content: LogMessage) {
         const embed = new MessageEmbed();
         if (c.title) embed.setTitle(content.title);
         if (c.description) embed.setDescription(c.description);
-        if (c.color) embed.setColor(c.color as ColorResolvable);
+        if (c.color?.match(/^#[0-9a-fA-F]+$/)) embed.setColor(c.color as ColorResolvable);
         if (c.fields?.length) {
             for (const field of c.fields) {
                 embed.addField(field.title, field.content.trim() || "\u200b", field.inline);
