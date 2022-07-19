@@ -3,7 +3,7 @@ config();
 
 import logger from './bot/logger';
 import AutomodClient, { login } from './struct/AutomodClient';
-import MongoDB from './bot/db';
+import MongoDB, { databaseMigrations } from './bot/db';
 import DbUser from 'automod/dist/types/DbUser';
 import ServerConfig from 'automod/dist/types/ServerConfig';
 import Infraction from 'automod/dist/types/antispam/Infraction';
@@ -56,6 +56,9 @@ logger.info(`\
     await db.get('servers').findOne({});
     logger.done('DB ready!');
 
+    logger.info('Running database migrations...');
+    await databaseMigrations();
+
     // Load modules
     import('./bot/modules/command_handler');
     import('./bot/modules/mod_logs');
@@ -65,4 +68,5 @@ logger.info(`\
     import('./bot/modules/metrics');
     import('./bot/modules/bot_status');
     import('./bot/modules/fetch_all');
+    import('./bot/modules/raid_detection');
 })();

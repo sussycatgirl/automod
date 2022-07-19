@@ -6,6 +6,7 @@ class ServerConfig {
     prefix?: string;
     spaceAfterPrefix?: boolean;
     automodSettings?: AutomodSettings;
+    antispamEnabled?: boolean; // Used by private spam detection module
     botManagers?: string[];
     moderators?: string[];
     votekick?: {

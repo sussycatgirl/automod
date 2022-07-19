@@ -19,7 +19,7 @@ export default class GenericEmbed {
             if (embed.title) this.title = embed.title;
             if (embed.description) this.description = embed.description;
             if (embed.icon_url?.match(/^http(s)?\:\/\//)) this.icon = embed.icon_url;
-            if (embed.colour) this.color = (embed.colour as any);
+            if (embed.colour?.match(/^#[0-9a-fA-F]+$/)) this.color = (embed.colour as any);
             if (embed.url) this.url = embed.url;
         }
     }
