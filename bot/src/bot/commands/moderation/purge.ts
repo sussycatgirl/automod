@@ -5,7 +5,7 @@ import { isModerator, parseUser } from "../../util";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 
-const SYNTAX = '/purge [SELECTOR] [@user?[, @user?[, ...]]]; where SELECTOR: [number] || [messageID]-[messageID]';
+const SYNTAX = '/purge [number] [user[,user...]]';
 const MAX_PURGE_AMOUNT = 100;
 
 export default {
