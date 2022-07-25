@@ -109,4 +109,4 @@ class CachedDb<T> {
     }
 }
 
-export { CachedDb }
+export { CachedDb, RedisClient }
