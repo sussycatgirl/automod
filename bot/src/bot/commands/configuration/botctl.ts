@@ -1,7 +1,8 @@
-import { dbs } from "../../..";
+import { client, dbs } from "../../..";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { DEFAULT_PREFIX } from "../../modules/command_handler";
 import { isBotManager, NO_MANAGER_MSG } from "../../util";
 
 export default {
@@ -46,11 +47,83 @@ export default {
                 break;
             }
 
+            case 'logs': {
+                if (!args[0]) {
+                    return await message.reply(
+                        `No category specified. Syntax: ${DEFAULT_PREFIX}botctl logs [category] [#channel]\n` +
+                        `Categories: \`messageupdate\`, \`modaction\``,
+                    );
+                }
+
+                if (!args[1]) {
+                    return await message.reply('No target channel specified.');
+                }
+
+                let channelInput = args[1];
+                if (channelInput.startsWith('<#') && channelInput.endsWith('>')) {
+                    channelInput = channelInput.substring(2, channelInput.length - 1);
+                }
+
+                const channel = client.channels.get(channelInput);
+                if (!channel) return message.reply('I can\'t find that channel.');
+                if (channel.server_id != message.channel?.server_id) return message.reply('That channel is not part of this server!');
+                if (!channel.havePermission('SendMessage')) return message.reply('I don\'t have permission to **send messages** in that channel.');
+                if (!channel.havePermission('SendEmbeds')) return message.reply('I don\'t have permission to **send embeds** in that channel.');
+
+                switch(args[0]?.toLowerCase()) {
+                    case 'messageupdate': {
+                        await dbs.SERVERS.update(
+                            { id: message.channel!.server_id! },
+                            {
+                                $set: {
+                                    'logs.messageUpdate.revolt': {
+                                        channel: channel._id,
+                                        type: 'EMBED',
+                                    },
+                                },
+                                $setOnInsert: {
+                                    id: message.channel!.server_id!,
+                                }
+                            },
+                            { upsert: true },
+                        );
+                        await message.reply(`Bound message update logs to <#${channel._id}>!`);
+                        break;
+                    }
+
+                    case 'modaction': {
+                        await dbs.SERVERS.update(
+                            { id: message.channel!.server_id! },
+                            {
+                                $set: {
+                                    'logs.modAction.revolt': {
+                                        channel: channel._id,
+                                        type: 'EMBED',
+                                    },
+                                },
+                                $setOnInsert: {
+                                    id: message.channel!.server_id!,
+                                }
+                            },
+                            { upsert: true },
+                        );
+                        await message.reply(`Bound moderation logs to <#${channel._id}>!`);
+                        break;
+                    }
+
+                    default: {
+                        return await message.reply('Unknown log category');
+                    }
+                }
+                break;
+            }
+
             case undefined:
                 case '':
                 message.reply(`### Available subcommands\n`
                 + `- \`ignore_blacklist\` - Ignore the bot's global blacklist.\n`
-                + `- \`spam_detection\` - Toggle automatic spam detection.\n`);
+                + `- \`spam_detection\` - Toggle automatic spam detection.\n`
+                + `- \`logs\` - Configure log channels.\n`);
             break
             default:
                 message.reply(`Unknown option`);
