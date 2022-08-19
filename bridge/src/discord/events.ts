@@ -242,97 +242,141 @@ client.on('messageCreate', async message => {
     }
 });
 
-client.on('guildCreate', async server => {
+client.on("guildCreate", async (server) => {
     try {
-        const me = server.me || await server.members.fetch({ user: client.user!.id });
-        const channels = Array.from(server.channels.cache.filter(
-            c => c.permissionsFor(me).has('SEND_MESSAGES') && c.isText()
-        ));
+        const me =
+            server.me ||
+            (await server.members.fetch({ user: client.user!.id }));
+        const channels = Array.from(
+            server.channels.cache.filter(
+                (c) => c.permissionsFor(me).has("SEND_MESSAGES") && c.isText()
+            )
+        );
 
         if (!channels.length) return;
 
-        const channel = (channels.find(c => c[0] == server.systemChannel?.id) || channels[0])?.[1] as TextChannel;
+        const channel = (channels.find(
+            (c) => c[0] == server.systemChannel?.id
+        ) || channels[0])?.[1] as TextChannel;
 
         const message =
-            ':wave: Hi there!\n\n' +
-            'Thanks for adding AutoMod to this server! Please note that despite it\'s name, this bot only provides ' +
-            'bridge integration with the AutoMod bot on Revolt (<https://revolt.chat>) and does not offer any moderation ' +
-            'features on Discord. To get started, run the `/bridge help` command!\n\n' +
-            'Before using AutoMod, please make sure you have read the privacy policy: <https://github.com/janderedev/automod/wiki/Privacy-Policy>\n\n' +
-            'A note to this server\'s administrators: When using the bridge, please make sure to also provide your members ' +
-            'with a link to AutoMod\'s privacy policy in an accessible place like your rules channel.';
+            ":wave: Hi there!\n\n" +
+            "Thanks for adding AutoMod to this server! Please note that despite its name, this bot only provides " +
+            "bridge integration with the AutoMod bot on Revolt (<https://revolt.chat>) and does not offer any moderation " +
+            "features on Discord. To get started, run the `/bridge help` command!\n\n" +
+            "Before using AutoMod, please make sure you have read the privacy policy: <https://github.com/janderedev/automod/wiki/Privacy-Policy>\n\n" +
+            "A note to this server's administrators: When using the bridge, please make sure to also provide your members " +
+            "with a link to AutoMod's privacy policy in an accessible place like your rules channel.";
 
-        if (channel.permissionsFor(me).has('EMBED_LINKS')) {
+        if (channel.permissionsFor(me).has("EMBED_LINKS")) {
             await channel.send({
                 embeds: [
                     new MessageEmbed()
                         .setDescription(message)
-                        .setColor('#ff6e6d')
-                ]
+                        .setColor("#ff6e6d"),
+                ],
             });
-        }
-        else {
+        } else {
             await channel.send(message);
         }
-    } catch(e) {
+    } catch (e) {
         console.error(e);
     }
 });
 
-// Replaces @mentions and #channel mentions
+// Replaces @mentions and #channel mentions and modifies body to make markdown render on Revolt
 async function renderMessageBody(message: string): Promise<string> {
-
     // Replace Tenor URLs so they render properly.
     // We have to download the page first, then extract
     // the `c.tenor.com` URL from the meta tags.
     // Could query autumn but that's too much effort and I already wrote this.
     if (RE_TENOR.test(message)) {
         try {
-            logger.debug('Replacing tenor URL');
+            logger.debug("Replacing tenor URL");
 
-            const res = await axios.get(
-                message,
-                {
-                    headers: {
-                        'User-Agent': 'AutoMod/1.0; https://github.com/janderedev/automod',
-                    }
-                }
-            );
+            const res = await axios.get(message, {
+                headers: {
+                    "User-Agent":
+                        "AutoMod/1.0; https://github.com/janderedev/automod",
+                },
+            });
 
             const metaTag = RE_TENOR_META.exec(res.data as string)?.[0];
             if (metaTag) {
                 return metaTag
-                    .replace('<meta class="dynamic" property="og:url" content="', '')
-                    .replace('">', '');
+                    .replace(
+                        '<meta class="dynamic" property="og:url" content="',
+                        ""
+                    )
+                    .replace('">', "");
             }
-        } catch(e) { logger.warn(`Replacing tenor URL failed: ${e}`) }
+        } catch (e) {
+            logger.warn(`Replacing tenor URL failed: ${e}`);
+        }
     }
 
     // @mentions
-    message = await smartReplace(message, RE_MENTION_USER, async (match: string) => {
-        const id = match.replace('<@!', '').replace('<@', '').replace('>', '');
-        const user = await discordFetchUser(id);
-        return `@${user?.username || id}`;
-    }, { cacheMatchResults: true, maxMatches: 10 });
+    message = await smartReplace(
+        message,
+        RE_MENTION_USER,
+        async (match: string) => {
+            const id = match
+                .replace("<@!", "")
+                .replace("<@", "")
+                .replace(">", "");
+            const user = await discordFetchUser(id);
+            return `@${user?.username || id}`;
+        },
+        { cacheMatchResults: true, maxMatches: 10 }
+    );
 
     // #channels
-    message = await smartReplace(message, RE_MENTION_CHANNEL, async (match: string) => {
-        const id = match.replace('<#', '').replace('>', '');
-        const channel = client.channels.cache.get(id);
-        const bridgeCfg = channel ? await BRIDGE_CONFIG.findOne({ discord: channel.id }) : undefined;
-        const revoltChannel = bridgeCfg?.revolt
-            ? revoltClient.channels.get(bridgeCfg.revolt)
-            : undefined;
+    message = await smartReplace(
+        message,
+        RE_MENTION_CHANNEL,
+        async (match: string) => {
+            const id = match.replace("<#", "").replace(">", "");
+            const channel = client.channels.cache.get(id);
+            const bridgeCfg = channel
+                ? await BRIDGE_CONFIG.findOne({ discord: channel.id })
+                : undefined;
+            const revoltChannel = bridgeCfg?.revolt
+                ? revoltClient.channels.get(bridgeCfg.revolt)
+                : undefined;
 
-        return revoltChannel ? `<#${revoltChannel._id}>` : `#${(channel as TextChannel)?.name || id}`;
-    }, { cacheMatchResults: true, maxMatches: 10 });
+            return revoltChannel
+                ? `<#${revoltChannel._id}>`
+                : `#${(channel as TextChannel)?.name || id}`;
+        },
+        { cacheMatchResults: true, maxMatches: 10 }
+    );
 
     // :emojis:
-    message = await smartReplace(message, RE_EMOJI, async (match: string) => {
-        return match
-            .replace(/<(a?)?:/, ':\u200b') // We don't want to accidentally send an unrelated emoji, so we add a zero width space here
-            .replace(/(:\d{18}?>)/, ':');
-    }, { cacheMatchResults: true });
+    message = await smartReplace(
+        message,
+        RE_EMOJI,
+        async (match: string) => {
+            return match
+                .replace(/<(a?)?:/, ":\u200b") // We don't want to accidentally send an unrelated emoji, so we add a zero width space here
+                .replace(/(:\d{18}?>)/, ":");
+        },
+        { cacheMatchResults: true }
+    );
+
+    message = message
+        // "Escape" !!Revite style spoilers!!
+        .replace(
+            /!!.+!!/g,
+            (match) => `!\u200b!${match.substring(2, match.length - 2)}!!`
+        )
+        // Translate ||Discord spoilers|| to !!Revite spoilers!!, while making sure multiline spoilers continue working
+        .replace(/\|\|.+\|\|/gs, (match) => {
+            return match
+                .substring(2, match.length - 2)
+                .split("\n")
+                .map((line) => `!!${line.replace(/!!/g, "!\u200b!")}!!`)
+                .join("\n");
+        });
 
     return message;
 }

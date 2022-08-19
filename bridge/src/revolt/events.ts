@@ -258,41 +258,68 @@ client.on('message', async message => {
     }
 });
 
-// Replaces @mentions, #channel mentions and :emojis:
+// Replaces @mentions, #channel mentions, :emojis: and makes markdown features work on Discord
 async function renderMessageBody(message: string): Promise<string> {
-    // We don't want users to generate large amounts of database and API queries
-    let failsafe = 0;
-
     // @mentions
-    message = await smartReplace(message, RE_MENTION_USER, async (match) => {
-        const id = match.replace('<@', '').replace('>', '');
-        const user = await revoltFetchUser(id);
-        return `@${user?.username || id}`;
-    }, { cacheMatchResults: true, maxMatches: 10 });
+    message = await smartReplace(
+        message,
+        RE_MENTION_USER,
+        async (match) => {
+            const id = match.replace("<@", "").replace(">", "");
+            const user = await revoltFetchUser(id);
+            return `@${user?.username || id}`;
+        },
+        { cacheMatchResults: true, maxMatches: 10 }
+    );
 
     // #channels
-    message = await smartReplace(message, RE_MENTION_CHANNEL, async (match) => {
-        const id = match.replace('<#', '').replace('>', '');
-        const channel = client.channels.get(id);
+    message = await smartReplace(
+        message,
+        RE_MENTION_CHANNEL,
+        async (match) => {
+            const id = match.replace("<#", "").replace(">", "");
+            const channel = client.channels.get(id);
 
-        const bridgeCfg = channel ? await BRIDGE_CONFIG.findOne({ revolt: channel._id }) : undefined;
-        const discordChannel = bridgeCfg?.discord
-            ? discordClient.channels.cache.get(bridgeCfg.discord)
-            : undefined;
+            const bridgeCfg = channel
+                ? await BRIDGE_CONFIG.findOne({ revolt: channel._id })
+                : undefined;
+            const discordChannel = bridgeCfg?.discord
+                ? discordClient.channels.cache.get(bridgeCfg.discord)
+                : undefined;
 
-        return discordChannel ? `<#${discordChannel.id}>` : `#${channel?.name || id}`;
-    }, { cacheMatchResults: true, maxMatches: 10 });
+            return discordChannel
+                ? `<#${discordChannel.id}>`
+                : `#${channel?.name || id}`;
+        },
+        { cacheMatchResults: true, maxMatches: 10 }
+    );
 
-    message = await smartReplace(message, RE_EMOJI, async (match) => {
-        const emojiName = match.replace(/(^:)|(:$)/g, '');
+    message = await smartReplace(
+        message,
+        RE_EMOJI,
+        async (match) => {
+            const emojiName = match.replace(/(^:)|(:$)/g, "");
 
-        if (!KNOWN_EMOJI_NAMES.includes(emojiName)) return match;
+            if (!KNOWN_EMOJI_NAMES.includes(emojiName)) return match;
 
-        const dbEmoji = await BRIDGED_EMOJIS.findOne({ name: emojiName });
-        if (!dbEmoji) return match;
+            const dbEmoji = await BRIDGED_EMOJIS.findOne({ name: emojiName });
+            if (!dbEmoji) return match;
 
-        return `<${dbEmoji.animated ? 'a' : ''}:${emojiName}:${dbEmoji.emojiid}>`;
-    }, { cacheMatchResults: true, maxMatches: 40 });
+            return `<${dbEmoji.animated ? "a" : ""}:${emojiName}:${
+                dbEmoji.emojiid
+            }>`;
+        },
+        { cacheMatchResults: true, maxMatches: 40 }
+    );
+
+    message = message
+        // Escape ||Discord style spoilers|| since Revite doesn't support them
+        .replace(/\|\|.+\|\|/gs, (match) => "\\" + match)
+        // Translate !!Revite spoilers!! to ||Discord spoilers||
+        .replace(
+            /!!.+!!/g,
+            (match) => `||${match.substring(2, match.length - 2)}||`
+        );
 
     return message;
 }
