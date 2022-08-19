@@ -319,7 +319,23 @@ async function renderMessageBody(message: string): Promise<string> {
         .replace(
             /!!.+!!/g,
             (match) => `||${match.substring(2, match.length - 2)}||`
-        );
+        )
+        // KaTeX blocks
+        .replace(/(\$\$[^$]+\$\$)|(\$[^$]+\$)/g, (match) => {
+            const dollarCount =
+                match.startsWith("$$") && match.endsWith("$$") ? 2 : 1;
+            const tex = match.substring(
+                dollarCount,
+                match.length - dollarCount
+            );
+            const output = `[\`${tex}\`](<https://automod.me/tex/?tex=${encodeURI(
+                tex
+            )}>)`;
+
+            // Make sure we don't blow through the message length limit
+            const newLength = message.length - match.length + output.length;
+            return newLength <= 2000 ? output : `\`${tex}\``;
+        });
 
     return message;
 }

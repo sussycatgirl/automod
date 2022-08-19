@@ -7,6 +7,7 @@ import RequireAuth from './components/RequireAuth';
 import DashboardHome from './pages/DashboardHome';
 import ServerDashboard from './pages/ServerDashboard/ServerDashboard';
 import localforage from 'localforage';
+import TexPage from './pages/Tex';
 
 const API_URL = import.meta.env.VITE_API_URL?.toString()
   || 'http://localhost:9000';
@@ -33,6 +34,7 @@ function App() {
         <Route path='/' element={<Home />} />
         <Route path='/dashboard' element={<RequireAuth><DashboardHome /></RequireAuth>} />
         <Route path='/dashboard/:serverid' element={<RequireAuth><ServerDashboard /></RequireAuth>} />
+        <Route path='/tex' element={<TexPage />} />
       </Routes>
     </BrowserRouter>
   );
