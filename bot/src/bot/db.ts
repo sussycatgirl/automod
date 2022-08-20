@@ -46,7 +46,12 @@ async function databaseMigrations() {
 
     await setIndexes(dbs.BRIDGE_CONFIG, [ 'discord', 'revolt' ]);
     await setIndexes(dbs.BRIDGE_REQUESTS, [ 'id', 'revolt' ]);
-    await setIndexes(dbs.BRIDGED_MESSAGES, [ 'discord.messageId', 'revolt.messageId', 'revolt.nonce' ]);
+    await setIndexes(dbs.BRIDGED_MESSAGES, [
+        "discord.messageId",
+        "revolt.messageId",
+        "revolt.nonce",
+        "origin",
+    ]);
     await setIndexes(dbs.INFRACTIONS, [ 'createdBy', 'user', 'server' ]);
     await setIndexes(dbs.PENDING_LOGINS, [ 'code', 'user' ]);
     await setIndexes(dbs.SERVERS, [ 'id' ]);
