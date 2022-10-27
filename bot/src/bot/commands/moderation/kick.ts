@@ -38,8 +38,8 @@ export default {
         ?.replace(new RegExp('`', 'g'), '\'')
         ?.replace(new RegExp('\n', 'g'), ' ');
 
-        if (reason.length > 200) return message.reply({
-            embeds: [ embed('Kick reason may not be longer than 200 characters.', null, EmbedColor.SoftError) ]
+        if (reason.length > 500) return message.reply({
+            embeds: [ embed('Kick reason may not be longer than 500 characters.', null, EmbedColor.SoftError) ]
         });
 
         const embeds: SendableEmbed[] = [];
