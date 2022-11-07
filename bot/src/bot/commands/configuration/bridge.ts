@@ -262,6 +262,9 @@ export default {
                     });
             }
             case "config": {
+                if (!(await isBotManager(message)))
+                    return message.reply(NO_MANAGER_MSG);
+
                 const [_, configKey, newVal]: (string | undefined)[] = args;
 
                 if (!configKey) {
