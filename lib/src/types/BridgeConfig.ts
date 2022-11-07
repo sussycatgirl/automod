@@ -1,3 +1,5 @@
+import { CONFIG_KEYS } from "../misc/bridge_config_keys";
+
 export default class {
     // Revolt channel ID
     revolt?: string;
@@ -9,5 +11,10 @@ export default class {
     discordWebhook?: {
         id: string;
         token: string;
-    }
+    };
+
+    config?: { [key in keyof typeof CONFIG_KEYS]: boolean | undefined };
+
+    // If true, messages by users who have opted out of bridging will be deleted.
+    disallowIfOptedOut?: boolean;
 }

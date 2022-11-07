@@ -7,7 +7,7 @@ import { BRIDGED_MESSAGES, BRIDGE_CONFIG, BRIDGE_REQUESTS, BRIDGE_USER_CONFIG, l
 import { MessageEmbed, TextChannel } from "discord.js";
 import { revoltFetchMessage, revoltFetchUser } from "../util";
 import { client as revoltClient } from "../revolt/client";
-import { CONFIG_KEYS } from "../types/ConfigKeys";
+import { CONFIG_KEYS } from "automod/dist/misc/bridge_config_keys";
 
 const PRIVACY_POLICY_URL =
     "https://github.com/janderedev/automod/wiki/Privacy-Policy";

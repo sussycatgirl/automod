@@ -4,7 +4,7 @@ import { getDb } from './db';
 import { login as loginRevolt } from './revolt/client';
 import { login as loginDiscord } from './discord/client';
 import { ICollection } from 'monk';
-import BridgeConfig from './types/BridgeConfig';
+import BridgeConfig from "automod/dist/types/BridgeConfig";
 import BridgedMessage from './types/BridgedMessage';
 import BridgeRequest from './types/BridgeRequest';
 import DiscordBridgedEmoji from './types/DiscordBridgedEmoji';
