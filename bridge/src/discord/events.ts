@@ -101,7 +101,11 @@ client.on('messageCreate', async message => {
             }
         }
 
-        if (bridgeCfg.disallowIfOptedOut && userConfig?.optOut && message.deletable) {
+        if (
+            bridgeCfg.config?.disallow_opt_out &&
+            userConfig?.optOut &&
+            message.deletable
+        ) {
             await message.delete();
             return;
         }

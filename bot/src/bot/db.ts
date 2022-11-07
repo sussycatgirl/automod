@@ -30,6 +30,7 @@ function getDBUrl() {
 }
 
 async function databaseMigrations() {
+    // prettier-ignore
     async function setIndexes(collection: ICollection, toIndex: string[]) {
         try {
             const indexes = await collection.indexes();
@@ -44,21 +45,32 @@ async function databaseMigrations() {
         }
     }
 
-    await setIndexes(dbs.BRIDGE_CONFIG, [ 'discord', 'revolt' ]);
-    await setIndexes(dbs.BRIDGE_REQUESTS, [ 'id', 'revolt' ]);
+    await setIndexes(dbs.BRIDGE_CONFIG, ["discord", "revolt"]);
+    await setIndexes(dbs.BRIDGE_REQUESTS, ["id", "revolt"]);
     await setIndexes(dbs.BRIDGED_MESSAGES, [
         "discord.messageId",
         "revolt.messageId",
         "revolt.nonce",
         "origin",
     ]);
-    await setIndexes(dbs.INFRACTIONS, [ 'createdBy', 'user', 'server' ]);
-    await setIndexes(dbs.PENDING_LOGINS, [ 'code', 'user' ]);
-    await setIndexes(dbs.SERVERS, [ 'id' ]);
-    await setIndexes(dbs.SESSIONS, [ 'user', 'token' ]);
-    await setIndexes(dbs.TEMPBANS, [ 'id', 'until' ]);
-    await setIndexes(dbs.USERS, [ 'id' ]);
-    await setIndexes(dbs.VOTEKICKS, [ 'id', 'server', 'target' ]);
+    await setIndexes(dbs.INFRACTIONS, ["createdBy", "user", "server"]);
+    await setIndexes(dbs.PENDING_LOGINS, ["code", "user"]);
+    await setIndexes(dbs.SERVERS, ["id"]);
+    await setIndexes(dbs.SESSIONS, ["user", "token"]);
+    await setIndexes(dbs.TEMPBANS, ["id", "until"]);
+    await setIndexes(dbs.USERS, ["id"]);
+    await setIndexes(dbs.VOTEKICKS, ["id", "server", "target"]);
+
+    // Migrate `disallowIfOptedOut` to `config.disallow_opt_out` on bridge_config
+    await dbs.BRIDGE_CONFIG.update(
+        {
+            disallowIfOptedOut: { $exists: true },
+            "config.disallow_opt_out": { $exists: false },
+        },
+        {
+            $rename: { disallowIfOptedOut: "config.disallow_opt_out" },
+        }
+    );
 }
 
 export { databaseMigrations }

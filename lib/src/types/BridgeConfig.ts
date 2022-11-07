@@ -15,6 +15,9 @@ export default class {
 
     config?: { [key in keyof typeof CONFIG_KEYS]: boolean | undefined };
 
-    // If true, messages by users who have opted out of bridging will be deleted.
+    /**
+     * @deprecated Use config.disallow_opt_out
+     * Will be automatically removed by database migrations
+     */
     disallowIfOptedOut?: boolean;
 }
