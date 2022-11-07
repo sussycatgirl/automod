@@ -150,16 +150,29 @@ client.on('message', async message => {
             token: bridgeCfg.discordWebhook!.token,
         });
 
-        const payload: MessagePayload|WebhookMessageOptions = {
-            content: message.content ? await renderMessageBody(message.content) : undefined,
-            username: message.author?.username ?? 'Unknown user',
-            avatarURL: message.author?.generateAvatarURL({ max_side: 128 }),
+        const payload: MessagePayload | WebhookMessageOptions = {
+            content: message.content
+                ? await renderMessageBody(message.content)
+                : undefined,
+            username:
+                (bridgeCfg.config?.bridge_nicknames
+                    ? message.masquerade?.name ??
+                      message.member?.nickname ??
+                      message.author?.username
+                    : message.author?.username) ?? "Unknown user",
+            avatarURL: bridgeCfg.config?.bridge_nicknames
+                ? message.masquerade?.avatar ??
+                  message.member?.generateAvatarURL({ max_side: 128 }) ??
+                  message.author?.generateAvatarURL({ max_side: 128 })
+                : message.author?.generateAvatarURL({ max_side: 128 }),
             embeds: message.embeds?.length
                 ? message.embeds
-                    .filter(e => e.type == "Text")
-                    .map(e => new GenericEmbed(e as SendableEmbed).toDiscord())
+                      .filter((e) => e.type == "Text")
+                      .map((e) =>
+                          new GenericEmbed(e as SendableEmbed).toDiscord()
+                      )
                 : undefined,
-            allowedMentions: { parse: [ ] },
+            allowedMentions: { parse: [] },
         };
 
         if (repliedMessages.length) {

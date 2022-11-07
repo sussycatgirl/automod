@@ -192,18 +192,24 @@ client.on('messageCreate', async message => {
                 //attachments: [],
                 //embeds: [],
                 nonce: nonce,
-                replies: reply ? [ { id: reply, mention: !!message.mentions.repliedUser } ] : undefined,
+                replies: reply
+                    ? [{ id: reply, mention: !!message.mentions.repliedUser }]
+                    : undefined,
                 masquerade: {
-                    name: message.author.username,
-                    avatar: message.author.displayAvatarURL({ size: 128 }),
-                    colour: channel.server?.havePermission('ManageRole')
+                    name: bridgeCfg.config?.bridge_nicknames
+                        ? message.member?.nickname ?? message.author.username
+                        : message.author.username,
+                    avatar: bridgeCfg.config?.bridge_nicknames
+                        ? message.member?.displayAvatarURL({ size: 128 })
+                        : message.author.displayAvatarURL({ size: 128 }),
+                    colour: channel.server?.havePermission("ManageRole")
                         ? message.member?.displayColor // Discord.js returns black or 0 instead of undefined when no role color is set
                             ? message.member?.displayHexColor
-                            : 'var(--foreground)'
+                            : "var(--foreground)"
                         : undefined,
                 },
                 embeds: message.embeds.length
-                    ? message.embeds.map(e => new GenericEmbed(e).toRevolt())
+                    ? message.embeds.map((e) => new GenericEmbed(e).toRevolt())
                     : undefined,
                 attachments: autumnUrls.length ? autumnUrls : undefined,
             };
