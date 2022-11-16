@@ -300,7 +300,7 @@ export default {
                                 description: `**${key.friendlyName}**\n${
                                     key.description
                                 }\n\nCurrent value: **${
-                                    bridgeConfig?.config?.[
+                                    !!bridgeConfig?.config?.[
                                         configKey as keyof typeof CONFIG_KEYS
                                     ]
                                 }**`,
