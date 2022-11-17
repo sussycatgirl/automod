@@ -259,6 +259,8 @@ client.on('messageCreate', async message => {
                 attachments: autumnUrls.length ? autumnUrls : undefined,
             };
 
+            if (!payload.embeds.length) payload.embeds = undefined as any;
+
             await axios.post(
                 `${revoltClient.apiURL}/channels/${channel._id}/messages`,
                 payload,
