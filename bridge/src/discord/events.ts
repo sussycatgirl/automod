@@ -518,13 +518,35 @@ async function renderSystemMessage(
                 "\\*"
             )}** joined the server`;
         case "USER_PREMIUM_GUILD_SUBSCRIPTION":
-        case "USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_1":
-        case "USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_2":
-        case "USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_3":
             return `:01GJ39CX4H8KJEFF63ZT744S24: **${message.author.username.replace(
                 /\*/g,
                 "\\*"
             )}** just boosted the server!`;
+        
+        case "USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_1":
+            return `:01GJ39CX4H8KJEFF63ZT744S24: **${message.author.username.replace(
+                /\*/g,
+                "\\*"
+            )}** just boosted the server! ${message.guild?.name.replace(
+                /\*/g,
+                "\\*"
+            )} has achieved **Level 1!**`;
+        case "USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_2":
+            return `:01GJ39CX4H8KJEFF63ZT744S24: **${message.author.username.replace(
+                /\*/g,
+                "\\*"
+            )}** just boosted the server! ${message.guild?.name.replace(
+                /\*/g,
+                "\\*"
+            )} has achieved **Level 2!**`;
+        case "USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_3":
+            return `:01GJ39CX4H8KJEFF63ZT744S24: **${message.author.username.replace(
+                /\*/g,
+                "\\*"
+            )}** just boosted the server! ${message.guild?.name.replace(
+                /\*/g,
+                "\\*"
+            )} has achieved **Level 3!**`;
         default:
             return undefined;
     }
