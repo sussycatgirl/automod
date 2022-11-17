@@ -9,6 +9,7 @@ import { discordFetchUser, revoltFetchMessage } from "../util";
 import { MessageEmbed, TextChannel } from "discord.js";
 import { smartReplace } from "smart-replace";
 import { metrics } from "../metrics";
+import { SendableEmbed } from "revolt-api";
 
 const MAX_BRIDGED_FILE_SIZE = 8_000_000; // 8 MB
 const RE_MENTION_USER = /<@!*[0-9]+>/g;
@@ -155,6 +156,43 @@ client.on('messageCreate', async message => {
         }
 
         const autumnUrls: string[] = [];
+        const stickerEmbeds: SendableEmbed[] = [];
+
+        if (message.stickers.size) {
+            for (const sticker of message.stickers) {
+                try {
+                    logger.debug(`Downloading sticker ${sticker[0]} ${sticker[1].name}`);
+
+                    const formData = new FormData();
+                    const file = await axios.get(sticker[1].url, { responseType: 'arraybuffer' });
+
+                    logger.debug(`Downloading sticker ${sticker[0]} finished, uploading to autumn`);
+
+                    formData.append(
+                        sticker[0],
+                        file.data,
+                        {
+                            filename: sticker[1].name || sticker[0],
+                            contentType: file.headers['content-type']
+                                // I have no clue what "LOTTIE" is so I'll pretend it doesn't exist
+                                ?? sticker[1].format == "PNG" ? 'image/png' : "image/vnd.mozilla.apng"
+                        }
+                    );
+
+                    const res = await axios.post(
+                        `${AUTUMN_URL}/attachments`, formData, { headers: formData.getHeaders() }
+                    );
+
+                    logger.debug(`Uploading attachment ${sticker[0]} finished`);
+
+                    stickerEmbeds.push({
+                        colour: 'var(--primary-header)',
+                        title: sticker[1].name,
+                        media: res.data.id,
+                    });
+                } catch (e) { console.error(e) }
+            }
+        }
 
         // todo: upload all attachments at once instead of sequentially
         for (const a of message.attachments) {
@@ -212,9 +250,12 @@ client.on('messageCreate', async message => {
                             : "var(--foreground)"
                         : undefined,
                 },
-                embeds: message.embeds.length
-                    ? message.embeds.map((e) => new GenericEmbed(e).toRevolt())
-                    : undefined,
+                embeds: [
+                    ...stickerEmbeds,
+                    ...(message.embeds.length
+                        ? message.embeds.map((e) => new GenericEmbed(e).toRevolt())
+                        : []),
+                ],
                 attachments: autumnUrls.length ? autumnUrls : undefined,
             };
 
