@@ -3,8 +3,13 @@ import { AUTUMN_URL, client } from "./client";
 import { client as discordClient } from "../discord/client";
 import { Channel as DiscordChannel, Message as DiscordMessage, MessageEmbed, MessagePayload, TextChannel, WebhookClient, WebhookMessageOptions } from "discord.js";
 import GenericEmbed from "../types/GenericEmbed";
-import { SendableEmbed } from "revolt-api";
-import { clipText, discordFetchMessage, revoltFetchMessage, revoltFetchUser } from "../util";
+import { SendableEmbed, SystemMessage } from "revolt-api";
+import {
+    clipText,
+    discordFetchMessage,
+    revoltFetchMessage,
+    revoltFetchUser,
+} from "../util";
 import { smartReplace } from "smart-replace";
 import { metrics } from "../metrics";
 import { fetchEmojiList } from "../discord/bridgeEmojis";
@@ -16,115 +21,190 @@ const RE_EMOJI = /:[^\s]+/g;
 const KNOWN_EMOJI_NAMES: string[] = [];
 
 fetchEmojiList()
-    .then(emojis => Object.keys(emojis).forEach(name => KNOWN_EMOJI_NAMES.push(name)))
-    .catch(e => console.error(e));
+    .then((emojis) =>
+        Object.keys(emojis).forEach((name) => KNOWN_EMOJI_NAMES.push(name))
+    )
+    .catch((e) => console.error(e));
 
-client.on('message/delete', async id => {
+client.on("message/delete", async (id) => {
     try {
         logger.debug(`[D] Revolt: ${id}`);
 
-        const bridgedMsg = await BRIDGED_MESSAGES.findOne({ "revolt.messageId": id });
-        if (!bridgedMsg?.discord.messageId) return logger.debug(`Revolt: Message has not been bridged; ignoring delete`);
-        if (!bridgedMsg.channels?.discord) return logger.debug(`Revolt: Channel for deleted message is unknown`);
+        const bridgedMsg = await BRIDGED_MESSAGES.findOne({
+            "revolt.messageId": id,
+        });
+        if (!bridgedMsg?.discord.messageId)
+            return logger.debug(
+                `Revolt: Message has not been bridged; ignoring delete`
+            );
+        if (!bridgedMsg.channels?.discord)
+            return logger.debug(
+                `Revolt: Channel for deleted message is unknown`
+            );
 
-        const bridgeCfg = await BRIDGE_CONFIG.findOne({ revolt: bridgedMsg.channels.revolt });
-        if (!bridgeCfg?.discordWebhook) return logger.debug(`Revolt: No Discord webhook stored`);
-        if (!bridgeCfg.discord || bridgeCfg.discord != bridgedMsg.channels.discord) {
-            return logger.debug(`Revolt: Discord channel is no longer linked; ignoring delete`);
+        const bridgeCfg = await BRIDGE_CONFIG.findOne({
+            revolt: bridgedMsg.channels.revolt,
+        });
+        if (!bridgeCfg?.discordWebhook)
+            return logger.debug(`Revolt: No Discord webhook stored`);
+        if (
+            !bridgeCfg.discord ||
+            bridgeCfg.discord != bridgedMsg.channels.discord
+        ) {
+            return logger.debug(
+                `Revolt: Discord channel is no longer linked; ignoring delete`
+            );
         }
 
-        const targetMsg = await discordFetchMessage(bridgedMsg.discord.messageId, bridgeCfg.discord);
-        if (!targetMsg) return logger.debug(`Revolt: Could not fetch message from Discord`);
+        const targetMsg = await discordFetchMessage(
+            bridgedMsg.discord.messageId,
+            bridgeCfg.discord
+        );
+        if (!targetMsg)
+            return logger.debug(`Revolt: Could not fetch message from Discord`);
 
-        if (targetMsg.webhookId && targetMsg.webhookId == bridgeCfg.discordWebhook.id) {
-            const client = new WebhookClient({ id: bridgeCfg.discordWebhook.id, token: bridgeCfg.discordWebhook.token });
+        if (
+            targetMsg.webhookId &&
+            targetMsg.webhookId == bridgeCfg.discordWebhook.id
+        ) {
+            const client = new WebhookClient({
+                id: bridgeCfg.discordWebhook.id,
+                token: bridgeCfg.discordWebhook.token,
+            });
             await client.deleteMessage(bridgedMsg.discord.messageId);
             client.destroy();
-            metrics.messages.inc({ source: 'revolt', type: 'delete' });
+            metrics.messages.inc({ source: "revolt", type: "delete" });
         } else if (targetMsg.deletable) {
             targetMsg.delete();
-            metrics.messages.inc({ source: 'revolt', type: 'delete' });
+            metrics.messages.inc({ source: "revolt", type: "delete" });
         } else logger.debug(`Revolt: Unable to delete Discord message`);
-    } catch(e) {
+    } catch (e) {
         console.error(e);
     }
 });
 
-client.on('message/update', async message => {
-    if (!message.content || typeof message.content != 'string') return;
+client.on("message/update", async (message) => {
+    if (!message.content || typeof message.content != "string") return;
     if (message.author_id == client.user?._id) return;
 
     try {
         logger.debug(`[E] Revolt: ${message.content}`);
 
-        const [ bridgeCfg, bridgedMsg ] = await Promise.all([
+        const [bridgeCfg, bridgedMsg] = await Promise.all([
             BRIDGE_CONFIG.findOne({ revolt: message.channel_id }),
             BRIDGED_MESSAGES.findOne({ "revolt.nonce": message.nonce }),
         ]);
 
-        if (!bridgedMsg) return logger.debug(`Revolt: Message has not been bridged; ignoring edit`);
-        if (!bridgeCfg?.discord) return logger.debug(`Revolt: No Discord channel associated`);
-        if (!bridgeCfg.discordWebhook) return logger.debug(`Revolt: No Discord webhook stored`);
+        if (!bridgedMsg)
+            return logger.debug(
+                `Revolt: Message has not been bridged; ignoring edit`
+            );
+        if (!bridgeCfg?.discord)
+            return logger.debug(`Revolt: No Discord channel associated`);
+        if (!bridgeCfg.discordWebhook)
+            return logger.debug(`Revolt: No Discord webhook stored`);
 
-        const targetMsg = await discordFetchMessage(bridgedMsg.discord.messageId, bridgeCfg.discord);
-        if (!targetMsg) return logger.debug(`Revolt: Could not fetch message from Discord`);
+        const targetMsg = await discordFetchMessage(
+            bridgedMsg.discord.messageId,
+            bridgeCfg.discord
+        );
+        if (!targetMsg)
+            return logger.debug(`Revolt: Could not fetch message from Discord`);
 
-        const client = new WebhookClient({ id: bridgeCfg.discordWebhook.id, token: bridgeCfg.discordWebhook.token });
-        await client.editMessage(targetMsg, { content: await renderMessageBody(message.content), allowedMentions: { parse: [ ] } });
+        const client = new WebhookClient({
+            id: bridgeCfg.discordWebhook.id,
+            token: bridgeCfg.discordWebhook.token,
+        });
+        await client.editMessage(targetMsg, {
+            content: await renderMessageBody(message.content),
+            allowedMentions: { parse: [] },
+        });
         client.destroy();
 
-        metrics.messages.inc({ source: 'revolt', type: 'edit' });
-    } catch(e) { console.error(e) }
+        metrics.messages.inc({ source: "revolt", type: "edit" });
+    } catch (e) {
+        console.error(e);
+    }
 });
 
-client.on('message', async message => {
+client.on("message", async (message) => {
     try {
-        if (message.content && typeof message.content != 'string') return;
-        logger.debug(`[M] Revolt: ${message.content}`);
+        logger.debug(`[M] Revolt: ${message._id} ${message.content}`);
 
-        const [ bridgeCfg, bridgedMsg, ...repliedMessages ] = await Promise.all([
+        const [bridgeCfg, bridgedMsg, ...repliedMessages] = await Promise.all([
             BRIDGE_CONFIG.findOne({ revolt: message.channel_id }),
-            BRIDGED_MESSAGES.findOne({ "revolt.nonce": message.nonce }),
-            ...(message.reply_ids?.map(id => BRIDGED_MESSAGES.findOne({ "revolt.messageId": id })) ?? [])
+            BRIDGED_MESSAGES.findOne(
+                message.nonce
+                    ? { "revolt.nonce": message.nonce }
+                    : { "revolt.messageId": message._id }
+            ),
+            ...(message.reply_ids?.map((id) =>
+                BRIDGED_MESSAGES.findOne({ "revolt.messageId": id })
+            ) ?? []),
         ]);
 
-        if (bridgedMsg) return logger.debug(`Revolt: Message has already been bridged; ignoring`);
-        if (!bridgeCfg?.discord) return logger.debug(`Revolt: No Discord channel associated`);
+        if (bridgedMsg)
+            return logger.debug(
+                `Revolt: Message has already been bridged; ignoring`
+            );
+        if (message.system && bridgeCfg?.config?.disable_system_messages)
+            return logger.debug(
+                `Revolt: System message bridging disabled; ignoring`
+            );
+        if (!bridgeCfg?.discord)
+            return logger.debug(`Revolt: No Discord channel associated`);
         if (!bridgeCfg.discordWebhook) {
-            logger.debug(`Revolt: No Discord webhook stored; Creating new Webhook`);
+            logger.debug(
+                `Revolt: No Discord webhook stored; Creating new Webhook`
+            );
 
             try {
-                const channel = await discordClient.channels.fetch(bridgeCfg.discord) as TextChannel;
-                if (!channel || !channel.isText()) throw 'Error: Unable to fetch channel';
-                const ownPerms = (channel as TextChannel).permissionsFor(discordClient.user!);
-                if (!ownPerms?.has('MANAGE_WEBHOOKS')) throw 'Error: Bot user does not have MANAGE_WEBHOOKS permission';
+                const channel = (await discordClient.channels.fetch(
+                    bridgeCfg.discord
+                )) as TextChannel;
+                if (!channel || !channel.isText())
+                    throw "Error: Unable to fetch channel";
+                const ownPerms = (channel as TextChannel).permissionsFor(
+                    discordClient.user!
+                );
+                if (!ownPerms?.has("MANAGE_WEBHOOKS"))
+                    throw "Error: Bot user does not have MANAGE_WEBHOOKS permission";
 
-                const hook = await (channel as TextChannel).createWebhook('AutoMod Bridge', { avatar: discordClient.user?.avatarURL() });
+                const hook = await (channel as TextChannel).createWebhook(
+                    "AutoMod Bridge",
+                    { avatar: discordClient.user?.avatarURL() }
+                );
 
                 bridgeCfg.discordWebhook = {
                     id: hook.id,
-                    token: hook.token || '',
+                    token: hook.token || "",
                 };
                 await BRIDGE_CONFIG.update(
                     { revolt: message.channel_id },
                     {
                         $set: {
                             discordWebhook: bridgeCfg.discordWebhook,
-                        }
+                        },
                     }
                 );
-            } catch(e) {
-                logger.warn(`Unable to create new webhook for channel ${bridgeCfg.discord}; Deleting link\n${e}`);
+            } catch (e) {
+                logger.warn(
+                    `Unable to create new webhook for channel ${bridgeCfg.discord}; Deleting link\n${e}`
+                );
                 await BRIDGE_CONFIG.remove({ revolt: message.channel_id });
-                await message.channel?.sendMessage(':warning: I was unable to create a webhook in the bridged Discord channel. '
-                    + `The bridge has been removed; if you wish to rebridge, use the \`/bridge\` command.`).catch(() => {});
+                await message.channel
+                    ?.sendMessage(
+                        ":warning: I was unable to create a webhook in the bridged Discord channel. " +
+                            `The bridge has been removed; if you wish to rebridge, use the \`/bridge\` command.`
+                    )
+                    .catch(() => {});
 
                 return;
             }
         }
 
         await BRIDGED_MESSAGES.update(
-            { 'revolt.messageId': message._id },
+            { "revolt.messageId": message._id },
             {
                 $set: {
                     revolt: {
@@ -134,33 +214,41 @@ client.on('message', async message => {
                     channels: {
                         revolt: message.channel_id,
                         discord: bridgeCfg.discord,
-                    }
+                    },
                 },
                 $setOnInsert: {
                     discord: {},
-                    origin: 'revolt',
-                }
+                    origin: "revolt",
+                },
             },
             { upsert: true }
         );
 
-        const channel = await discordClient.channels.fetch(bridgeCfg.discord) as TextChannel;
+        const channel = (await discordClient.channels.fetch(
+            bridgeCfg.discord
+        )) as TextChannel;
         const client = new WebhookClient({
             id: bridgeCfg.discordWebhook!.id,
             token: bridgeCfg.discordWebhook!.token,
         });
 
         const payload: MessagePayload | WebhookMessageOptions = {
-            content: message.content
-                ? await renderMessageBody(message.content)
-                : undefined,
-            username:
-                (bridgeCfg.config?.bridge_nicknames
-                    ? message.masquerade?.name ??
-                      message.member?.nickname ??
-                      message.author?.username
-                    : message.author?.username) ?? "Unknown user",
-            avatarURL: bridgeCfg.config?.bridge_nicknames
+            content:
+                typeof message.content == "string"
+                    ? await renderMessageBody(message.content)
+                    : message.system
+                    ? await renderSystemMessage(message.system)
+                    : undefined,
+            username: message.system
+                ? "Revolt"
+                : (bridgeCfg.config?.bridge_nicknames
+                      ? message.masquerade?.name ??
+                        message.member?.nickname ??
+                        message.author?.username
+                      : message.author?.username) ?? "Unknown user",
+            avatarURL: message.system
+                ? "https://app.revolt.chat/assets/logo_round.png"
+                : bridgeCfg.config?.bridge_nicknames
                 ? message.masquerade?.avatar ??
                   message.member?.generateAvatarURL({ max_side: 128 }) ??
                   message.author?.generateAvatarURL({ max_side: 128 })
@@ -176,60 +264,100 @@ client.on('message', async message => {
         };
 
         if (repliedMessages.length) {
-            const embed = new MessageEmbed().setColor('#2f3136');
+            const embed = new MessageEmbed().setColor("#2f3136");
 
             if (repliedMessages.length == 1) {
-                const replyMsg = repliedMessages[0]?.origin == 'discord'
-                    ? await discordFetchMessage(repliedMessages[0]?.discord.messageId, bridgeCfg.discord)
-                    : undefined;
+                const replyMsg =
+                    repliedMessages[0]?.origin == "discord"
+                        ? await discordFetchMessage(
+                              repliedMessages[0]?.discord.messageId,
+                              bridgeCfg.discord
+                          )
+                        : undefined;
                 const author = replyMsg?.author;
 
                 if (replyMsg) {
                     embed.setAuthor({
-                        name: `@${author?.username ?? 'Unknown'}`, // todo: check if @pinging was enabled for reply
-                        iconURL: author?.displayAvatarURL({ size: 64, dynamic: true }),
+                        name: `@${author?.username ?? "Unknown"}`, // todo: check if @pinging was enabled for reply
+                        iconURL: author?.displayAvatarURL({
+                            size: 64,
+                            dynamic: true,
+                        }),
                         url: replyMsg?.url,
                     });
-                    if (replyMsg?.content) embed.setDescription('>>> ' + clipText(replyMsg.content, 200));
+                    if (replyMsg?.content)
+                        embed.setDescription(
+                            ">>> " + clipText(replyMsg.content, 200)
+                        );
                 } else {
-                    const msg = await revoltFetchMessage(message.reply_ids?.[0], message.channel);
-                    const brMsg = repliedMessages.find(m => m?.revolt.messageId == msg?._id);
+                    const msg = await revoltFetchMessage(
+                        message.reply_ids?.[0],
+                        message.channel
+                    );
+                    const brMsg = repliedMessages.find(
+                        (m) => m?.revolt.messageId == msg?._id
+                    );
                     embed.setAuthor({
-                        name: `@${msg?.author?.username ?? 'Unknown'}`,
+                        name: `@${msg?.author?.username ?? "Unknown"}`,
                         iconURL: msg?.author?.generateAvatarURL({ size: 64 }),
-                        url: brMsg ? `https://discord.com/channels/${channel.guildId}/${brMsg.channels?.discord || channel.id}/${brMsg.discord.messageId}` : undefined,
+                        url: brMsg
+                            ? `https://discord.com/channels/${
+                                  channel.guildId
+                              }/${brMsg.channels?.discord || channel.id}/${
+                                  brMsg.discord.messageId
+                              }`
+                            : undefined,
                     });
-                    if (msg?.content) embed.setDescription('>>> ' + clipText(msg.content, 200));
+                    if (msg?.content)
+                        embed.setDescription(
+                            ">>> " + clipText(msg.content, 200)
+                        );
                 }
             } else {
                 const replyMsgs = await Promise.all(
-                    repliedMessages.map(m => m?.origin == 'discord'
-                        ? discordFetchMessage(m?.discord.messageId, bridgeCfg.discord)
-                        : revoltFetchMessage(m?.revolt.messageId, message.channel))
+                    repliedMessages.map((m) =>
+                        m?.origin == "discord"
+                            ? discordFetchMessage(
+                                  m?.discord.messageId,
+                                  bridgeCfg.discord
+                              )
+                            : revoltFetchMessage(
+                                  m?.revolt.messageId,
+                                  message.channel
+                              )
+                    )
                 );
 
-                embed.setAuthor({ name: repliedMessages.length + ' replies' });
+                embed.setAuthor({ name: repliedMessages.length + " replies" });
 
                 for (const msg of replyMsgs) {
-                    let msgUrl = '';
+                    let msgUrl = "";
                     if (msg instanceof DiscordMessage) {
                         msgUrl = msg.url;
                     } else {
-                        const brMsg = repliedMessages.find(m => m?.revolt.messageId == msg?._id);
-                        if (brMsg) msgUrl = `https://discord.com/channels/${channel.guildId}/${brMsg.channels?.discord || channel.id}/${brMsg.discord.messageId}`;
+                        const brMsg = repliedMessages.find(
+                            (m) => m?.revolt.messageId == msg?._id
+                        );
+                        if (brMsg)
+                            msgUrl = `https://discord.com/channels/${
+                                channel.guildId
+                            }/${brMsg.channels?.discord || channel.id}/${
+                                brMsg.discord.messageId
+                            }`;
                     }
 
                     embed.addField(
-                        `@${msg?.author?.username ?? 'Unknown'}`,
-                        (msg ? `[Link](${msgUrl})\n` : '') +
-                            '>>> ' + clipText(msg?.content ?? '\u200b', 100),
-                        true,
+                        `@${msg?.author?.username ?? "Unknown"}`,
+                        (msg ? `[Link](${msgUrl})\n` : "") +
+                            ">>> " +
+                            clipText(msg?.content ?? "\u200b", 100),
+                        true
                     );
                 }
             }
 
             if (payload.embeds) payload.embeds.unshift(embed);
-            else payload.embeds = [ embed ];
+            else payload.embeds = [embed];
         }
 
         if (message.attachments?.length) {
@@ -243,30 +371,42 @@ client.on('message', async message => {
             }
         }
 
-        client.send(payload)
-        .then(async res => {
-            await BRIDGED_MESSAGES.update({
-                "revolt.messageId": message._id
-            }, {
-                $set: {
-                    "discord.messageId": res.id
+        client
+            .send(payload)
+            .then(async (res) => {
+                await BRIDGED_MESSAGES.update(
+                    {
+                        "revolt.messageId": message._id,
+                    },
+                    {
+                        $set: {
+                            "discord.messageId": res.id,
+                        },
+                    }
+                );
+
+                metrics.messages.inc({ source: "revolt", type: "create" });
+            })
+            .catch(async (e) => {
+                console.error(
+                    "Failed to execute webhook:",
+                    e?.response?.data ?? e
+                );
+                if (`${e}` == "DiscordAPIError: Unknown Webhook") {
+                    try {
+                        logger.warn(
+                            "Revolt: Got Unknown Webhook error, deleting webhook config"
+                        );
+                        await BRIDGE_CONFIG.update(
+                            { revolt: message.channel_id },
+                            { $set: { discordWebhook: undefined } }
+                        );
+                    } catch (e) {
+                        console.error(e);
+                    }
                 }
             });
-
-            metrics.messages.inc({ source: 'revolt', type: 'create' });
-        })
-        .catch(async e => {
-            console.error('Failed to execute webhook:', e?.response?.data ?? e);
-            if (`${e}` == 'DiscordAPIError: Unknown Webhook') {
-                try {
-                    logger.warn('Revolt: Got Unknown Webhook error, deleting webhook config');
-                    await BRIDGE_CONFIG.update({ revolt: message.channel_id }, { $set: { discordWebhook: undefined } });
-                } catch(e) {
-                    console.error(e);
-                }
-            }
-        });
-    } catch(e) {
+    } catch (e) {
         console.error(e);
     }
 });
@@ -351,4 +491,48 @@ async function renderMessageBody(message: string): Promise<string> {
         });
 
     return message;
+}
+
+async function renderSystemMessage(message: SystemMessage): Promise<string> {
+    const getUsername = async (id: string) =>
+        `**@${(await revoltFetchUser(id))?.username.replace(/\*/g, "\\*")}**`;
+
+    switch (message.type) {
+        case "user_joined":
+        case "user_added":
+            return `<:joined:1042831832888127509> ${await getUsername(
+                message.id
+            )} joined`;
+        case "user_left":
+        case "user_remove":
+            return `<:left:1042831834259652628> ${await getUsername(
+                message.id
+            )} left`;
+        case "user_kicked":
+            return `<:kicked:1042831835421483050> ${await getUsername(
+                message.id
+            )} was kicked`;
+        case "user_banned":
+            return `<:banned:1042831836675588146> ${await getUsername(
+                message.id
+            )} was banned`;
+        case "channel_renamed":
+            return `<:channel_renamed:1042831837912891392> ${await getUsername(
+                message.by
+            )} renamed the channel to **${message.name}**`;
+        case "channel_icon_changed":
+            return `<:channel_icon:1042831840538542222> ${await getUsername(
+                message.by
+            )} changed the channel icon`;
+        case "channel_description_changed":
+            return `<:channel_description:1042831839217328228> ${await getUsername(
+                message.by
+            )} changed the channel description`;
+        case "text":
+            return message.content;
+        default:
+            return Object.entries(message)
+                .map((e) => `${e[0]}: ${e[1]}`)
+                .join(", ");
+    }
 }
