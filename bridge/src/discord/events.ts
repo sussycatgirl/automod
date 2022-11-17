@@ -6,7 +6,7 @@ import { ulid } from "ulid";
 import GenericEmbed from "../types/GenericEmbed";
 import FormData from 'form-data';
 import { discordFetchUser, revoltFetchMessage } from "../util";
-import { MessageEmbed, TextChannel } from "discord.js";
+import { Message, MessageEmbed, TextChannel } from "discord.js";
 import { smartReplace } from "smart-replace";
 import { metrics } from "../metrics";
 import { SendableEmbed } from "revolt-api";
@@ -16,89 +16,133 @@ const RE_MENTION_USER = /<@!*[0-9]+>/g;
 const RE_MENTION_CHANNEL = /<#[0-9]+>/g;
 const RE_EMOJI = /<(a?)?:\w+:\d{18}?>/g;
 const RE_TENOR = /^https:\/\/tenor.com\/view\/[^\s]+$/g;
-const RE_TENOR_META = /<meta class="dynamic" property="og:url" content="[^\s]+">/g
+const RE_TENOR_META =
+    /<meta class="dynamic" property="og:url" content="[^\s]+">/g;
 
-client.on('messageDelete', async message => {
+client.on("messageDelete", async (message) => {
     try {
         logger.debug(`[D] Discord: ${message.id}`);
 
-        const [ bridgeCfg, bridgedMsg ] = await Promise.all([
+        const [bridgeCfg, bridgedMsg] = await Promise.all([
             BRIDGE_CONFIG.findOne({ discord: message.channelId }),
             BRIDGED_MESSAGES.findOne({ "discord.messageId": message.id }),
         ]);
 
-        if (!bridgedMsg?.revolt) return logger.debug(`Discord: Message has not been bridged; ignoring deletion`);
-        if (bridgedMsg.ignore) return logger.debug(`Discord: Message marked as ignore`);
-        if (!bridgeCfg?.revolt) return logger.debug(`Discord: No Revolt channel associated`);
+        if (!bridgedMsg?.revolt)
+            return logger.debug(
+                `Discord: Message has not been bridged; ignoring deletion`
+            );
+        if (bridgedMsg.ignore)
+            return logger.debug(`Discord: Message marked as ignore`);
+        if (!bridgeCfg?.revolt)
+            return logger.debug(`Discord: No Revolt channel associated`);
 
-        const targetMsg = await revoltFetchMessage(bridgedMsg.revolt.messageId, revoltClient.channels.get(bridgeCfg.revolt));
-        if (!targetMsg) return logger.debug(`Discord: Could not fetch message from Revolt`);
+        const targetMsg = await revoltFetchMessage(
+            bridgedMsg.revolt.messageId,
+            revoltClient.channels.get(bridgeCfg.revolt)
+        );
+        if (!targetMsg)
+            return logger.debug(`Discord: Could not fetch message from Revolt`);
 
         await targetMsg.delete();
-        metrics.messages.inc({ source: 'discord', type: 'delete' });
-    } catch(e) {
+        metrics.messages.inc({ source: "discord", type: "delete" });
+    } catch (e) {
         console.error(e);
     }
 });
 
-client.on('messageUpdate', async (oldMsg, newMsg) => {
+client.on("messageUpdate", async (oldMsg, newMsg) => {
     if (oldMsg.content && newMsg.content == oldMsg.content) return; // Let's not worry about embeds here for now
 
     try {
         logger.debug(`[E] Discord: ${newMsg.content}`);
 
-        const [ bridgeCfg, bridgedMsg ] = await Promise.all([
+        const [bridgeCfg, bridgedMsg] = await Promise.all([
             BRIDGE_CONFIG.findOne({ discord: newMsg.channel.id }),
             BRIDGED_MESSAGES.findOne({ "discord.messageId": newMsg.id }),
         ]);
 
-        if (!bridgedMsg) return logger.debug(`Discord: Message has not been bridged; ignoring edit`);
-        if (bridgedMsg.ignore) return logger.debug(`Discord: Message marked as ignore`);
-        if (!bridgeCfg?.revolt) return logger.debug(`Discord: No Revolt channel associated`);
-        if (newMsg.webhookId && newMsg.webhookId == bridgeCfg.discordWebhook?.id) {
-            return logger.debug(`Discord: Message was sent by bridge; ignoring edit`);
+        if (!bridgedMsg)
+            return logger.debug(
+                `Discord: Message has not been bridged; ignoring edit`
+            );
+        if (bridgedMsg.ignore)
+            return logger.debug(`Discord: Message marked as ignore`);
+        if (!bridgeCfg?.revolt)
+            return logger.debug(`Discord: No Revolt channel associated`);
+        if (
+            newMsg.webhookId &&
+            newMsg.webhookId == bridgeCfg.discordWebhook?.id
+        ) {
+            return logger.debug(
+                `Discord: Message was sent by bridge; ignoring edit`
+            );
         }
 
-        const targetMsg = await revoltFetchMessage(bridgedMsg.revolt.messageId, revoltClient.channels.get(bridgeCfg.revolt));
-        if (!targetMsg) return logger.debug(`Discord: Could not fetch message from Revolt`);
+        const targetMsg = await revoltFetchMessage(
+            bridgedMsg.revolt.messageId,
+            revoltClient.channels.get(bridgeCfg.revolt)
+        );
+        if (!targetMsg)
+            return logger.debug(`Discord: Could not fetch message from Revolt`);
 
-        await targetMsg.edit({ content: newMsg.content ? await renderMessageBody(newMsg.content) : undefined });
-        metrics.messages.inc({ source: 'discord', type: 'edit' });
-    } catch(e) {
+        await targetMsg.edit({
+            content: newMsg.content
+                ? await renderMessageBody(newMsg.content)
+                : undefined,
+        });
+        metrics.messages.inc({ source: "discord", type: "edit" });
+    } catch (e) {
         console.error(e);
     }
 });
 
-client.on('messageCreate', async message => {
+client.on("messageCreate", async (message) => {
     try {
         logger.debug(`[M] Discord: ${message.content}`);
-        const [ bridgeCfg, bridgedReply, userConfig ] = await Promise.all([
+        const [bridgeCfg, bridgedReply, userConfig] = await Promise.all([
             BRIDGE_CONFIG.findOne({ discord: message.channelId }),
-            (message.reference?.messageId
-                ? BRIDGED_MESSAGES.findOne({ "discord.messageId": message.reference.messageId })
-                : undefined
-            ),
+            message.reference?.messageId
+                ? BRIDGED_MESSAGES.findOne({
+                      "discord.messageId": message.reference.messageId,
+                  })
+                : undefined,
             BRIDGE_USER_CONFIG.findOne({ id: message.author.id }),
         ]);
 
-        if (message.webhookId && bridgeCfg?.discordWebhook?.id == message.webhookId) {
-            return logger.debug(`Discord: Message has already been bridged; ignoring`);
+        if (
+            message.webhookId &&
+            bridgeCfg?.discordWebhook?.id == message.webhookId
+        ) {
+            return logger.debug(
+                `Discord: Message has already been bridged; ignoring`
+            );
         }
-        if (!bridgeCfg?.revolt) return logger.debug(`Discord: No Revolt channel associated`);
+        if (!bridgeCfg?.revolt)
+            return logger.debug(`Discord: No Revolt channel associated`);
+        if (message.system && bridgeCfg.config?.disable_system_messages)
+            return logger.debug(`Discord: Not bridging system message`);
 
         const channel = revoltClient.channels.get(bridgeCfg.revolt);
-        if (!channel) return logger.debug(`Discord: Cannot find associated channel`);
+        if (!channel)
+            return logger.debug(`Discord: Cannot find associated channel`);
 
-        if (!(channel.havePermission('SendMessage'))) {
-            return logger.debug(`Discord: Lacking SendMessage permission; refusing to send`);
+        if (!channel.havePermission("SendMessage")) {
+            return logger.debug(
+                `Discord: Lacking SendMessage permission; refusing to send`
+            );
         }
 
-        for (const perm of [ 'SendEmbeds', 'UploadFiles', 'Masquerade' ]) {
-            if (!(channel.havePermission(perm as any))) {
+        for (const perm of ["SendEmbeds", "UploadFiles", "Masquerade"]) {
+            if (!channel.havePermission(perm as any)) {
                 // todo: maybe don't spam this on every message?
-                await channel.sendMessage(`Missing permission: I don't have the \`${perm}\` permission `
-                    + `which is required to bridge a message sent by \`${message.author.tag}\` on Discord.`);
-                return logger.debug(`Discord: Lacking ${perm} permission; refusing to send`);
+                await channel.sendMessage(
+                    `Missing permission: I don't have the \`${perm}\` permission ` +
+                        `which is required to bridge a message sent by \`${message.author.tag}\` on Discord.`
+                );
+                return logger.debug(
+                    `Discord: Lacking ${perm} permission; refusing to send`
+                );
             }
         }
 
@@ -118,20 +162,22 @@ client.on('messageCreate', async message => {
         await BRIDGED_MESSAGES.update(
             { "discord.messageId": message.id },
             {
-                $setOnInsert: userConfig?.optOut ? {} : {
-                    origin: 'discord',
-                    discord: {
-                        messageId: message.id,
-                    },
-                },
+                $setOnInsert: userConfig?.optOut
+                    ? {}
+                    : {
+                          origin: "discord",
+                          discord: {
+                              messageId: message.id,
+                          },
+                      },
                 $set: {
-                    'revolt.nonce': nonce,
+                    "revolt.nonce": nonce,
                     channels: {
                         discord: message.channelId,
                         revolt: bridgeCfg.revolt,
                     },
                     ignore: userConfig?.optOut,
-                }
+                },
             },
             { upsert: true }
         );
@@ -140,7 +186,7 @@ client.on('messageCreate', async message => {
             const msg = await channel.sendMessage({
                 content: `$\\color{#565656}\\small{\\textsf{Message content redacted}}$`,
                 masquerade: {
-                    name: 'AutoMod Bridge',
+                    name: "AutoMod Bridge",
                 },
                 nonce: nonce,
             });
@@ -161,36 +207,45 @@ client.on('messageCreate', async message => {
         if (message.stickers.size) {
             for (const sticker of message.stickers) {
                 try {
-                    logger.debug(`Downloading sticker ${sticker[0]} ${sticker[1].name}`);
-
-                    const formData = new FormData();
-                    const file = await axios.get(sticker[1].url, { responseType: 'arraybuffer' });
-
-                    logger.debug(`Downloading sticker ${sticker[0]} finished, uploading to autumn`);
-
-                    formData.append(
-                        sticker[0],
-                        file.data,
-                        {
-                            filename: sticker[1].name || sticker[0],
-                            contentType: file.headers['content-type']
-                                // I have no clue what "LOTTIE" is so I'll pretend it doesn't exist
-                                ?? sticker[1].format == "PNG" ? 'image/png' : "image/vnd.mozilla.apng"
-                        }
+                    logger.debug(
+                        `Downloading sticker ${sticker[0]} ${sticker[1].name}`
                     );
 
+                    const formData = new FormData();
+                    const file = await axios.get(sticker[1].url, {
+                        responseType: "arraybuffer",
+                    });
+
+                    logger.debug(
+                        `Downloading sticker ${sticker[0]} finished, uploading to autumn`
+                    );
+
+                    formData.append(sticker[0], file.data, {
+                        filename: sticker[1].name || sticker[0],
+                        contentType:
+                            file.headers["content-type"] ??
+                            // I have no clue what "LOTTIE" is so I'll pretend it doesn't exist
+                            sticker[1].format == "PNG"
+                                ? "image/png"
+                                : "image/vnd.mozilla.apng",
+                    });
+
                     const res = await axios.post(
-                        `${AUTUMN_URL}/attachments`, formData, { headers: formData.getHeaders() }
+                        `${AUTUMN_URL}/attachments`,
+                        formData,
+                        { headers: formData.getHeaders() }
                     );
 
                     logger.debug(`Uploading attachment ${sticker[0]} finished`);
 
                     stickerEmbeds.push({
-                        colour: 'var(--primary-header)',
+                        colour: "var(--primary-header)",
                         title: sticker[1].name,
                         media: res.data.id,
                     });
-                } catch (e) { console.error(e) }
+                } catch (e) {
+                    console.error(e);
+                }
             }
         }
 
@@ -198,39 +253,49 @@ client.on('messageCreate', async message => {
         for (const a of message.attachments) {
             try {
                 if (a[1].size > MAX_BRIDGED_FILE_SIZE) {
-                    logger.debug(`Skipping attachment ${a[0]} ${a[1].name}: Size ${a[1].size} > max (${MAX_BRIDGED_FILE_SIZE})`);
+                    logger.debug(
+                        `Skipping attachment ${a[0]} ${a[1].name}: Size ${a[1].size} > max (${MAX_BRIDGED_FILE_SIZE})`
+                    );
                     continue;
                 }
 
-                logger.debug(`Downloading attachment ${a[0]} ${a[1].name} (Size ${a[1].size})`);
-
-                const formData = new FormData();
-                const file = await axios.get(a[1].url, { responseType: 'arraybuffer' });
-
-                logger.debug(`Downloading attachment ${a[0]} finished, uploading to autumn`);
-
-                formData.append(
-                    a[0],
-                    file.data,
-                    {
-                        filename: a[1].name || a[0],
-                        contentType: a[1].contentType || undefined
-                    }
+                logger.debug(
+                    `Downloading attachment ${a[0]} ${a[1].name} (Size ${a[1].size})`
                 );
 
+                const formData = new FormData();
+                const file = await axios.get(a[1].url, {
+                    responseType: "arraybuffer",
+                });
+
+                logger.debug(
+                    `Downloading attachment ${a[0]} finished, uploading to autumn`
+                );
+
+                formData.append(a[0], file.data, {
+                    filename: a[1].name || a[0],
+                    contentType: a[1].contentType || undefined,
+                });
+
                 const res = await axios.post(
-                    `${AUTUMN_URL}/attachments`, formData, { headers: formData.getHeaders() }
+                    `${AUTUMN_URL}/attachments`,
+                    formData,
+                    { headers: formData.getHeaders() }
                 );
 
                 logger.debug(`Uploading attachment ${a[0]} finished`);
 
                 autumnUrls.push(res.data.id);
-            } catch(e) { console.error(e) }
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         const sendBridgeMessage = async (reply?: string) => {
             const payload = {
-                content: await renderMessageBody(message.content),
+                content: message.system
+                    ? await renderSystemMessage(message)
+                    : await renderMessageBody(message.content),
                 //attachments: [],
                 //embeds: [],
                 nonce: nonce,
@@ -238,10 +303,14 @@ client.on('messageCreate', async message => {
                     ? [{ id: reply, mention: !!message.mentions.repliedUser }]
                     : undefined,
                 masquerade: {
-                    name: bridgeCfg.config?.bridge_nicknames
+                    name: message.system
+                        ? "Discord"
+                        : bridgeCfg.config?.bridge_nicknames
                         ? message.member?.nickname ?? message.author.username
                         : message.author.username,
-                    avatar: bridgeCfg.config?.bridge_nicknames
+                    avatar: message.system
+                        ? "https://discord.com/assets/847541504914fd33810e70a0ea73177e.ico"
+                        : bridgeCfg.config?.bridge_nicknames
                         ? message.member?.displayAvatarURL({ size: 128 })
                         : message.author.displayAvatarURL({ size: 128 }),
                     colour: channel.server?.havePermission("ManageRole")
@@ -253,7 +322,9 @@ client.on('messageCreate', async message => {
                 embeds: [
                     ...stickerEmbeds,
                     ...(message.embeds.length
-                        ? message.embeds.map((e) => new GenericEmbed(e).toRevolt())
+                        ? message.embeds.map((e) =>
+                              new GenericEmbed(e).toRevolt()
+                          )
                         : []),
                 ],
                 attachments: autumnUrls.length ? autumnUrls : undefined,
@@ -261,36 +332,37 @@ client.on('messageCreate', async message => {
 
             if (!payload.embeds.length) payload.embeds = undefined as any;
 
-            await axios.post(
-                `${revoltClient.apiURL}/channels/${channel._id}/messages`,
-                payload,
-                {
-                    headers: {
-                        'x-bot-token': process.env['REVOLT_TOKEN']!
-                    }
-                }
-            )
-            .then(async res => {
-                await BRIDGED_MESSAGES.update(
-                    { "discord.messageId": message.id },
+            await axios
+                .post(
+                    `${revoltClient.apiURL}/channels/${channel._id}/messages`,
+                    payload,
                     {
-                        $set: { "revolt.messageId": res.data._id },
+                        headers: {
+                            "x-bot-token": process.env["REVOLT_TOKEN"]!,
+                        },
                     }
-                );
+                )
+                .then(async (res) => {
+                    await BRIDGED_MESSAGES.update(
+                        { "discord.messageId": message.id },
+                        {
+                            $set: { "revolt.messageId": res.data._id },
+                        }
+                    );
 
-                metrics.messages.inc({ source: 'discord', type: 'create' });
-            })
-            .catch(async e => {
-                console.error(`Failed to send message: ${e}`);
-                if (reply) {
-                    console.info('Reytring without reply');
-                    await sendBridgeMessage(undefined);
-                }
-            });
-        }
+                    metrics.messages.inc({ source: "discord", type: "create" });
+                })
+                .catch(async (e) => {
+                    console.error(`Failed to send message: ${e}`);
+                    if (reply) {
+                        console.info("Reytring without reply");
+                        await sendBridgeMessage(undefined);
+                    }
+                });
+        };
 
         await sendBridgeMessage(bridgedReply?.revolt?.messageId);
-    } catch(e) {
+    } catch (e) {
         console.error(e);
     }
 });
@@ -432,4 +504,18 @@ async function renderMessageBody(message: string): Promise<string> {
         });
 
     return message;
+}
+
+async function renderSystemMessage(
+    message: Message
+): Promise<string | undefined> {
+    switch (message.type) {
+        case "GUILD_MEMBER_JOIN":
+            return `:01GJ3854QM6VGMY5D6E9T0DV7X: **${message.author.username.replace(
+                /\*/g,
+                "\\*"
+            )}** joined the server`;
+        default:
+            return undefined;
+    }
 }
