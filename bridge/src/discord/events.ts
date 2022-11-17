@@ -524,7 +524,7 @@ async function renderSystemMessage(
             return `:01GJ39CX4H8KJEFF63ZT744S24: **${message.author.username.replace(
                 /\*/g,
                 "\\*"
-            )}** just Boosted the server!`;
+            )}** just boosted the server!`;
         default:
             return undefined;
     }
