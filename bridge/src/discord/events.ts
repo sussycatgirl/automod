@@ -518,6 +518,9 @@ async function renderSystemMessage(
                 "\\*"
             )}** joined the server`;
         case "USER_PREMIUM_GUILD_SUBSCRIPTION":
+        case "USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_1":
+        case "USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_2":
+        case "USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_3":
             return `:01GJ39CX4H8KJEFF63ZT744S24: **${message.author.username.replace(
                 /\*/g,
                 "\\*"
