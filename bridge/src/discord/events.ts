@@ -515,6 +515,11 @@ async function renderSystemMessage(
                 /\*/g,
                 "\\*"
             )}** joined the server`;
+        case "USER_PREMIUM_GUILD_SUBSCRIPTION":
+            return `:01GJ39CX4H8KJEFF63ZT744S24: **${message.author.username.replace(
+                /\*/g,
+                "\\*"
+            )}** just Boosted the server!`;
         default:
             return undefined;
     }
