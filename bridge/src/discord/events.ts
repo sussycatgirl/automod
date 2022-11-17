@@ -313,11 +313,13 @@ client.on("messageCreate", async (message) => {
                         : bridgeCfg.config?.bridge_nicknames
                         ? message.member?.displayAvatarURL({ size: 128 })
                         : message.author.displayAvatarURL({ size: 128 }),
-                    colour: channel.server?.havePermission("ManageRole")
-                        ? message.member?.displayColor // Discord.js returns black or 0 instead of undefined when no role color is set
-                            ? message.member?.displayHexColor
-                            : "var(--foreground)"
-                        : undefined,
+                    colour:
+                        channel.server?.havePermission("ManageRole") &&
+                        !message.system
+                            ? message.member?.displayColor // Discord.js returns black or 0 instead of undefined when no role color is set
+                                ? message.member?.displayHexColor
+                                : "var(--foreground)"
+                            : undefined,
                 },
                 embeds: [
                     ...stickerEmbeds,
