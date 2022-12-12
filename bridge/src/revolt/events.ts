@@ -234,7 +234,7 @@ client.on("message", async (message) => {
 
         const payload: MessagePayload | WebhookMessageOptions = {
             content:
-                typeof message.content == "string"
+                message.content
                     ? await renderMessageBody(message.content)
                     : message.system
                     ? await renderSystemMessage(message.system)
