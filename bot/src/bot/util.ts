@@ -379,6 +379,10 @@ const generateInfractionDMEmbed = (server: Server, serverConfig: ServerConfig, i
                 ? (infraction.expires == Infinity
                     ? '\n**Ban duration:** Permanent'
                     : `\n**Ban expires** <t:${Math.round(infraction.expires / 1000)}:R>`)
+                : '') +
+            (infraction.actionType == 'ban'
+                ? '\n\n**Reminder:** Circumventing this ban by using another account is a violation of the Revolt [Terms of Service](<https://revolt.chat/terms>) ' +
+                  'and may result in your accounts getting suspended from the platform.'
                 : '')
     }
 
