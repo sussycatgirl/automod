@@ -151,6 +151,8 @@ client.on("message", async (message) => {
             return logger.debug(
                 `Revolt: System message bridging disabled; ignoring`
             );
+        if (bridgeCfg?.config?.read_only_revolt)
+            return logger.debug(`Revolt: Channel is marked as read only`);
         if (!bridgeCfg?.discord)
             return logger.debug(`Revolt: No Discord channel associated`);
         if (!bridgeCfg.discordWebhook) {

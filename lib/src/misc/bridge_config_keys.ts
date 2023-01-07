@@ -15,4 +15,12 @@ export const CONFIG_KEYS = {
         description:
             "If enabled, system messages (e.g. join/leave events) won't be bridged.",
     },
+    read_only_revolt: {
+        friendlyName: "Revolt read only",
+        description: "Don't bridge Revolt messages to Discord",
+    },
+    read_only_discord: {
+        friendlyName: "Discord read only",
+        description: "Don't bridge Discord messages to Revolt",
+    },
 };

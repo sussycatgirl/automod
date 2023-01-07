@@ -122,6 +122,8 @@ client.on("messageCreate", async (message) => {
             return logger.debug(`Discord: No Revolt channel associated`);
         if (message.system && bridgeCfg.config?.disable_system_messages)
             return logger.debug(`Discord: Not bridging system message`);
+        if (bridgeCfg.config?.read_only_discord)
+            return logger.debug(`Discord: Channel is marked as read only`);
 
         const channel = revoltClient.channels.get(bridgeCfg.revolt);
         if (!channel)
