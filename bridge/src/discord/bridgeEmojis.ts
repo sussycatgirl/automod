@@ -13,7 +13,11 @@ async function fetchEmojiList(): Promise<Record<string, string>> {
     const start = file.indexOf('...{') + 3;
     const end = file.indexOf('},') + 1;
 
-    return JSON5.parse(file.substring(start, end).trim());
+    return JSON5.parse(
+        file.substring(start, end)
+            .replace(/^\s*[0-9]+:/gm, (match) => `"${match.replace(/(^\s+)|(:$)/g, '')}":`)
+            .trim()
+    );
 }
 
 const emojiUpdate = async () => {
