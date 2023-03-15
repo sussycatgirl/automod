@@ -9,7 +9,7 @@ import { dedupeArray, embed, EmbedColor, generateInfractionDMEmbed, getDmChannel
 import Day from 'dayjs';
 import RelativeTime from 'dayjs/plugin/relativeTime';
 import CommandCategory from "../../../struct/commands/CommandCategory";
-import { SendableEmbed } from "@janderedev/revolt.js/node_modules/revolt-api";
+import { SendableEmbed } from "revolt-api";
 import { User } from "@janderedev/revolt.js";
 import logger from "../../logger";
 

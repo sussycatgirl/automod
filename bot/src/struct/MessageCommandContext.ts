@@ -8,7 +8,7 @@ class MessageCommandContext extends Message {
 
     /* Override types */
 
-    content: string;
+    declare content: string;
 }
 
 export default MessageCommandContext;
