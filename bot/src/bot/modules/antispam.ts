@@ -1,12 +1,13 @@
 import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
 import { ulid } from "ulid";
-import { dbs } from "../..";
+import { client, dbs } from "../..";
 import AntispamRule from "automod/dist/types/antispam/AntispamRule";
 import Infraction from "automod/dist/types/antispam/Infraction";
 import InfractionType from "automod/dist/types/antispam/InfractionType";
 import ModerationAction from "automod/dist/types/antispam/ModerationAction";
 import logger from "../logger";
-import { isModerator, storeInfraction } from "../util";
+import { awaitClient, isModerator, storeInfraction } from "../util";
+import { getDmChannel, sanitizeMessageContent } from "../util";
 
 let msgCountStore: Map<string, { users: any }> = new Map();
 
@@ -104,5 +105,47 @@ function getWarnMsg(rule: AntispamRule, message: Message) {
             .replace(new RegExp('{{userid}}', 'gi'), message.author_id);
     } else return `<@${message.author_id}>, please stop spamming.`;
 }
+
+// Scan all servers for the `discoverable` flag and notify their owners that antispam is forcefully enabled
+const notifyPublicServers = async () => {
+    logger.info('Sending antispam notification to public servers');
+
+    const servers = Array.from(client.servers.values())
+        .filter(server => server.discoverable);
+
+    const res = await dbs.SERVERS.find({
+        id: { $in: servers.map(s => s._id) },
+        discoverAutospamNotify: { $in: [ undefined, false ] },
+    });
+
+    res.forEach(async (serverConfig) => {
+        try {
+            logger.info(`Sending notification to owner of server ${serverConfig._id}`);
+
+            const server = client.servers.get(serverConfig.id);
+            const channel = await getDmChannel(server!.owner);
+            await channel.sendMessage(`Hi there,
+
+It looks like your server, **${sanitizeMessageContent(server!.name).trim()}**, has been added to server discovery. Congratulations!
+
+In order to keep Revolt free of spam, AutoMod enables spam protection by default on public servers.
+You are receiving this message to inform you that said features have been enabled automatically in your server.
+
+Please ensure that AutoMod has appropriate permissions to kick and ban users.
+You may also want to set up a logging channel by running \`/botctl logs modaction #yourchannel\` to receive details about antispam events if you haven't done so already.
+
+Thanks for being part of Revolt!`);
+
+            await dbs.SERVERS.update(
+                { id: serverConfig.id },
+                { $set: { discoverAutospamNotify: true, antispamEnabled: true, allowBlacklistedUsers: false } },
+            );
+        } catch(e) {
+            console.error(e);
+        }
+    });
+}
+
+awaitClient().then(() => notifyPublicServers());
 
 export { antispam }

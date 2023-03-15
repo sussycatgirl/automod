@@ -60,8 +60,8 @@ __metadata:
   linkType: hard
 
 "@janderedev/revolt.js@npm:latest":
-  version: 6.0.20-patch.7
-  resolution: "@janderedev/revolt.js@npm:6.0.20-patch.7"
+  version: 6.0.20-patch.8
+  resolution: "@janderedev/revolt.js@npm:6.0.20-patch.8"
   dependencies:
     "@insertish/exponential-backoff": 3.1.0-patch.2
     "@insertish/isomorphic-ws": ^4.0.1
@@ -75,7 +75,7 @@ __metadata:
     revolt-api: 0.5.16
     ulid: ^2.3.0
     ws: ^8.2.2
-  checksum: 3917cb81acc5fd9ab2df2f63fff7e7074c7bb3e94c93ca4d6cf709657d083d824e751abaadf81f9e0fbb669cf4cb84400108c57cd7a4390f5e120a045342479c
+  checksum: 104c8e1a10adb485fcec58056c596e16195ea920dba75632c6533683fb3bf4dfc9df150cb6bf84b2a7231b9db1ef7b8a595763b5bdc4b226b3d6059c2e2e5ec9
   languageName: node
   linkType: hard
 

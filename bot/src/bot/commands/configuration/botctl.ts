@@ -18,6 +18,10 @@ export default {
         switch(action) {
             case 'ignore_blacklist': {
                 if (args[0] == 'yes') {
+                    if (message.serverContext.discoverable) {
+                        return message.reply('Your server is currently listed in server discovery. As part of Revolt\'s [Discover Guidelines](<https://support.revolt.chat/kb/safety/discover-guidelines>), all servers on Discover are enrolled to AutoMod\'s antispam features.');
+                    }
+
                     await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { allowBlacklistedUsers: true } });
                     await message.reply('Globally blacklisted users will no longer get banned in this server. Previously banned users will need to be unbanned manually.');
                 } else if (args[0] == 'no') {
@@ -32,10 +36,14 @@ export default {
             case 'spam_detection': {
                 if (args[0] == 'on') {
                     await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { antispamEnabled: true } });
-                    await message.reply('Spam detection is now enabled in this server.\nIf a user wrongfully gets kicked '
+                    await message.reply('Spam detection is now enabled in this server.\nIf a user is wrongfully kicked '
                         + 'or banned, please report it here: https://rvlt.gg/jan\n\n'
                         + 'Please make sure to grant AutoMod permission to **Kick**, **Ban** and **Manage Messages**!');
                 } else if (args[0] == 'off') {
+                    if (message.serverContext.discoverable) {
+                        return message.reply('Your server is currently listed in server discovery. As part of Revolt\'s [Discover Guidelines](<https://support.revolt.chat/kb/safety/discover-guidelines>), all servers on Discover are enrolled to AutoMod\'s antispam features.');
+                    }
+
                     await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { antispamEnabled: false } });
                     await message.reply('Spam detection is now disabled in this server.');
 

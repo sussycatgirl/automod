@@ -29,6 +29,7 @@ class ServerConfig {
     dmOnKick?: boolean; // Whether users should receive a DM when kicked/banned. Default false
     dmOnWarn?: boolean; // Whether users should receive a DM when warned. Default false
     contact?: string;   // How to contact the server staff. Sent on kick/ban/warn DMs. http(s)/mailto link or normal text.
+    discoverAutospamNotify?: boolean; // Whether we have notified the server owner that antispam is enabled for servers on discover.
 }
 
 export default ServerConfig;
