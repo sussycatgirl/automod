@@ -22,8 +22,6 @@ export default {
     syntax: '/warns; /warns @username ["export-csv"]; /warns rm [ID]',
     category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {
-        if (!await isModerator(message)) return message.reply(NO_MANAGER_MSG);
-
         let infractions: Array<Infraction> = await dbs.INFRACTIONS.find({
             server: message.serverContext._id,
         });
@@ -34,6 +32,8 @@ export default {
         });
 
         if (!args[0]) {
+            if (!await isModerator(message)) return message.reply(NO_MANAGER_MSG);
+
             // Show top most warned users
             let msg = `## Most warned users in ${message.serverContext.name}\n\u200b\n`;
             for (let inf of Array.from(userInfractions.values()).sort((a, b) => b.length - a.length).slice(0, 9)) {
@@ -50,6 +50,8 @@ export default {
                 case 'remove':
                 case 'rm':
                 case 'del':
+                    if (!await isModerator(message)) return message.reply(NO_MANAGER_MSG);
+
                     let id = args[1];
                     if (!id) return message.reply('No infraction ID provided.');
                     let inf = await dbs.INFRACTIONS.findOneAndDelete({
@@ -68,6 +70,9 @@ export default {
                 default:
                     let user = await parseUserOrId(args[0]);
                     if (!user?._id) return message.reply('I can\'t find this user.');
+
+                    
+                    if (user._id != message.author_id && !await isModerator(message)) return message.reply(NO_MANAGER_MSG);
 
                     const infs = userInfractions.get(user._id);
                     const userConfig = await dbs.USERS.findOne({ id: user._id });
