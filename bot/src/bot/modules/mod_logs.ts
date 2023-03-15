@@ -31,17 +31,22 @@ client.on('packet', async (packet) => {
                 const attachFullMessage = oldMsg.length > 800 || newMsg.length > 800;
                 let embed: LogMessage = {
                     title: `Message edited in ${server.name}`,
-                    description: `[\\[#${channel.name}\\]](/server/${server._id}/channel/${channel._id}) | `
-                               + `[\\[Author\\]](/@${m?.author_id}) | `
-                               + `[\\[Jump to message\\]](/server/${server._id}/channel/${channel._id}/${packet.id})`,
+                    description:
+                        `[#${channel.name}](/server/${server._id}/channel/${channel._id}) | ` +
+                        `[@${sanitizeMessageContent(
+                            m?.author?.username ?? "Unknown User"
+                        )}](/@${m?.author_id}) | ` +
+                        `[Jump to message](/server/${server._id}/channel/${channel._id}/${packet.id})`,
                     fields: [],
-                    color: '#829dff',
+                    color: "#829dff",
                     overrides: {
                         discord: {
-                            description: `Author: @${m?.author?.username || m?.author_id || "Unknown"} | Channel: ${channel?.name || channel?._id}`
+                            description: `Author: @${
+                                m?.author?.username || m?.author_id || "Unknown"
+                            } | Channel: ${channel?.name || channel?._id}`,
                         },
-                    }
-                }
+                    },
+                };
 
                 if (attachFullMessage) {
                     embed.attachments = [
