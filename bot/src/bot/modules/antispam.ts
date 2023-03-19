@@ -122,6 +122,11 @@ const notifyPublicServers = async () => {
         try {
             logger.info(`Sending notification to owner of server ${serverConfig._id}`);
 
+            await dbs.SERVERS.update(
+                { id: serverConfig.id },
+                { $set: { discoverAutospamNotify: true, antispamEnabled: true, allowBlacklistedUsers: false } },
+            );
+
             const server = client.servers.get(serverConfig.id);
             const channel = await getDmChannel(server!.owner);
             await channel.sendMessage(`Hi there,
@@ -135,11 +140,6 @@ Please ensure that AutoMod has appropriate permissions to kick and ban users.
 You may also want to set up a logging channel by running \`/botctl logs modaction #yourchannel\` to receive details about antispam events if you haven't done so already.
 
 Thanks for being part of Revolt!`);
-
-            await dbs.SERVERS.update(
-                { id: serverConfig.id },
-                { $set: { discoverAutospamNotify: true, antispamEnabled: true, allowBlacklistedUsers: false } },
-            );
         } catch(e) {
             console.error(e);
         }
