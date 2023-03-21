@@ -120,7 +120,7 @@ const notifyPublicServers = async () => {
 
     res.forEach(async (serverConfig) => {
         try {
-            logger.info(`Sending notification to owner of server ${serverConfig._id}`);
+            logger.info(`Sending notification to owner of server ${serverConfig.id}`);
 
             await dbs.SERVERS.update(
                 { id: serverConfig.id },
