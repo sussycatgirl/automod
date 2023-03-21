@@ -6,6 +6,7 @@ let AUTUMN_URL = `http://autumnUrl`;
 
 const client = new Client({
     apiURL: process.env.REVOLT_API_URL,
+    autoReconnect: true,
 });
 
 const login = () => new Promise((resolve: (value: Client) => void) => {
