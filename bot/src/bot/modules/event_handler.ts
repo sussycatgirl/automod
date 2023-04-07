@@ -106,8 +106,7 @@ client.on('message', async message => {
 
             // Don't need to risk exposing the user to the token, so we'll send it in the nonce
             await message.channel.sendMessage({
-                content: 'Token request granted.',
-                nonce: `${ulid()}; TOKEN:${token}`,
+                content: `Token request granted. **Do not send the content of this message to anyone!**\n$%${token}%$`,
                 replies: [ { id: message._id, mention: false } ],
             });
             return;
