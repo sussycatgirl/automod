@@ -32,6 +32,13 @@ class ServerConfig {
 
     // TODO: rename this and write a migration for it (this is why you don't code when sleep deprived)
     discoverAutospamNotify?: boolean; // Whether we have notified the server owner that antispam is enabled for servers on discover.
+
+    wordlistEnabled?: boolean;
+    wordlistAction?: {
+        action: 'LOG'|'DELETE'|'WARN';
+        message: string;
+    };
+    wordlist?: { word: string, strictness: 'SOFT'|'HARD'|'STRICT' }[];
 }
 
 export default ServerConfig;

@@ -1,9 +1,13 @@
+import axios from "axios";
+import FormData from "form-data";
 import { client, dbs } from "../../..";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { DEFAULT_PREFIX } from "../../modules/command_handler";
-import { isBotManager, NO_MANAGER_MSG } from "../../util";
+import { embed, EmbedColor, getAutumnURL, getDmChannel, isBotManager, NO_MANAGER_MSG, sanitizeMessageContent } from "../../util";
+
+const WORDLIST_DEFAULT_MESSAGE = '<@{{user_id}}>, the message you sent contained a blocked word.';
 
 export default {
     name: 'botctl',
@@ -126,12 +130,207 @@ export default {
                 break;
             }
 
+            case 'filter': {
+                const config = await dbs.SERVERS.findOne({ id: message.channel!.server_id! });
+                switch(args.shift()?.toLowerCase()) {
+                    case 'enable': {
+                        await dbs.SERVERS.update(
+                            { id: message.channel!.server_id! },
+                            { $set: { wordlistEnabled: true } },
+                            { upsert: true },
+                        );
+                        await message.reply({ embeds: [
+                            embed(
+                                `### Word filter enabled!\nThere are currently ${config?.wordlist?.length ?? 0} words on your list.`,
+                                null,
+                                EmbedColor.Success
+                            ),
+                        ] });
+                        break;
+                    }
+                    case 'disable': {
+                        await dbs.SERVERS.update(
+                            { id: message.channel!.server_id! },
+                            { $set: { wordlistEnabled: false } },
+                            { upsert: true },
+                        );
+                        await message.reply({ embeds: [
+                            embed('Word filter disabled.', null, EmbedColor.SoftError),
+                        ] });
+                        break;
+                    }
+                    case 'add': {
+                        let strictness: any = 'SOFT';
+                        if (['soft', 'hard', 'strict'].includes(args[0].toLowerCase())) {
+                            strictness = args.shift()!.toUpperCase() as any;
+                        }
+
+                        const word = args.join(' ').toLowerCase();
+                        if (!word) return message.reply('You didn\'t provide a word to add to the list!');
+                        if (config?.wordlist?.find(w => w.word == word)) return await message.reply('That word is already on the list!');
+
+                        await dbs.SERVERS.update(
+                            { id: message.channel!.server_id! },
+                            { $push: { wordlist: { strictness, word } } },
+                            { upsert: true },
+                        );
+                        await message.reply({ embeds: [
+                            embed(`Word added with strictness **${strictness}**.`, null, EmbedColor.Success),
+                        ] });
+                        break;
+                    }
+                    case 'remove': {
+                        const word = args.join(' ').toLowerCase();
+                        if (!word) return message.reply('You need to provide the word to remove from the list.');
+
+                        if (!config?.wordlist?.find(w => w.word == word)) return await message.reply('That word is not on the list.');
+                        await dbs.SERVERS.update(
+                            { id: message.channel!.server_id! },
+                            { $pull: { wordlist: { word } } },
+                            { upsert: true },
+                        );
+                        await message.reply({ embeds: [
+                            embed(`Word removed.`, null, EmbedColor.Success),
+                        ] });
+                        break;
+                    }
+                    case 'show': {
+                        const formData = new FormData();
+                        formData.append(
+                            `wordlist_${message.channel?.server_id}`,
+                            config?.wordlist?.map(w => `${w.strictness}\t${w.word}`).join('\n') ?? '',
+                            `wordlist_${message.channel?.server_id}.txt`
+                        );
+
+                        try {
+                            const channel = await getDmChannel(message.author_id);
+                            const res = await axios.post(
+                                `${await getAutumnURL()}/attachments`,
+                                formData,
+                                { headers: formData.getHeaders(), responseType: 'json' }
+                            );
+                            await channel.sendMessage({
+                                attachments: [ (res.data as any).id ],
+                                embeds: [ embed(
+                                    `Here's the current word list for **${message.channel?.server?.name}**.`,
+                                    'Word List',
+                                    EmbedColor.Success
+                                ) ],
+                            });
+                            await message.reply({ embeds: [
+                                embed(`I have sent the current word list to your direct messages!`, null, EmbedColor.Success),
+                            ] });
+                        } catch(e) {
+                            console.error(e);
+                        }
+                        break;
+                    }
+                    case 'message': {
+                        const msg = args.join(' ');
+                        if (!msg) {
+                            return await message.reply({ embeds: [
+                                embed(
+                                    'This command lets you change the message the bot will send if a message is filtered.\n' +
+                                    'The current message is:\n' +
+                                    `>${sanitizeMessageContent(config?.wordlistAction?.message ?? WORDLIST_DEFAULT_MESSAGE).trim().replace(/\n/g, '\n>')}\n` +
+                                    '`{{user_id}}` will be substituted for the target user\'s ID.',
+                                    'Warning message',
+                                    EmbedColor.Success
+                                ),
+                            ] });
+                        }
+
+                        await dbs.SERVERS.update(
+                            { id: message.channel!.server_id! },
+                            { $set: { wordlistAction: { action: config?.wordlistAction?.action ?? 'LOG', message: msg } } },
+                            { upsert: true },
+                        );
+                        await message.reply({ embeds: [
+                            embed(
+                                'Filter message set!',
+                                null,
+                                EmbedColor.Success
+                            ),
+                        ] });
+                        break;
+                    }
+                    case 'action': {
+                        let action: string;
+                        switch(args[0]?.toLowerCase()) {
+                            case 'log':
+                            case 'delete':
+                            case 'warn':
+                                action = args[0].toUpperCase();
+                                break;
+                            default:
+                                await message.reply({ embeds: [
+                                    embed(
+                                        'Please provide one of the following arguments:\n' +
+                                            '- **log** (Log the message in mod action log channel)\n' +
+                                            '- **delete** (Log and delete the message)\n' +
+                                            '- **warn** (Log and delete message, warn user)\n\n' +
+                                            `The currently configured action is **${config?.wordlistAction?.action ?? 'LOG'}**.`,
+                                        null,
+                                        EmbedColor.SoftError
+                                    ),
+                                ] });
+                                return;
+                        }
+
+                        await dbs.SERVERS.update(
+                            { id: message.channel!.server_id! },
+                            { $set: { wordlistAction: {
+                                action: action as any,
+                                message: config?.wordlistAction?.message ?? WORDLIST_DEFAULT_MESSAGE
+                            } } },
+                            { upsert: true },
+                        );
+                        await message.reply({ embeds: [
+                            embed(
+                                `Filter action set to **${action}**. ` +
+                                `Please make sure you configured a logging channel using **${DEFAULT_PREFIX}botctl logs**.`,
+                                null,
+                                EmbedColor.Success
+                            ),
+                        ] });
+                        break;
+                    }
+                    default: {
+                        await message.reply({ embeds: [
+                            embed(
+                                `### This command allows you to configure a manual word filter.\n` +
+                                `- **${DEFAULT_PREFIX}botctl filter enable** - Enable the word filter.\n` +
+                                `- **${DEFAULT_PREFIX}botctl filter disable** - Disable the word filter.\n` +
+                                `- **${DEFAULT_PREFIX}botctl filter add [soft|hard] [word]** - Add a word to the list. If omitted, defaults to 'soft'.\n` +
+                                `- **${DEFAULT_PREFIX}botctl filter remove** - Remove a word from the list.\n` +
+                                `- **${DEFAULT_PREFIX}botctl filter show** - Send the current filter list.\n` +
+                                `- **${DEFAULT_PREFIX}botctl filter message [message]** - Set the message sent when a message is matched.\n` +
+                                `- **${DEFAULT_PREFIX}botctl filter action [log|delete|warn]** - Configure the action taken on filtered messages.\n`,
+                                'Word filter',
+                            ),
+                            embed(
+                                `**Enabled:** ${config?.wordlistEnabled}` + (!config?.wordlistEnabled
+                                    ? ''
+                                    : `\n**Action:** ${config?.wordlistAction?.action ?? 'LOG'}\n` +
+                                      `**Warning message:** ${config?.wordlistAction?.message}\n` +
+                                      `**Wordlist length:** ${config?.wordlist?.length ?? 0}`),
+                                'Current configuration',
+                                config?.wordlistEnabled ? EmbedColor.Success : EmbedColor.SoftError,
+                            ),
+                        ] });
+                        break;
+                    }
+                }
+                break;
+            }
+
             case undefined:
                 case '':
                 message.reply(`### Available subcommands\n`
                 + `- \`ignore_blacklist\` - Ignore the bot's global blacklist.\n`
                 + `- \`spam_detection\` - Toggle automatic spam detection.\n`
-                + `- \`logs\` - Configure log channels.\n`);
+                + `- \`logs\` - Configure log channels.\n`
+                + `- \`filter\` - Configure word filter.\n`);
             break
             default:
                 message.reply(`Unknown option`);
