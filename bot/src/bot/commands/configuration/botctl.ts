@@ -322,7 +322,7 @@ export default {
                                 'Word filter',
                             ),
                             embed(
-                                `**Enabled:** ${config?.wordlistEnabled}` + (!config?.wordlistEnabled
+                                `**Enabled:** ${!!config?.wordlistEnabled}` + (!config?.wordlistEnabled
                                     ? ''
                                     : `\n**Action:** ${config?.wordlistAction?.action ?? 'LOG'}\n` +
                                       `**Warning message:** ${config?.wordlistAction?.message}\n` +
