@@ -1,9 +1,11 @@
+import ServerConfig from "automod/dist/types/ServerConfig";
 import axios from "axios";
 import FormData from "form-data";
 import { client, dbs } from "../../..";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { checkMessageForFilteredWords } from "../../modules/antispam";
 import { DEFAULT_PREFIX } from "../../modules/command_handler";
 import { embed, EmbedColor, getAutumnURL, getDmChannel, isBotManager, NO_MANAGER_MSG, sanitizeMessageContent } from "../../util";
 
@@ -295,6 +297,15 @@ export default {
                         ] });
                         break;
                     }
+                    case 'test': {
+                        const match = checkMessageForFilteredWords(args.join(' '), config  as ServerConfig);
+                        await message.reply({ embeds: [
+                            match
+                                ? embed('Your word list matches this test phrase!', 'Filter Test', EmbedColor.SoftError)
+                                : embed('Your word list does not match this test phrase!', 'Filter Test', EmbedColor.Success)
+                        ] });
+                        break;
+                    }
                     default: {
                         await message.reply({ embeds: [
                             embed(
@@ -305,7 +316,8 @@ export default {
                                 `- **${DEFAULT_PREFIX}botctl filter remove** - Remove a word from the list.\n` +
                                 `- **${DEFAULT_PREFIX}botctl filter show** - Send the current filter list.\n` +
                                 `- **${DEFAULT_PREFIX}botctl filter message [message]** - Set the message sent when a message is matched.\n` +
-                                `- **${DEFAULT_PREFIX}botctl filter action [log|delete|warn]** - Configure the action taken on filtered messages.\n`,
+                                `- **${DEFAULT_PREFIX}botctl filter action [log|delete|warn]** - Configure the action taken on filtered messages.\n` +
+                                `- **${DEFAULT_PREFIX}botctl filter test [phrase]** - Test whether a phrase matches your word list.\n`,
                                 'Word filter',
                             ),
                             embed(

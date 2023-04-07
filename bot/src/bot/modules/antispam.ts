@@ -8,6 +8,7 @@ import ModerationAction from "automod/dist/types/antispam/ModerationAction";
 import logger from "../logger";
 import { awaitClient, isModerator, storeInfraction } from "../util";
 import { getDmChannel, sanitizeMessageContent } from "../util";
+import ServerConfig from "automod/dist/types/ServerConfig";
 
 let msgCountStore: Map<string, { users: any }> = new Map();
 
@@ -106,6 +107,72 @@ function getWarnMsg(rule: AntispamRule, message: Message) {
     } else return `<@${message.author_id}>, please stop spamming.`;
 }
 
+function checkMessageForFilteredWords(message: string, config: ServerConfig): boolean {
+    if (!config.wordlistEnabled || !config.wordlist?.length || !message) return false;
+
+    const words = {
+        soft: config.wordlist.filter(w => w.strictness == 'SOFT').map(w => w.word),
+        hard: config.wordlist.filter(w => w.strictness == 'HARD').map(w => w.word),
+        strict: config.wordlist.filter(w => w.strictness == 'STRICT').map(w => w.word),
+    }
+
+    const softSegments = message.split(/\s/g).map(s => s.toLowerCase());
+    for (const word of words.soft) {
+        if (softSegments.includes(word.toLowerCase())) return true;
+    }
+
+    for (const word of words.hard) {
+        if (message.toLowerCase().includes(word.toLowerCase())) return true;
+    }
+
+    const replace = {
+        '0': 'o',
+        '1': 'i',
+        '4': 'a',
+        '3': 'e',
+        '5': 's',
+        '6': 'g',
+        '7': 't',
+        '8': 'b',
+        '9': 'g',
+        '@': 'a',
+        '^': 'a',
+        'Д': 'a',
+        'ß': 'b',
+        '¢': 'c',
+        '©': 'c',
+        '<': 'c',
+        '€': 'e',
+        'ƒ': 'f',
+        'ท': 'n',
+        'И': 'n',
+        'Ø': 'o',
+        'Я': 'r',
+        '®': 'r',
+        '$': 's',
+        '§': 's',
+        '†': 't',
+        'บ': 'u',
+        'พ': 'w',
+        '₩': 'w',
+        '×': 'x',
+        '¥': 'y',
+    }
+    const replaceChars = (input: string) => {
+        input = `${input}`;
+        for (const pair of Object.entries(replace)) {
+            input = input.replaceAll(pair[0], pair[1]);
+        }
+        return input;
+    }
+    const replacedMsg = replaceChars(message.toLowerCase().replace(/\s/g, ''));
+    for (const word of words.strict) {
+        if (replacedMsg.includes(replaceChars(word.toLowerCase()))) return true;
+    }
+
+    return false;
+}
+
 // Scan all servers for the `discoverable` flag and notify their owners that antispam is forcefully enabled
 const notifyPublicServers = async () => {
     logger.info('Sending antispam notification to public servers');
@@ -148,4 +215,4 @@ Thanks for being part of Revolt!`);
 
 awaitClient().then(() => notifyPublicServers());
 
-export { antispam }
+export { antispam, checkMessageForFilteredWords }
