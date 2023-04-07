@@ -233,6 +233,7 @@ export default {
                             return await message.reply({ embeds: [
                                 embed(
                                     'This command lets you change the message the bot will send if a message is filtered.\n' +
+                                    'Note that this message will not be sent if the configured action is to log events only.\n' +
                                     'The current message is:\n' +
                                     `>${sanitizeMessageContent(config?.wordlistAction?.message ?? WORDLIST_DEFAULT_MESSAGE).trim().replace(/\n/g, '\n>')}\n` +
                                     '`{{user_id}}` will be substituted for the target user\'s ID.',
@@ -353,3 +354,5 @@ export default {
         }
     }
 } as SimpleCommand;
+
+export { WORDLIST_DEFAULT_MESSAGE }

@@ -6,11 +6,15 @@ import Infraction from "automod/dist/types/antispam/Infraction";
 import InfractionType from "automod/dist/types/antispam/InfractionType";
 import ModerationAction from "automod/dist/types/antispam/ModerationAction";
 import logger from "../logger";
-import { awaitClient, isModerator, storeInfraction } from "../util";
+import { awaitClient, generateInfractionDMEmbed, isModerator, sendLogMessage, storeInfraction } from "../util";
 import { getDmChannel, sanitizeMessageContent } from "../util";
 import ServerConfig from "automod/dist/types/ServerConfig";
+import { WORDLIST_DEFAULT_MESSAGE } from "../commands/configuration/botctl";
 
 let msgCountStore: Map<string, { users: any }> = new Map();
+
+// Should use redis for this
+const SENT_FILTER_MESSAGE: string[] = [];
 
 /**
  * 
@@ -105,6 +109,78 @@ function getWarnMsg(rule: AntispamRule, message: Message) {
         return rule.message
             .replace(new RegExp('{{userid}}', 'gi'), message.author_id);
     } else return `<@${message.author_id}>, please stop spamming.`;
+}
+
+/**
+ * Run word filter check and act on message if required
+ */
+async function wordFilterCheck(message: Message, config: ServerConfig) {
+    try {
+        if (!message.content) return;
+        const match = checkMessageForFilteredWords(message.content, config);
+        if (!match) return;
+
+        console.log('Message matched word filter!');
+
+        // Lack of `break` is intended here
+        switch(config.wordlistAction?.action) {
+            case 'WARN': {
+                try {
+                    const infraction: Infraction = {
+                        _id: ulid(),
+                        createdBy: null,
+                        date: Date.now(),
+                        reason: 'Word filter triggered',
+                        server: message.channel!.server_id!,
+                        type: InfractionType.Automatic,
+                        user: message.author_id,
+                    }
+
+                    await storeInfraction(infraction);
+
+                    if (config.dmOnWarn) {
+                        const embed = generateInfractionDMEmbed(message.channel!.server!, config, infraction, message);
+                        const dmChannel = await getDmChannel(message.author!);
+
+                        if (dmChannel.havePermission('SendMessage') && dmChannel.havePermission('SendEmbeds')) {
+                            await dmChannel.sendMessage({ embeds: [ embed ] });
+                        }
+                        else logger.warn('Missing permission to DM user.');
+                    }
+                } catch(e) {
+                    console.error(e);
+                }
+            }
+            case 'DELETE': {
+                if (message.channel?.havePermission('ManageMessages')) {
+                    const key = `${message.author_id}:${message.channel_id}`;
+                    await message.delete();
+
+                    if (!SENT_FILTER_MESSAGE.includes(key)) {
+                        SENT_FILTER_MESSAGE.push(key);
+                        setTimeout(() => SENT_FILTER_MESSAGE.splice(SENT_FILTER_MESSAGE.indexOf(key), 1), 30000);
+                        await message.channel.sendMessage((config.wordlistAction.message || WORDLIST_DEFAULT_MESSAGE)
+                            .replaceAll('{{user_id}}', message.author_id));
+                    }
+                }
+            }
+            case 'LOG':
+            default: {
+                if (!config.logs?.modAction) break;
+                await sendLogMessage(config.logs.modAction, {
+                    title: 'Message triggered word filter',
+                    description: `**Author:** @${message.author?.username} (${message.author_id})\n` +
+                        `**Action:** ${config.wordlistAction?.action || 'LOG'}\n` +
+                        `#### Content\n` +
+                        `>${sanitizeMessageContent(message.content.substring(0, 1000)).trim().replace(/\n/g, '\n>')}`,
+                    color: '#ff557f',
+                });
+            }
+
+        }
+    } catch(e) {
+        console.error(e);
+    }
 }
 
 function checkMessageForFilteredWords(message: string, config: ServerConfig): boolean {
@@ -215,4 +291,4 @@ Thanks for being part of Revolt!`);
 
 awaitClient().then(() => notifyPublicServers());
 
-export { antispam, checkMessageForFilteredWords }
+export { antispam, wordFilterCheck, checkMessageForFilteredWords }

@@ -3,7 +3,7 @@ import logger from "../logger";
 import { client, dbs } from "../../index";
 import fs from 'fs';
 import path from 'path';
-import { antispam } from "./antispam";
+import { antispam, wordFilterCheck } from "./antispam";
 import checkCustomRules from "./custom_rules/custom_rules";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import { fileURLToPath } from 'url';
@@ -64,6 +64,10 @@ let commands: SimpleCommand[];
             dbs.SERVERS.findOne({ id: msg.channel!.server_id! }),
             dbs.USERS.findOne({ id: msg.author_id }),
         ]);
+
+        if (config) {
+            await wordFilterCheck(msg, config);
+        }
 
         if (userConfig?.ignore) return;
 

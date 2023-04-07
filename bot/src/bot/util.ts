@@ -465,11 +465,11 @@ const generateInfractionDMEmbed = (
     server: Server,
     serverConfig: ServerConfig,
     infraction: Infraction,
-    message: MessageCommandContext
+    message: Message
 ) => {
     const embed: SendableEmbed = {
-        title: message.serverContext.name,
-        icon_url: message.serverContext.generateIconURL({ max_side: 128 }),
+        title: server.name,
+        icon_url: server.generateIconURL({ max_side: 128 }),
         colour: "#ff9e2f",
         url: message.url,
         description:
@@ -480,7 +480,7 @@ const generateInfractionDMEmbed = (
                   }** from `
                 : `**warned** in `) +
             `'${sanitizeMessageContent(
-                message.serverContext.name
+                server.name
             ).trim()}' <t:${Math.round(infraction.date / 1000)}:R>.\n` +
             `**Reason:** ${infraction.reason}\n` +
             `**Moderator:** [@${sanitizeMessageContent(
