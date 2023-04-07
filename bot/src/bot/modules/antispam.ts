@@ -120,6 +120,8 @@ async function wordFilterCheck(message: Message, config: ServerConfig) {
         const match = checkMessageForFilteredWords(message.content, config);
         if (!match) return;
 
+        if (await isModerator(message, false)) return;
+
         console.log('Message matched word filter!');
 
         // Lack of `break` is intended here
