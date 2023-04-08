@@ -162,7 +162,7 @@ export default {
                         break;
                     }
                     case 'add': {
-                        let strictness: any = 'SOFT';
+                        let strictness: any = 'HARD';
                         if (['soft', 'hard', 'strict'].includes(args[0].toLowerCase())) {
                             strictness = args.shift()!.toUpperCase() as any;
                         }
@@ -313,7 +313,7 @@ export default {
                                 `### This command allows you to configure a manual word filter.\n` +
                                 `- **${DEFAULT_PREFIX}botctl filter enable** - Enable the word filter.\n` +
                                 `- **${DEFAULT_PREFIX}botctl filter disable** - Disable the word filter.\n` +
-                                `- **${DEFAULT_PREFIX}botctl filter add [soft|hard] [word]** - Add a word to the list. If omitted, defaults to 'soft'.\n` +
+                                `- **${DEFAULT_PREFIX}botctl filter add [soft|hard] [word]** - Add a word to the list. If omitted, defaults to 'hard'.\n` +
                                 `- **${DEFAULT_PREFIX}botctl filter remove** - Remove a word from the list.\n` +
                                 `- **${DEFAULT_PREFIX}botctl filter show** - Send the current filter list.\n` +
                                 `- **${DEFAULT_PREFIX}botctl filter message [message]** - Set the message sent when a message is matched.\n` +
