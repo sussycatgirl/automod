@@ -313,12 +313,13 @@ export default {
                                 `### This command allows you to configure a manual word filter.\n` +
                                 `- **${DEFAULT_PREFIX}botctl filter enable** - Enable the word filter.\n` +
                                 `- **${DEFAULT_PREFIX}botctl filter disable** - Disable the word filter.\n` +
-                                `- **${DEFAULT_PREFIX}botctl filter add [soft|hard] [word]** - Add a word to the list. If omitted, defaults to 'hard'.\n` +
+                                `- **${DEFAULT_PREFIX}botctl filter add [soft|hard|strict] [word]** - Add a word to the list. If omitted, defaults to 'hard'.\n` +
                                 `- **${DEFAULT_PREFIX}botctl filter remove** - Remove a word from the list.\n` +
                                 `- **${DEFAULT_PREFIX}botctl filter show** - Send the current filter list.\n` +
                                 `- **${DEFAULT_PREFIX}botctl filter message [message]** - Set the message sent when a message is matched.\n` +
                                 `- **${DEFAULT_PREFIX}botctl filter action [log|delete|warn]** - Configure the action taken on filtered messages.\n` +
-                                `- **${DEFAULT_PREFIX}botctl filter test [phrase]** - Test whether a phrase matches your word list.\n`,
+                                `- **${DEFAULT_PREFIX}botctl filter test [phrase]** - Test whether a phrase matches your word list.\n` +
+                                `More documentation can be found [here](https://github.com/janderedev/automod/wiki/Word-Filter).`,
                                 'Word filter',
                             ),
                             embed(
