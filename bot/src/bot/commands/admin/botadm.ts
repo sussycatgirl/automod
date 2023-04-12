@@ -5,7 +5,7 @@ import { commands, DEFAULT_PREFIX, ownerIDs } from "../../modules/command_handle
 import child_process from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { User } from "@janderedev/revolt.js/dist/maps/Users";
+import { User } from "revolt.js";
 import { adminBotLog } from "../../logging";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import { getMutualServers, parseUserOrId } from "../../util";
@@ -17,11 +17,11 @@ const BLACKLIST_MESSAGE = (username: string) => `\`@${username}\` has been banne
 const sudoOverrides: { [key: string]: number|null } = {}
 
 const isSudo = (user: User): boolean => {
-    return !!(sudoOverrides[user._id] && sudoOverrides[user._id]! > Date.now());
+    return !!(sudoOverrides[user.id] && sudoOverrides[user.id]! > Date.now());
 }
 
 const updateSudoTimeout = (user: User) => {
-    sudoOverrides[user._id] = Date.now() + (1000 * 60 * 5);
+    sudoOverrides[user.id] = Date.now() + (1000 * 60 * 5);
 }
 
 const getCommitHash = (): Promise<string|null> => new Promise((resolve) => {
@@ -57,23 +57,22 @@ export default {
                     const pjson = JSON.parse((await fs.promises.readFile(path.join(process.cwd(), 'package.json'))).toString());
                     let msg = `# AutoMod stats\n`
                             + `### Cache\n`
-                            + `Servers: \`${client.servers.size}\`\n`
-                            + `Channels: \`${client.channels.size}\`\n`
-                            + `Users: \`${client.users.size}\`\n`
+                            + `Servers: \`${client.servers.size()}\`\n`
+                            + `Channels: \`${client.channels.size()}\`\n`
+                            + `Users: \`${client.users.size()}\`\n`
                             + `### Misc\n`
                             + `Command count: \`${commands.length}\`\n`
                             + `Environment: \`${process.env.NODE_ENV || 'testing'}\`\n`
                             + `Commit hash: \`${await getCommitHash() || 'Unknown'}\`\n`
                             + `### Packages\n`
-                            + `revolt.js: \`${pjson.dependencies['@janderedev/revolt.js']}\`\n`
+                            + `revolt.js: \`${pjson.dependencies['revolt.js']}\`\n`
                             + `discord.js: \`${pjson.dependencies['discord.js']}\`\n`
                             + `axios: \`${pjson.dependencies['axios']}\`\n`
                             + `log75: \`${pjson.dependencies['log75']}\`\n`
                             + `typescript: \`${pjson.devDependencies['typescript']}\`\n`
                             + `### Connection\n`
-                            + `API Endpoint: \`${client.apiURL}\`\n`
-                            + `Heartbeat: \`${client.heartbeat}\`\n`
-                            + `Ping: \`${client.websocket.ping ?? 'Unknown'}\`\n`
+                            + `API Endpoint: \`${client.options.baseURL}\`\n`
+                            + `Ping: \`${client.events.ping() ?? 'Unknown'}\`\n`
                             + `### Bot configuration\n`
                             + `Owners: \`${ownerIDs.length}\` (${ownerIDs.join(', ')})\n`;
 
@@ -87,7 +86,7 @@ export default {
                         case 'on': {
                             if (isSudo(message.author!)) return message.reply('You are already in sudo mode!');
 
-                            sudoOverrides[message.author_id] = Date.now() + (1000 * 60 * 5);
+                            sudoOverrides[message.authorId!] = Date.now() + (1000 * 60 * 5);
 
                             let msg = `# %emoji% Sudo mode enabled\n`
                                     + `In sudo mode, you will be able to run any command regardless of your server permissions.\n`
@@ -106,7 +105,7 @@ export default {
                         case 'off': {
                             if (!isSudo(message.author!)) return message.reply('You currently not in sudo mode.');
 
-                            sudoOverrides[message.author_id] = null;
+                            sudoOverrides[message.authorId!] = null;
 
                             let msg = `# %emoji% Sudo mode disabled.`;
                             const sentMsg = await message.reply(msg.replace('%emoji%', ':unlock:'), false);
@@ -138,7 +137,7 @@ export default {
                     const target = await parseUserOrId(args.shift() || '');
                     if (!target) return message.reply('Specified user could not be found.');
 
-                    const res = await dbs.USERS.findOne({ id: target._id });
+                    const res = await dbs.USERS.findOne({ id: target.id });
 
                     if (!res) await message.reply(`Nothing stored about this user.`);
                     else await message.reply(`\`\`\`json\n${JSON.stringify(res, null, 4)}\n\`\`\``);
@@ -149,12 +148,12 @@ export default {
                 case 'blacklist': {
                     const target = await parseUserOrId(args.shift() || '');
                     if (!target) return message.reply('Specified user could not be found.');
-                    if (target._id == message.author_id) return message.reply(`no`);
+                    if (target.id == message.authorId) return message.reply(`no`);
 
                     await dbs.USERS.update({
-                        id: target._id,
+                        id: target.id,
                     }, {
-                        $setOnInsert: { id: target._id },
+                        $setOnInsert: { id: target.id },
                         $set: { globalBlacklist: true }
                     }, { upsert: true });
 
@@ -167,23 +166,23 @@ export default {
                             const mutuals = getMutualServers(target);
                             for (const server of mutuals) {
                                 if (server.havePermission('BanMembers')) {
-                                    const config = await dbs.SERVERS.findOne({ id: server._id });
+                                    const config = await dbs.SERVERS.findOne({ id: server.id });
                                     if (config?.allowBlacklistedUsers) continue;
 
                                     try {
-                                        await server.banUser(target._id, {
+                                        await server.banUser(target.id, {
                                             reason: BLACKLIST_BAN_REASON,
                                         });
                                         bannedServers++;
 
-                                        if (server.system_messages?.user_banned) {
-                                            const channel = server.channels.find(c => c!._id == server.system_messages!.user_banned);
+                                        if (server.systemMessages?.user_banned) {
+                                            const channel = server.channels.find(c => c!.id == server.systemMessages!.user_banned);
                                             if (channel && channel.havePermission('SendMessage')) {
                                                 await channel.sendMessage(BLACKLIST_MESSAGE(target.username));
                                             }
                                         }
                                     } catch(e) {
-                                        console.error(`Failed to ban in ${server._id}: ${e}`);
+                                        console.error(`Failed to ban in ${server.id}: ${e}`);
                                     }
                                 }
                             }
@@ -205,9 +204,9 @@ export default {
                     if (!target) return message.reply('Specified user could not be found.');
 
                     await dbs.USERS.update({
-                        id: target._id,
+                        id: target.id,
                     }, {
-                        $setOnInsert: { id: target._id },
+                        $setOnInsert: { id: target.id },
                         $set: { globalBlacklist: false }
                     }, { upsert: true });
 
@@ -221,9 +220,9 @@ export default {
                     if (!target) return message.reply('Specified user could not be found.');
 
                     await dbs.USERS.update({
-                        id: target._id,
+                        id: target.id,
                     }, {
-                        $setOnInsert: { id: target._id },
+                        $setOnInsert: { id: target.id },
                         $set: { blacklistReason: args.join(' ') || undefined }
                     }, { upsert: true });
 
@@ -235,12 +234,12 @@ export default {
                 case 'ignore': {
                     const target = await parseUserOrId(args.shift() || '');
                     if (!target) return message.reply('Specified user could not be found.');
-                    if (target._id == message.author_id) return message.reply(`no`);
+                    if (target.id == message.authorId) return message.reply(`no`);
 
                     await dbs.USERS.update(
-                        { id: target._id },
+                        { id: target.id },
                         {
-                            $setOnInsert: { id: target._id },
+                            $setOnInsert: { id: target.id },
                             $set: { ignore: true },
                         },
                         { upsert: true }
@@ -254,12 +253,12 @@ export default {
                 case 'unignore': {
                     const target = await parseUserOrId(args.shift() || '');
                     if (!target) return message.reply('Specified user could not be found.');
-                    if (target._id == message.author_id) return message.reply(`no`);
+                    if (target.id == message.authorId) return message.reply(`no`);
 
                     await dbs.USERS.update(
-                        { id: target._id },
+                        { id: target.id },
                         {
-                            $setOnInsert: { id: target._id },
+                            $setOnInsert: { id: target.id },
                             $set: { ignore: false },
                         },
                         { upsert: true }

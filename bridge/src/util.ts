@@ -1,6 +1,6 @@
-import { Channel } from "@janderedev/revolt.js/dist/maps/Channels";
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
-import { User } from "@janderedev/revolt.js/dist/maps/Users";
+import { Channel } from "revolt.js";
+import { Message } from "revolt.js";
+import { User } from "revolt.js";
 import { Message as DiscordMessage, TextChannel, User as DiscordUser } from "discord.js";
 import { client as discordClient } from "./discord/client";
 import { client as revoltClient } from "./revolt/client"

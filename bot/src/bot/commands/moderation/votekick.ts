@@ -24,7 +24,7 @@ export default {
     category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {
         try {
-            const serverConfig = await dbs.SERVERS.findOne({ id: message.serverContext._id });
+            const serverConfig = await dbs.SERVERS.findOne({ id: message.serverContext.id });
             if (!serverConfig?.votekick?.enabled) return message.reply('Vote kick is not enabled for this server.');
             if (!message.member!.roles?.filter(r => serverConfig.votekick?.trustedRoles.includes(r)).length
              && !(await isModerator(message))) {
@@ -47,23 +47,23 @@ export default {
 
             const vote: VoteEntry = {
                 id: ulid(),
-                target: target._id,
-                user: message.author_id,
-                server: message.serverContext._id,
+                target: target.id,
+                user: message.authorId!,
+                server: message.serverContext.id,
                 time: Date.now(),
                 ignore: false,
             }
 
             const votes = await dbs.VOTEKICKS.find({
-                server: message.serverContext._id,
-                target: target._id,
+                server: message.serverContext.id,
+                target: target.id,
                 time: {
                     $gt: Date.now() - 1000 * 60 * 30,  // Last 30 minutes
                 },
                 ignore: false,
             });
 
-            if (votes.find(v => v.user == message.author_id)) return message.reply('You can\'t vote twice for this user.');
+            if (votes.find(v => v.user == message.authorId)) return message.reply('You can\'t vote twice for this user.');
 
             await dbs.VOTEKICKS.insert(vote);
             votes.push({ _id: '' as any, ...vote });
@@ -72,7 +72,7 @@ export default {
                 "votekick",
                 message.serverContext,
                 message.member!,
-                target._id,
+                target.id,
                 `n/a`,
                 vote.id,
                 `This is vote ${votes.length}/${serverConfig.votekick.votesRequired} for this user.`,
@@ -82,15 +82,15 @@ export default {
                 if (serverConfig.votekick.banDuration == -1) {
                     targetMember.kick();
                 } else if (serverConfig.votekick.banDuration == 0) {
-                    message.serverContext.banUser(target._id, { reason: 'Automatic permanent ban triggered by /votekick' });
+                    message.serverContext.banUser(target.id, { reason: 'Automatic permanent ban triggered by /votekick' });
                 } else {
-                    message.serverContext.banUser(target._id, { reason: `Automatic temporary ban triggered by /votekick `
+                    message.serverContext.banUser(target.id, { reason: `Automatic temporary ban triggered by /votekick `
                         + `(${serverConfig.votekick.banDuration} minutes)` });
 
                     await storeTempBan({
                         id: ulid(),
-                        bannedUser: target._id,
-                        server: message.serverContext._id,
+                        bannedUser: target.id,
+                        server: message.serverContext.id,
                         until: Date.now() + (1000 * 60 * serverConfig.votekick.banDuration),
                     });
                 }
@@ -99,8 +99,8 @@ export default {
                     + `Banned @${target.username} for ${serverConfig.votekick.banDuration} minutes.`); // Todo: display ban duration properly (Permban, kick, etc)
 
                 await dbs.VOTEKICKS.update({
-                    server: message.serverContext._id,
-                    target: target._id,
+                    server: message.serverContext.id,
+                    target: target.id,
                     time: { $gt: Date.now() - 1000 * 60 * 30 },
                     ignore: false,
                 }, { $set: { ignore: true } });

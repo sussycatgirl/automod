@@ -42,7 +42,7 @@ export default {
     removeEmptyArgs: true,
     category: CommandCategory.Misc,
     run: async (message: MessageCommandContext, args: string[]) => {
-        const isBotOwner = ownerIDs.includes(message.author_id);
+        const isBotOwner = ownerIDs.includes(message.authorId!);
         const prefix = DEFAULT_PREFIX; // TODO: fetch prefix from server config
 
         let searchInput = args.shift()?.toLowerCase();
@@ -50,7 +50,7 @@ export default {
             let msg = `## AutoMod help\n` +
                       `Type **${prefix}help [category]** to view see all commands or **${prefix}help [command]** to learn more about a command.\n\n`
                       + `### [Open Server Settings]`
-                      + `(<${process.env.WEB_UI_URL || 'https://automod.janderedev.xyz'}/dashboard/${message.channel?.server_id}>)\n\n`;
+                      + `(<${process.env.WEB_UI_URL || 'https://automod.janderedev.xyz'}/dashboard/${message.channel?.serverId}>)\n\n`;
 
             let total = 0;
 

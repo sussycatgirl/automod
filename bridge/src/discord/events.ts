@@ -1,6 +1,6 @@
 import { BRIDGED_MESSAGES, BRIDGE_CONFIG, BRIDGE_USER_CONFIG, logger } from "..";
 import { client } from "./client";
-import { AUTUMN_URL, client as revoltClient } from "../revolt/client";
+import { client as revoltClient } from "../revolt/client";
 import axios from 'axios';
 import { ulid } from "ulid";
 import GenericEmbed from "../types/GenericEmbed";
@@ -196,7 +196,7 @@ client.on("messageCreate", async (message) => {
             await BRIDGED_MESSAGES.update(
                 { "discord.messageId": message.id },
                 {
-                    $set: { "revolt.messageId": msg._id },
+                    $set: { "revolt.messageId": msg.id },
                 }
             );
 
@@ -233,7 +233,7 @@ client.on("messageCreate", async (message) => {
                     });
 
                     const res = await axios.post(
-                        `${AUTUMN_URL}/attachments`,
+                        `${revoltClient.configuration?.features.autumn.url}/attachments`,
                         formData,
                         { headers: formData.getHeaders() }
                     );
@@ -280,7 +280,7 @@ client.on("messageCreate", async (message) => {
                 });
 
                 const res = await axios.post(
-                    `${AUTUMN_URL}/attachments`,
+                    `${revoltClient.configuration?.features.autumn.url}/attachments`,
                     formData,
                     { headers: formData.getHeaders() }
                 );
@@ -338,7 +338,7 @@ client.on("messageCreate", async (message) => {
 
             await axios
                 .post(
-                    `${revoltClient.apiURL}/channels/${channel._id}/messages`,
+                    `${revoltClient.options.baseURL}/channels/${channel.id}/messages`,
                     payload,
                     {
                         headers: {
@@ -474,7 +474,7 @@ async function renderMessageBody(message: string): Promise<string> {
                 : undefined;
 
             return revoltChannel
-                ? `<#${revoltChannel._id}>`
+                ? `<#${revoltChannel.id}>`
                 : `#${(channel as TextChannel)?.name || id}`;
         },
         { cacheMatchResults: true, maxMatches: 10 }

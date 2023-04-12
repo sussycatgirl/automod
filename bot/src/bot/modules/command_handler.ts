@@ -7,7 +7,7 @@ import { antispam, wordFilterCheck } from "./antispam";
 import checkCustomRules from "./custom_rules/custom_rules";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import { fileURLToPath } from 'url';
-import { getOwnMemberInServer, hasPermForChannel } from "../util";
+import { getOwnMemberInServer } from "../util";
 import { isSudo, updateSudoTimeout } from "../commands/admin/botadm";
 import { metrics } from "./metrics";
 
@@ -30,20 +30,20 @@ let commands: SimpleCommand[];
             .map(async file => await import(file) as SimpleCommand)
         )).map(c => (c as any).default)
 
-    client.on('message/update', async msg => {
+    client.on('messageUpdate', async msg => {
         checkCustomRules(msg, true);
     });
 
-    client.on('message', async msg => {
+    client.on('messageCreate', async msg => {
         logger.debug(`Message -> ${msg.content}`);
 
         if (typeof msg.content != 'string' ||
-            msg.author_id == client.user?._id ||
+            msg.authorId == client.user?.id ||
             !msg.channel?.server) return;
 
         try {
-            if (!msg.member) await msg.channel.server.fetchMember(msg.author_id);
-            if (!msg.author) await client.users.fetch(msg.author_id);
+            if (!msg.member) await msg.channel.server.fetchMember(msg.authorId!);
+            if (!msg.author) await client.users.fetch(msg.authorId!);
         } catch(e) {
             return msg.reply('⚠ Failed to fetch message author');
         }
@@ -51,7 +51,8 @@ let commands: SimpleCommand[];
         if (msg.author!.bot) return;
 
         // If we can't reply to the message, return
-        if (!hasPermForChannel(await getOwnMemberInServer(msg.channel.server), msg.channel, 'SendMessage')) {
+        const member = await getOwnMemberInServer(msg.channel.server);
+        if (!member.hasPermission(msg.channel, 'SendMessage')) {
             logger.debug('Cannot reply to message; returning');
             return;
         }
@@ -61,8 +62,8 @@ let commands: SimpleCommand[];
         checkCustomRules(msg);
 
         let [ config, userConfig ] = await Promise.all([
-            dbs.SERVERS.findOne({ id: msg.channel!.server_id! }),
-            dbs.USERS.findOne({ id: msg.author_id }),
+            dbs.SERVERS.findOne({ id: msg.channel!.serverId! }),
+            dbs.USERS.findOne({ id: msg.authorId }),
         ]);
 
         if (config) {
@@ -75,8 +76,8 @@ let commands: SimpleCommand[];
         let cmdName = args.shift() ?? '';
         let guildPrefix = config?.prefix ?? DEFAULT_PREFIX;
 
-        if (cmdName.startsWith(`<@${client.user?._id}>`)) {
-            cmdName = cmdName.substring(`<@${client.user?._id}>`.length);
+        if (cmdName.startsWith(`<@${client.user?.id}>`)) {
+            cmdName = cmdName.substring(`<@${client.user?.id}>`.length);
             if (!cmdName) cmdName = args.shift() ?? ''; // Space between mention and command name
         } else if (cmdName.startsWith(guildPrefix)) {
             cmdName = cmdName.substring(guildPrefix.length);
@@ -108,7 +109,7 @@ let commands: SimpleCommand[];
 
         if (isSudo(msg.author!)) updateSudoTimeout(msg.author!);
 
-        if (cmd.restrict == 'BOTOWNER' && ownerIDs.indexOf(msg.author_id) == -1) {
+        if (cmd.restrict == 'BOTOWNER' && ownerIDs.indexOf(msg.authorId!) == -1) {
             logger.warn(`User ${msg.author?.username} tried to run owner-only command: ${cmdName}`);
             msg.reply('🔒 Access denied');
             return;
@@ -130,10 +131,10 @@ let commands: SimpleCommand[];
         let message: MessageCommandContext = msg as MessageCommandContext;
         message.serverContext = serverCtx;
 
-        logger.info(`Command: ${message.author?.username} (${message.author?._id}) in ${message.channel?.server?.name} (${message.channel?.server?._id}): ${message.content}`);
+        logger.info(`Command: ${message.author?.username} (${message.author?.id}) in ${message.channel?.server?.name} (${message.channel?.serverId}): ${message.content}`);
 
         // Create document for server in DB, if not already present
-        if (JSON.stringify(config) == '{}' || !config) await dbs.SERVERS.insert({ id: message.channel!.server_id! });
+        if (JSON.stringify(config) == '{}' || !config) await dbs.SERVERS.insert({ id: message.channel!.serverId! });
 
         if (cmd.removeEmptyArgs !== false) {
             args = args.filter(a => a.length > 0);

@@ -102,18 +102,18 @@ wsEvents.on('req:requestLogin', async (data: any, cb: (data: WSResponse) => void
         let code: string|null = null;
         while (!code) {
             const c = crypto.randomBytes(8).toString('hex');
-            const found = await dbs.PENDING_LOGINS.find({ code: c, user: user._id, confirmed: false });
+            const found = await dbs.PENDING_LOGINS.find({ code: c, user: user.id, confirmed: false });
             if (found.length > 0) continue;
             code = c.substring(0, 8).toUpperCase();
         }
 
-        logger.info(`Attempted login for user ${user._id} with code ${code}`);
+        logger.info(`Attempted login for user ${user.id} with code ${code}`);
 
         const nonce = ulid();
 
         const [previousLogins, currentValidLogins] = await Promise.all([
-            dbs.PENDING_LOGINS.find({ user: user._id, confirmed: true }),
-            dbs.PENDING_LOGINS.find({ user: user._id, confirmed: false, expires: { $gt: Date.now() } }),
+            dbs.PENDING_LOGINS.find({ user: user.id, confirmed: true }),
+            dbs.PENDING_LOGINS.find({ user: user.id, confirmed: false, expires: { $gt: Date.now() } }),
         ]);
 
         if (currentValidLogins.length >= 5) return cb({ success: false, statusCode: 403, error: 'Too many pending logins. Try again later.' });
@@ -121,7 +121,7 @@ wsEvents.on('req:requestLogin', async (data: any, cb: (data: WSResponse) => void
         await dbs.PENDING_LOGINS.insert({
             code,
             expires: Date.now() + (1000 * 60 * 15), // Expires in 15 minutes
-            user: user._id,
+            user: user.id,
             nonce: nonce,
             confirmed: false,
             requirePhishingConfirmation: previousLogins.length == 0,
@@ -129,7 +129,7 @@ wsEvents.on('req:requestLogin', async (data: any, cb: (data: WSResponse) => void
             invalid: false,
         } as PendingLogin);
 
-        cb({ success: true, uid: user._id, nonce, code });
+        cb({ success: true, uid: user.id, nonce, code });
     } catch(e) {
         console.error(e);
         cb({ success: false, error: `${e}` });
@@ -137,7 +137,7 @@ wsEvents.on('req:requestLogin', async (data: any, cb: (data: WSResponse) => void
 });
 
 wsEvents.on('req:stats', async (_data: any, cb: (data: { servers: number }) => void) => {
-    const servers = bot.servers.size;
+    const servers = bot.servers.size();
     cb({ servers });
 });
 

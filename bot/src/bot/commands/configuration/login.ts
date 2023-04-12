@@ -23,7 +23,7 @@ export default {
 
             const login: FindOneResult<PendingLogin> = await dbs.PENDING_LOGINS.findOne({
                 code,
-                user: message.author_id,
+                user: message.authorId,
                 confirmed: false,
                 exchanged: false,
                 invalid: false,
@@ -35,7 +35,7 @@ export default {
             if (!login) return message.reply(`Unknown code. Make sure you're logged into the correct account.`);
 
             if (login.requirePhishingConfirmation) {
-                logger.info(`Showing phishing warning to ${message.author_id}`);
+                logger.info(`Showing phishing warning to ${message.authorId}`);
                 await Promise.all([
                     message.reply(
                         `# If someone told you to run this, stop!\n` +

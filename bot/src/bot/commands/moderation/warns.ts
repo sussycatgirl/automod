@@ -23,7 +23,7 @@ export default {
     category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {
         let infractions: Array<Infraction> = await dbs.INFRACTIONS.find({
-            server: message.serverContext._id,
+            server: message.serverContext.id,
         });
         let userInfractions: Map<string, Infraction[]> = new Map();
         infractions.forEach(i => {
@@ -56,7 +56,7 @@ export default {
                     if (!id) return message.reply('No infraction ID provided.');
                     let inf = await dbs.INFRACTIONS.findOneAndDelete({
                         _id: { $eq: id.toUpperCase() },
-                        server: message.serverContext._id
+                        server: message.serverContext.id
                     });
 
                     if (!inf) return message.reply('I can\'t find that ID.');
@@ -69,18 +69,18 @@ export default {
                 break;
                 default:
                     let user = await parseUserOrId(args[0]);
-                    if (!user?._id) return message.reply('I can\'t find this user.');
+                    if (!user?.id) return message.reply('I can\'t find this user.');
 
                     
-                    if (user._id != message.author_id && !await isModerator(message)) return message.reply(NO_MANAGER_MSG);
+                    if (user.id != message.authorId && !await isModerator(message)) return message.reply(NO_MANAGER_MSG);
 
-                    const infs = userInfractions.get(user._id);
-                    const userConfig = await dbs.USERS.findOne({ id: user._id });
+                    const infs = userInfractions.get(user.id);
+                    const userConfig = await dbs.USERS.findOne({ id: user.id });
 
-                    if (!infs) return message.reply(`There are no infractions stored for \`${await fetchUsername(user._id)}\`.`
+                    if (!infs) return message.reply(`There are no infractions stored for \`${await fetchUsername(user.id)}\`.`
                         + (userConfig?.globalBlacklist ? '\n' + GLOBAL_BLACKLIST_TEXT(userConfig.blacklistReason) : ''), false);
                     else {
-                        let msg = `## ${infs.length} infractions stored for ${await fetchUsername(user._id)}\n`;
+                        let msg = `## ${infs.length} infractions stored for ${await fetchUsername(user.id)}\n`;
 
                         if (userConfig?.globalBlacklist) {
                             msg += GLOBAL_BLACKLIST_TEXT(userConfig.blacklistReason);
@@ -108,7 +108,7 @@ export default {
                         if (attachSpreadsheet) {
                             try {
                                 let csv_data = [
-                                    [`Warns for ${await fetchUsername(user._id)} (${user._id}) - ${Day().toString()}`],
+                                    [`Warns for ${await fetchUsername(user.id)} (${user.id}) - ${Day().toString()}`],
                                     [],
                                     ['Date', 'Reason', 'Created By', 'Type', 'Action Type', 'ID'],
                                 ];
@@ -127,7 +127,7 @@ export default {
                                 let sheet = Xlsx.utils.aoa_to_sheet(csv_data);
                                 let csv = Xlsx.utils.sheet_to_csv(sheet);
 
-                                message.reply({ content: msg, attachments: [ await uploadFile(csv, `${user._id}.csv`) ] }, false);
+                                message.reply({ content: msg, attachments: [ await uploadFile(csv, `${user.id}.csv`) ] }, false);
                             } catch(e) {
                                 console.error(e);
                                 message.reply(msg, false);

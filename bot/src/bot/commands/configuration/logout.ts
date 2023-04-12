@@ -20,8 +20,8 @@ export default {
 
             if (code.toLowerCase() == 'all') {
                 const [resA, resB] = await Promise.all([
-                    dbs.PENDING_LOGINS.update({ user: message.author_id, invalid: false }, { $set: { invalid: true } }),
-                    dbs.SESSIONS.update({ user: message.author_id, invalid: false }, { $set: { invalid: true } }),
+                    dbs.PENDING_LOGINS.update({ user: message.authorId, invalid: false }, { $set: { invalid: true } }),
+                    dbs.SESSIONS.update({ user: message.authorId, invalid: false }, { $set: { invalid: true } }),
                 ]);
 
                 if (resA.nModified == 0 && resB.nModified == 0) return message.reply('There are no sessions to invalidate.');
@@ -30,7 +30,7 @@ export default {
             } else {
                 const loginAttempt = await dbs.PENDING_LOGINS.findOne({
                     code: code.toUpperCase(),
-                    user: message.author_id,
+                    user: message.authorId,
                 });
 
                 if (!loginAttempt || loginAttempt.invalid) {

@@ -41,22 +41,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@insertish/exponential-backoff@npm:3.1.0-patch.2":
-  version: 3.1.0-patch.2
-  resolution: "@insertish/exponential-backoff@npm:3.1.0-patch.2"
-  checksum: 510a531965965c8cc633a91653ca09ffa8408925eb403d07c072bed065ec8ce429b4fd42fb0639a3dbee73d300d4422c306ebaaab3292b06778a224a2b5b0bf1
-  languageName: node
-  linkType: hard
-
-"@insertish/isomorphic-ws@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "@insertish/isomorphic-ws@npm:4.0.1"
-  peerDependencies:
-    ws: "*"
-  checksum: 64e6464b379784d0c8df31868eb8301b3e3827f91131755c38f66a007fcd791314c6ef49f3ead37bb5d62cc7fd52f2171b2e0ce04564a744905f72d3cd86f1ba
-  languageName: node
-  linkType: hard
-
 "@insertish/oapi@npm:0.1.18":
   version: 0.1.18
   resolution: "@insertish/oapi@npm:0.1.18"
@@ -72,26 +56,6 @@ __metadata:
   bin:
     oapilib: cli.js
   checksum: e83b1ac705f6aaf8fc3fd29198c70624aeec6150dc6b980af3f68285811fcdcbe09a3853908285e06c156890579dd49447ea381c85e6654a14e6ba53deba76e1
-  languageName: node
-  linkType: hard
-
-"@janderedev/revolt.js@npm:latest":
-  version: 6.0.20-patch.9
-  resolution: "@janderedev/revolt.js@npm:6.0.20-patch.9"
-  dependencies:
-    "@insertish/exponential-backoff": 3.1.0-patch.2
-    "@insertish/isomorphic-ws": ^4.0.1
-    axios: ^0.21.4
-    eventemitter3: ^4.0.7
-    lodash.defaultsdeep: ^4.6.1
-    lodash.flatten: ^4.4.0
-    lodash.isequal: ^4.5.0
-    long: ^5.2.0
-    mobx: ^6.3.2
-    revolt-api: 0.5.16
-    ulid: ^2.3.0
-    ws: ^8.2.2
-  checksum: 942f8cb7339f6378738d97ff788680dc63c287624e749b95b867a82c877bc6416a4a7b85264bf8797e034132d5a84843d75b820b6a1c37a760a88f13114772a0
   languageName: node
   linkType: hard
 
@@ -116,6 +80,48 @@ __metadata:
   version: 3.4.0
   resolution: "@sapphire/snowflake@npm:3.4.0"
   checksum: 556b7001f33d6edbbbcbca46f6abfa56c732a29e78b693161e358688e688edcb012d2c1bc944e7ffb41bd6c9950d261bc73f95656dc01643361a218b4f5ab985
+  languageName: node
+  linkType: hard
+
+"@solid-primitives/map@npm:^0.4.3":
+  version: 0.4.3
+  resolution: "@solid-primitives/map@npm:0.4.3"
+  dependencies:
+    "@solid-primitives/trigger": ^1.0.3
+  peerDependencies:
+    solid-js: ^1.6.12
+  checksum: e2408d7309c2bc0b93126771ad796cc3cbc2b150a03b4f3d4963dbc6df2ad26e671277fc14aafe1c117f1228c35557686e709accd6237ac511d2e05a6682006d
+  languageName: node
+  linkType: hard
+
+"@solid-primitives/set@npm:^0.4.3":
+  version: 0.4.3
+  resolution: "@solid-primitives/set@npm:0.4.3"
+  dependencies:
+    "@solid-primitives/trigger": ^1.0.3
+  peerDependencies:
+    solid-js: ^1.6.12
+  checksum: fcab5679185633b887d6d9ef4c12ded12d1773969a66079ce98dc18bbb2869f9fe743a1f3cd1f5721b52dcd274ae096470daa8ab1284643b4b26eeb28b7a5698
+  languageName: node
+  linkType: hard
+
+"@solid-primitives/trigger@npm:^1.0.3":
+  version: 1.0.5
+  resolution: "@solid-primitives/trigger@npm:1.0.5"
+  dependencies:
+    "@solid-primitives/utils": ^6.0.0
+  peerDependencies:
+    solid-js: ^1.6.12
+  checksum: 5f137ec425b317c09de6b994928992201206c16be7a01f7add46e0ee987d76a947a7f4f9396a945eeb671c43307b6f5d55bd57d90738880cebdaa0907aca65dd
+  languageName: node
+  linkType: hard
+
+"@solid-primitives/utils@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "@solid-primitives/utils@npm:6.0.0"
+  peerDependencies:
+    solid-js: ^1.6.12
+  checksum: c581b995e2d16c9ed0546baef52a9e60f54dda457a3733bac467a19f2a63227179eb0ec6faa16397af4cacc13fa281288cf967a206b0a75255412fafadc55411
   languageName: node
   linkType: hard
 
@@ -191,15 +197,6 @@ __metadata:
   languageName: node
   linkType: soft
 
-"axios@npm:^0.21.4":
-  version: 0.21.4
-  resolution: "axios@npm:0.21.4"
-  dependencies:
-    follow-redirects: ^1.14.0
-  checksum: 44245f24ac971e7458f3120c92f9d66d1fc695e8b97019139de5b0cc65d9b8104647db01e5f46917728edfc0cfd88eb30fc4c55e6053eef4ace76768ce95ff3c
-  languageName: node
-  linkType: hard
-
 "axios@npm:^0.26.1":
   version: 0.26.1
   resolution: "axios@npm:0.26.1"
@@ -231,7 +228,6 @@ __metadata:
   resolution: "bridge@workspace:."
   dependencies:
     "@discordjs/rest": ^0.4.1
-    "@janderedev/revolt.js": latest
     automod: ^0.1.0
     axios: ^0.26.1
     discord-api-types: ^0.31.2
@@ -242,7 +238,8 @@ __metadata:
     log75: ^2.2.0
     monk: ^7.3.4
     prom-client: ^14.0.1
-    revolt-api: ^0.5.3-rc.8
+    revolt-api: latest
+    revolt.js: ^7.0.0
     smart-replace: ^1.0.2
     typescript: ^4.7.4
     ulid: ^2.3.0
@@ -278,6 +275,13 @@ __metadata:
   version: 1.0.3
   resolution: "core-util-is@npm:1.0.3"
   checksum: 9de8597363a8e9b9952491ebe18167e3b36e7707569eed0ebf14f8bba773611376466ae34575bca8cfe3c767890c859c74056084738f09d4e4a6f902b2ad7d99
+  languageName: node
+  linkType: hard
+
+"csstype@npm:^3.1.0":
+  version: 3.1.2
+  resolution: "csstype@npm:3.1.2"
+  checksum: e1a52e6c25c1314d6beef5168da704ab29c5186b877c07d822bd0806717d9a265e8493a2e35ca7e68d0f5d472d43fac1cdce70fd79fd0853dff81f3028d857b5
   languageName: node
   linkType: hard
 
@@ -359,10 +363,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eventemitter3@npm:^4.0.7":
-  version: 4.0.7
-  resolution: "eventemitter3@npm:4.0.7"
-  checksum: 1875311c42fcfe9c707b2712c32664a245629b42bb0a5a84439762dd0fd637fc54d078155ea83c2af9e0323c9ac13687e03cfba79b03af9f40c89b4960099374
+"eventemitter3@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "eventemitter3@npm:5.0.0"
+  checksum: b974bafbab860e0a5bbb21add4c4e82f9d5691c583c03f2e4c5d44a2d6c4556d79223621bdcfc6c8e14366a4af9df6b5ea9d6caf65fbffc80b66f3e1dceacbc9
   languageName: node
   linkType: hard
 
@@ -373,7 +377,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.14.0, follow-redirects@npm:^1.14.8":
+"follow-redirects@npm:^1.14.8":
   version: 1.15.2
   resolution: "follow-redirects@npm:1.15.2"
   peerDependenciesMeta:
@@ -433,6 +437,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"isomorphic-ws@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "isomorphic-ws@npm:5.0.0"
+  peerDependencies:
+    ws: "*"
+  checksum: e20eb2aee09ba96247465fda40c6d22c1153394c0144fa34fe6609f341af4c8c564f60ea3ba762335a7a9c306809349f9b863c8beedf2beea09b299834ad5398
+  languageName: node
+  linkType: hard
+
 "js-yaml@npm:^4.1.0":
   version: 4.1.0
   resolution: "js-yaml@npm:4.1.0"
@@ -460,20 +473,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.flatten@npm:^4.4.0":
-  version: 4.4.0
-  resolution: "lodash.flatten@npm:4.4.0"
-  checksum: 0ac34a393d4b795d4b7421153d27c13ae67e08786c9cbb60ff5b732210d46f833598eee3fb3844bb10070e8488efe390ea53bb567377e0cb47e9e630bf0811cb
-  languageName: node
-  linkType: hard
-
-"lodash.isequal@npm:^4.5.0":
-  version: 4.5.0
-  resolution: "lodash.isequal@npm:4.5.0"
-  checksum: da27515dc5230eb1140ba65ff8de3613649620e8656b19a6270afe4866b7bd461d9ba2ac8a48dcc57f7adac4ee80e1de9f965d89d4d81a0ad52bb3eec2609644
-  languageName: node
-  linkType: hard
-
 "lodash@npm:^4.17.21":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
@@ -490,7 +489,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"long@npm:^5.2.0":
+"long@npm:^5.2.1":
   version: 5.2.1
   resolution: "long@npm:5.2.1"
   checksum: 9264da12d1b7df67e5aa6da4498144293caf1ad12e7f092efe4e9a2d32c53f0bbf7334f7cef997080a2a3af061142558ab366efa71698d98b1cdb883477445a7
@@ -526,13 +525,6 @@ __metadata:
   bin:
     mime: cli.js
   checksum: f43f9b7bfa64534e6b05bd6062961681aeb406a5b53673b53b683f27fcc4e739989941836a355eef831f4478923651ecc739f4a5f6e20a76487b432bfd4db928
-  languageName: node
-  linkType: hard
-
-"mobx@npm:^6.3.2":
-  version: 6.8.0
-  resolution: "mobx@npm:6.8.0"
-  checksum: f09bb079292ea59023a7e35a9c73ed577e3de9a0175ec3d5a2adc8192e2e3a352b29ec0981ee06d1d63f701f81bb7fc6cc19fd9089edf84a754a8a75ef00ef7f
   languageName: node
   linkType: hard
 
@@ -726,16 +718,32 @@ __metadata:
   languageName: node
   linkType: hard
 
-"revolt-api@npm:0.5.16, revolt-api@npm:^0.5.3-rc.8":
-  version: 0.5.16
-  resolution: "revolt-api@npm:0.5.16"
+"revolt-api@npm:^0.5.17, revolt-api@npm:latest":
+  version: 0.5.17
+  resolution: "revolt-api@npm:0.5.17"
   dependencies:
     "@insertish/oapi": 0.1.18
     axios: ^0.26.1
     lodash.defaultsdeep: ^4.6.1
-  checksum: ce39f61e371c1b7da0704191317bccf88b6630f1d8ffcef6bc9c699ebdc8cfbb3fcc5e054f96f9751c2f4a048398d4b349670cd067bcaad2e099d0c30efd9cfe
+  checksum: aa722f4739c09bea46f738a1b9aef61af126e06aa924a61fcf33caa53561c5de4e7e2ddde26b496cdd0546e113cf324821fead0035973e2ebdb2633df482091b
   languageName: node
   linkType: hard
+
+"revolt.js@portal:../revolt.js::locator=bridge%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "revolt.js@portal:../revolt.js::locator=bridge%40workspace%3A."
+  dependencies:
+    "@solid-primitives/map": ^0.4.3
+    "@solid-primitives/set": ^0.4.3
+    eventemitter3: ^5.0.0
+    isomorphic-ws: ^5.0.0
+    long: ^5.2.1
+    revolt-api: ^0.5.17
+    solid-js: ^1.7.2
+    ulid: ^2.3.0
+    ws: ^8.13.0
+  languageName: node
+  linkType: soft
 
 "safe-buffer@npm:^5.1.1, safe-buffer@npm:^5.1.2":
   version: 5.2.1
@@ -760,10 +768,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"seroval@npm:^0.5.0":
+  version: 0.5.1
+  resolution: "seroval@npm:0.5.1"
+  checksum: a4c1e42d6a65ed12de3c1f1b6a5b6b996e575c5bc838e1998e92daed7bc05421f3f6c82096387082dba33c475d64a31d0d932ac9b693352549259216e38dc091
+  languageName: node
+  linkType: hard
+
 "smart-replace@npm:^1.0.2":
   version: 1.0.2
   resolution: "smart-replace@npm:1.0.2"
   checksum: 47a70258e7426624715b67f5d857362f2cbe949747e482b38a73bf0a33572bcc290e27f08f3f60e5ed9011b33ad63b9ed25b55eb5cc5b0ebe93e54b98061cd37
+  languageName: node
+  linkType: hard
+
+"solid-js@npm:^1.7.2":
+  version: 1.7.3
+  resolution: "solid-js@npm:1.7.3"
+  dependencies:
+    csstype: ^3.1.0
+    seroval: ^0.5.0
+  checksum: 052a3148b6d0960312793781435005c16a7a80c2271e2bf2370ec22ec57ffd77e3e4a41335c1bd785ab36500adef86da79536445983efbed404db860e11593d4
   languageName: node
   linkType: hard
 
@@ -894,7 +919,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.2.2, ws@npm:^8.9.0":
+"ws@npm:^8.13.0, ws@npm:^8.9.0":
   version: 8.13.0
   resolution: "ws@npm:8.13.0"
   peerDependencies:

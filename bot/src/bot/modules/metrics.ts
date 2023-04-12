@@ -30,14 +30,14 @@ if (!isNaN(PORT)) {
         }
     });
 
-    const setServerCount = () => metrics.servers.set(client.servers.size);
+    const setServerCount = () => metrics.servers.set(client.servers.size());
 
     client.once('ready', setServerCount);
-    client.on('server/update', setServerCount);
-    client.on('server/delete', setServerCount);
+    client.on('serverUpdate', setServerCount);
+    client.on('serverDelete', setServerCount);
 
     const measureLatency = async () => {
-        const wsPing = client.websocket.ping;
+        const wsPing = -1; // currently not exported by revolt.js, todo?
         if (wsPing != undefined) metrics.wsPing.set(wsPing);
     }
 

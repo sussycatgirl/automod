@@ -18,7 +18,7 @@ export default {
         }
 
         let checkTempBans = async (id: string): Promise<number> => {
-            let tempbans = await dbs.TEMPBANS.find({ bannedUser: id, server: message.serverContext._id });
+            let tempbans = await dbs.TEMPBANS.find({ bannedUser: id, server: message.serverContext.id });
             if (tempbans.length > 0) {
                 for (const ban of tempbans) {
                     await removeTempBan(ban.id);
@@ -37,7 +37,7 @@ export default {
             let id: string|undefined = undefined;
 
             try {
-                id = (await parseUser(target))?._id;
+                id = (await parseUser(target))?.id;
             } catch(e) {
                 if (USER_MENTION_REGEX.test(target)) {
                     id = target
@@ -46,8 +46,8 @@ export default {
                 } else if (ULID_REGEX.test(target)) {
                     id = target;
                 } else {
-                    let user = bans.users.find(u => u.username.toLowerCase() == target.toLowerCase());
-                    if (user) id = user._id;
+                    let ban = bans.find(b => b.user?.username.toLowerCase() == target.toLowerCase());
+                    if (ban) id = ban.id.user;
                 }
             }
 
@@ -58,9 +58,9 @@ export default {
                 } else return msg.edit({ content: 'The user could not be found.' });
             }
 
-            let bannedUser = bans.users.find(u => u._id == id);
+            let ban = bans.find(b => b.id.user == id);
 
-            if (!bannedUser) {
+            if (!ban) {
                 let tempnum = await checkTempBans(id);
                 if (tempnum > 0) {
                     return msg.edit({ content: 'This user is not banned, but leftover database entries have been cleaned up.' });
@@ -68,12 +68,12 @@ export default {
             }
 
             await Promise.all([
-                msg.edit({ content: `User found: @${bannedUser.username}, unbanning...` }),
+                msg.edit({ content: `User found: @${ban.user?.username ?? ban.id.user}, unbanning...` }),
                 message.serverContext.unbanUser(id),
                 checkTempBans(id),
             ]);
 
-            await msg.edit({ content: `@${bannedUser.username} has been unbanned.` });
+            await msg.edit({ content: `@${ban.user?.username ?? ban.id.user} has been unbanned.` });
         } catch(e) { console.error(e) }
     }
 } as SimpleCommand;

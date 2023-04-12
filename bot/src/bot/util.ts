@@ -1,23 +1,20 @@
-import { Member } from "@janderedev/revolt.js/dist/maps/Members";
-import { User } from "@janderedev/revolt.js/dist/maps/Users";
+import { ServerMember } from "revolt.js";
+import { User } from "revolt.js";
 import { client, dbs } from "..";
 import Infraction from "automod/dist/types/antispam/Infraction";
 import FormData from 'form-data';
 import axios from 'axios';
-import { Server } from "@janderedev/revolt.js/dist/maps/Servers";
+import { Server } from "revolt.js";
 import LogConfig from "automod/dist/types/LogConfig";
 import LogMessage from "automod/dist/types/LogMessage";
 import { ColorResolvable, MessageEmbed } from "discord.js";
 import logger from "./logger";
 import { ulid } from "ulid";
-import { Channel } from "@janderedev/revolt.js/dist/maps/Channels";
-import { Permission } from "@janderedev/revolt.js/dist/permissions/definitions";
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
+import { Channel } from "revolt.js";
+import { Message } from "revolt.js";
 import { isSudo } from "./commands/admin/botadm";
 import { SendableEmbed } from "revolt-api";
-import MessageCommandContext from "../struct/MessageCommandContext";
 import ServerConfig from "automod/dist/types/ServerConfig";
-import { ClientboundNotification } from "@janderedev/revolt.js";
 
 const NO_MANAGER_MSG = "🔒 Missing permission";
 const ULID_REGEX = /^[0-9A-HJ-KM-NP-TV-Z]{26}$/i;
@@ -25,18 +22,6 @@ const USER_MENTION_REGEX = /^<@[0-9A-HJ-KM-NP-TV-Z]{26}>$/i;
 const CHANNEL_MENTION_REGEX = /^<#[0-9A-HJ-KM-NP-TV-Z]{26}>$/i;
 const RE_HTTP_URI = /^http(s?):\/\//g;
 const RE_MAILTO_URI = /^mailto:/g;
-
-let autumn_url: string | null = null;
-let apiConfig: any = axios.get(client.apiURL).then((res) => {
-    autumn_url = (res.data as any).features.autumn.url;
-});
-
-async function getAutumnURL() {
-    return (
-        autumn_url ||
-        ((await axios.get(client.apiURL)).data as any).features.autumn.url
-    );
-}
 
 /**
  * Parses user input and returns an user object.
@@ -80,10 +65,10 @@ async function parseUser(text: string): Promise<User | null> {
  */
 async function parseUserOrId(
     text: string
-): Promise<User | { _id: string } | null> {
+): Promise<User | { id: string } | null> {
     let parsed = await parseUser(text);
     if (parsed) return parsed;
-    if (ULID_REGEX.test(text)) return { _id: text.toUpperCase() };
+    if (ULID_REGEX.test(text)) return { id: text.toUpperCase() };
     return null;
 }
 
@@ -91,17 +76,17 @@ async function isModerator(message: Message, announceSudo?: boolean) {
     let member = message.member!,
         server = message.channel!.server!;
 
-    if (hasPerm(member, "KickMembers")) return true;
+    if (member.hasPermission(member.server!, "KickMembers")) return true;
 
     const [isManager, mods, isSudo] = await Promise.all([
         isBotManager(message),
-        dbs.SERVERS.findOne({ id: server._id }),
+        dbs.SERVERS.findOne({ id: server.id }),
         checkSudoPermission(message, announceSudo),
     ]);
 
     return (
         isManager ||
-        (mods?.moderators?.indexOf(member.user?._id!) ?? -1) > -1 ||
+        (mods?.moderators?.indexOf(member.user?.id!) ?? -1) > -1 ||
         isSudo
     );
 }
@@ -109,15 +94,15 @@ async function isBotManager(message: Message, announceSudo?: boolean) {
     let member = message.member!,
         server = message.channel!.server!;
 
-    if (hasPerm(member, "ManageServer")) return true;
+    if (member.hasPermission(member.server!, "ManageServer")) return true;
 
     const [managers, isSudo] = await Promise.all([
-        dbs.SERVERS.findOne({ id: server._id }),
+        dbs.SERVERS.findOne({ id: server.id }),
         checkSudoPermission(message, announceSudo),
     ]);
 
     return (
-        (managers?.botManagers?.indexOf(member.user?._id!) ?? -1) > -1 || isSudo
+        (managers?.botManagers?.indexOf(member.user?.id!) ?? -1) > -1 || isSudo
     );
 }
 async function checkSudoPermission(
@@ -137,68 +122,38 @@ async function checkSudoPermission(
     }
 }
 async function getPermissionLevel(
-    user: User | Member,
+    member: ServerMember | User,
     server: Server
 ): Promise<0 | 1 | 2 | 3> {
+
+    if (member instanceof User) {
+        member = client.serverMembers.getByKey({ server: server.id, user: member.id }) || await server.fetchMember(member.id);
+    }
+
+    if (isSudo(member.user!)) return 3;
+
+    if (member.hasPermission(member.server!, "ManageServer")) return 3;
+
+    const config = await dbs.SERVERS.findOne({ id: server.id });
+
+    if (config?.botManagers?.includes(member.id.user)) return 2;
     if (
-        isSudo(
-            user instanceof User
-                ? user
-                : user.user || (await client.users.fetch(user._id.user))
-        )
-    )
-        return 3;
-
-    const member = user instanceof User ? await server.fetchMember(user) : user;
-    if (user instanceof Member) user = user.user!;
-
-    if (hasPerm(member, "ManageServer")) return 3;
-
-    const config = await dbs.SERVERS.findOne({ id: server._id });
-
-    if (config?.botManagers?.includes(user._id)) return 2;
-    if (
-        config?.moderators?.includes(user._id) ||
-        hasPerm(member, "KickMembers")
+        config?.moderators?.includes(member.id.user) ||
+        member.hasPermission(member.server!, "KickMembers")
     )
         return 1;
 
     return 0;
 }
 
-function getPermissionBasedOnRole(member: Member): 0 | 1 | 2 | 3 {
-    if (hasPerm(member, "ManageServer")) return 3;
-    if (hasPerm(member, "KickMembers")) return 1;
+function getPermissionBasedOnRole(member: ServerMember): 0 | 1 | 2 | 3 {
+    if (member.hasPermission(member.server!, "ManageServer")) return 3;
+    if (member.hasPermission(member.server!, "KickMembers")) return 1;
     return 0;
 }
 
-/**
- * @deprecated Unnecessary
- */
-function hasPerm(member: Member, perm: keyof typeof Permission): boolean {
-    let p = Permission[perm];
-    if (member.server?.owner == member.user?._id) return true;
-
-    return member.hasPermission(member.server!, perm);
-}
-
-/**
- * @deprecated Unnecessary
- */
-function hasPermForChannel(
-    member: Member,
-    channel: Channel,
-    perm: keyof typeof Permission
-): boolean {
-    if (!member.server) throw "hasPermForChannel(): Server is undefined";
-    return member.hasPermission(channel, perm);
-}
-
-async function getOwnMemberInServer(server: Server): Promise<Member> {
-    return (
-        client.members.getKey({ server: server._id, user: client.user!._id }) ||
-        (await server.fetchMember(client.user!._id))
-    );
+async function getOwnMemberInServer(server: Server): Promise<ServerMember> {
+    return server.member || await server.fetchMember(client.user!.id);
 }
 
 async function storeInfraction(
@@ -220,7 +175,7 @@ async function uploadFile(file: any, filename: string): Promise<string> {
     let data = new FormData();
     data.append("file", file, { filename: filename });
 
-    let req = await axios.post((await getAutumnURL()) + "/attachments", data, {
+    let req = await axios.post(client.configuration?.features.autumn.url + "/attachments", data, {
         headers: data.getHeaders(),
     });
     return (req.data as any)["id"] as string;
@@ -432,8 +387,8 @@ function dedupeArray<T>(...arrays: T[][]): T[] {
 
 function getMutualServers(user: User) {
     const servers: Server[] = [];
-    for (const member of client.members) {
-        if (member[1]._id.user == user._id && member[1].server)
+    for (const member of client.serverMembers.entries()) {
+        if (member[1].id.user == user.id && member[1].server)
             servers.push(member[1].server);
     }
     return servers;
@@ -445,19 +400,21 @@ const awaitClient = () =>
         else resolve();
     });
 
-const getDmChannel = async (user: string | { _id: string } | User) => {
-    if (typeof user == "string")
+const getDmChannel = async (user: string | { id: string } | User) => {
+    if (typeof user == "string") {
         user = client.users.get(user) || (await client.users.fetch(user));
-    if (!(user instanceof User))
-        user =
-            client.users.get(user._id) || (await client.users.fetch(user._id));
+    }
+
+    if (!(user instanceof User)) {
+        user = client.users.get(user.id) || (await client.users.fetch(user.id));
+    }
 
     return (
-        Array.from(client.channels).find(
-            (c) =>
-                c[1].channel_type == "DirectMessage" &&
-                c[1].recipient?._id == (user as User)._id
-        )?.[1] || (await (user as User).openDM())
+        Array.from(client.channels.values()).find(
+            (c: Channel) =>
+                c.type == "DirectMessage" &&
+                c.recipient?.id == (user as User).id
+        ) || (await (user as User).openDM())
     );
 };
 
@@ -469,7 +426,7 @@ const generateInfractionDMEmbed = (
 ) => {
     const embed: SendableEmbed = {
         title: server.name,
-        icon_url: server.generateIconURL({ max_side: 128 }),
+        icon_url: server.icon?.createFileURL({ max_side: 128 }),
         colour: "#ff9e2f",
         url: message.url,
         description:
@@ -485,7 +442,7 @@ const generateInfractionDMEmbed = (
             `**Reason:** ${infraction.reason}\n` +
             `**Moderator:** [@${sanitizeMessageContent(
                 message.author?.username || "Unknown"
-            )}](/@${message.author_id})\n` +
+            )}](/@${message.authorId})\n` +
             `**Infraction ID:** \`${infraction._id}\`` +
             (infraction.actionType == "ban" && infraction.expires
                 ? infraction.expires == Infinity
@@ -545,14 +502,13 @@ const yesNoMessage = (
             });
 
             let destroyed = false;
-            const cb = async (packet: ClientboundNotification) => {
-                if (packet.type != "MessageReact") return;
-                if (packet.id != msg._id) return;
-                if (packet.user_id != allowedUser) return;
+            const cb = async (m: Message, userId: string, emoji: string) => {
+                if (m.id != msg.id) return;
+                if (userId != allowedUser) return;
 
-                switch (packet.emoji_id) {
+                switch (emoji) {
                     case EMOJI_YES:
-                        channel.client.removeListener("packet", cb);
+                        client.removeListener("messageReactionAdd", cb);
                         destroyed = true;
                         resolve(true);
                         msg.edit({
@@ -569,7 +525,7 @@ const yesNoMessage = (
                         break;
 
                     case EMOJI_NO:
-                        channel.client.removeListener("packet", cb);
+                        client.removeListener("messageReactionAdd", cb);
                         destroyed = true;
                         resolve(false);
                         msg.edit({
@@ -587,16 +543,16 @@ const yesNoMessage = (
 
                     default:
                         logger.warn(
-                            "Received unexpected reaction: " + packet.emoji_id
+                            "Received unexpected reaction: " + emoji
                         );
                 }
             };
-            channel.client.on("packet", cb);
+            client.on("messageReactionAdd", cb);
 
             setTimeout(() => {
                 if (!destroyed) {
                     resolve(false);
-                    channel.client.removeListener("packet", cb);
+                    client.removeListener("messageReactionAdd", cb);
                     msg.edit({
                         embeds: [
                             {
@@ -615,14 +571,19 @@ const yesNoMessage = (
 
 // Get all cached members of a server. Whoever put STRINGIFIED JSON as map keys is now on my hit list.
 const getMembers = (id: string) =>
-    Array.from(client.members.entries())
+    Array.from(client.serverMembers.entries())
         .filter((item) => item[0].includes(`"${id}"`))
         .map((entry) => entry[1]);
 
+const memberRanking = (member: ServerMember) => {
+    const inferior = (member.server?.member?.ranking ?? Infinity) < member.ranking;
+    const kickable = member.server?.havePermission('KickMembers') && inferior;
+    const bannable = member.server?.havePermission('BanMembers') && inferior;
+
+    return { inferior, kickable, bannable }
+}
+
 export {
-    getAutumnURL,
-    hasPerm,
-    hasPermForChannel,
     getOwnMemberInServer,
     isModerator,
     isBotManager,
@@ -642,6 +603,7 @@ export {
     generateInfractionDMEmbed,
     yesNoMessage,
     getMembers,
+    memberRanking,
     EmbedColor,
     NO_MANAGER_MSG,
     ULID_REGEX,

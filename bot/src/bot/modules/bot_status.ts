@@ -15,10 +15,10 @@ import logger from "../logger";
         const update = async () => {
             try {
                 const statusText = statuses[i]
-                    .replace('{{servers}}', `${client.servers.size}`)
-                    .replace('{{users}}', `${client.users.size}`)
+                    .replace('{{servers}}', `${client.servers.size()}`)
+                    .replace('{{users}}', `${client.users.size()}`)
                     .replace('{{infractions_total}}', `${await dbs.INFRACTIONS.count({})}`)
-                    .replace('{{ping_ms}}', `${client.websocket.ping ?? -1}`);
+                    .replace('{{ping_ms}}', `${client.events.ping() ?? -1}`);
 
                 await setStatus(statusText, 'Online');
                 logger.debug(`Bot status updated`);
@@ -37,7 +37,7 @@ import logger from "../logger";
 
 async function setStatus(text: string, presence: 'Online'|'Idle'|'Busy'|'Invisible') {
     await axios.patch(
-        `${client.apiURL}/users/@me`,
+        `${client.options.baseURL}/users/@me`,
         {
             status: { text, presence }
         },

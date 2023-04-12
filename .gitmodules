@@ -1,0 +1,4 @@
+[submodule "revolt.js"]
+	path = revolt.js
+	url = https://github.com/revoltchat/revolt.js
+	branch = insert/feat/store-rewrite

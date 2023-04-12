@@ -1,4 +1,4 @@
-import { User } from "@janderedev/revolt.js";
+import { User } from "revolt.js";
 import { SendableEmbed } from "revolt-api";
 import { ulid } from "ulid";
 import { client } from "../../../";
@@ -39,10 +39,10 @@ export default {
             );
         }
 
-        const userInput = !message.reply_ids?.length
+        const userInput = !message.replyIds?.length
             ? args.shift() || ""
             : undefined;
-        if (!userInput && !message.reply_ids?.length)
+        if (!userInput && !message.replyIds?.length)
             return message.reply({
                 embeds: [
                     embed(
@@ -72,19 +72,19 @@ export default {
 
         const embeds: SendableEmbed[] = [];
         const handledUsers: string[] = [];
-        const targetUsers: User | { _id: string }[] = [];
+        const targetUsers: User | { id: string }[] = [];
 
         const targetInput = dedupeArray(
-            message.reply_ids?.length
+            message.replyIds?.length
                 ? (
                       await Promise.allSettled(
-                          message.reply_ids.map((msg) =>
+                          message.replyIds.map((msg) =>
                               message.channel?.fetchMessage(msg)
                           )
                       )
                   )
                       .filter((m) => m.status == "fulfilled")
-                      .map((m) => (m as any).value.author_id)
+                      .map((m) => (m as any).value.authorId)
                 : userInput!.split(",")
         );
 
@@ -105,10 +105,10 @@ export default {
                 }
 
                 // Silently ignore duplicates
-                if (handledUsers.includes(user._id)) continue;
-                handledUsers.push(user._id);
+                if (handledUsers.includes(user.id)) continue;
+                handledUsers.push(user.id);
 
-                if (user._id == message.author_id) {
+                if (user.id == message.authorId) {
                     embeds.push(
                         embed(
                             "You might want to avoid kicking yourself...",
@@ -119,7 +119,7 @@ export default {
                     continue;
                 }
 
-                if (user._id == client.user!._id) {
+                if (user.id == client.user!.id) {
                     embeds.push(
                         embed(
                             "I won't allow you to get rid of me this easily :trol:",
@@ -145,30 +145,30 @@ export default {
             }
         }
 
-        if (message.reply_ids?.length && targetUsers.length) {
+        if (message.replyIds?.length && targetUsers.length) {
             let res = await yesNoMessage(
                 message.channel!,
-                message.author_id,
+                message.authorId!,
                 `This will kick the author${targetUsers.length > 1 ? 's' : ''} `
-                    + `of the message${message.reply_ids.length > 1 ? 's' : ''} you replied to.\n`
+                    + `of the message${message.replyIds.length > 1 ? 's' : ''} you replied to.\n`
                     + `The following user${targetUsers.length > 1 ? 's' : ''} will be affected: `
-                    + `${targetUsers.map(u => `<@${u._id}>`).join(', ')}.\n`
+                    + `${targetUsers.map(u => `<@${u.id}>`).join(', ')}.\n`
                     + `Are you sure?`,
                 'Confirm action'
             );
             if (!res) return;
         }
 
-        const members = getMembers(message.serverContext._id);
+        const members = getMembers(message.serverContext.id);
 
         for (const user of targetUsers) {
             try {
-                const member = members.find((m) => m._id.user == user._id);
+                const member = members.find((m) => m.id.user == user.id);
                 if (!member) {
                     embeds.push(
                         embed(
                             `\`${await fetchUsername(
-                                user._id
+                                user.id
                             )}\` is not a member of this server.`
                         )
                     );
@@ -178,12 +178,12 @@ export default {
                 let infId = ulid();
                 let infraction: Infraction = {
                     _id: infId,
-                    createdBy: message.author_id,
+                    createdBy: message.authorId!,
                     date: Date.now(),
                     reason: reason || "No reason provided",
-                    server: message.serverContext._id,
+                    server: message.serverContext.id,
                     type: InfractionType.Manual,
-                    user: user._id,
+                    user: user.id,
                     actionType: "kick",
                 };
 
@@ -214,7 +214,7 @@ export default {
                         "kick",
                         message.serverContext,
                         message.member!,
-                        user._id,
+                        user.id,
                         reason,
                         infraction._id
                     ),
@@ -225,7 +225,7 @@ export default {
                     title: `User kicked`,
                     icon_url:
                         user instanceof User
-                            ? user.generateAvatarURL()
+                            ? user.avatarURL
                             : undefined,
                     colour: EmbedColor.Success,
                     description:
@@ -234,8 +234,8 @@ export default {
                                 ? "**the first infraction**"
                                 : `infraction number **${userWarnCount}**`
                         }` +
-                        ` for ${await fetchUsername(user._id)}.\n` +
-                        `**User ID:** \`${user._id}\`\n` +
+                        ` for ${await fetchUsername(user.id)}.\n` +
+                        `**User ID:** \`${user.id}\`\n` +
                         `**Infraction ID:** \`${infraction._id}\`\n` +
                         `**Reason:** \`${infraction.reason}\``,
                 });
@@ -243,7 +243,7 @@ export default {
                 embeds.push(
                     embed(
                         `Failed to kick user ${await fetchUsername(
-                            user._id
+                            user.id
                         )}: ${e}`,
                         "Failed to kick user",
                         EmbedColor.Error

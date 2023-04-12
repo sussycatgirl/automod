@@ -13,6 +13,7 @@ import {
     getDmChannel,
     getMembers,
     isModerator,
+    memberRanking,
     NO_MANAGER_MSG,
     parseUserOrId,
     sanitizeMessageContent,
@@ -23,7 +24,7 @@ import Day from "dayjs";
 import RelativeTime from "dayjs/plugin/relativeTime";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import { SendableEmbed } from "revolt-api";
-import { User } from "@janderedev/revolt.js";
+import { User } from "revolt.js";
 import logger from "../../logger";
 
 Day.extend(RelativeTime);
@@ -49,10 +50,10 @@ export default {
             });
         }
 
-        const userInput = !message.reply_ids?.length
+        const userInput = !message.replyIds?.length
             ? args.shift() || ""
             : undefined;
-        if (!userInput && !message.reply_ids?.length)
+        if (!userInput && !message.replyIds?.length)
             return message.reply({
                 embeds: [
                     embed(
@@ -121,13 +122,13 @@ export default {
 
         const embeds: SendableEmbed[] = [];
         const handledUsers: string[] = [];
-        const targetUsers: User | { _id: string }[] = [];
+        const targetUsers: User | { id: string }[] = [];
 
         const targetInput = dedupeArray(
-            message.reply_ids?.length
+            message.replyIds?.length
                 ? (
                       await Promise.allSettled(
-                          message.reply_ids.map((msg) =>
+                          message.replyIds.map((msg) =>
                               message.channel?.fetchMessage(msg)
                           )
                       )
@@ -154,10 +155,10 @@ export default {
                 }
 
                 // Silently ignore duplicates
-                if (handledUsers.includes(user._id)) continue;
-                handledUsers.push(user._id);
+                if (handledUsers.includes(user.id)) continue;
+                handledUsers.push(user.id);
 
-                if (user._id == message.author_id) {
+                if (user.id == message.authorId!) {
                     embeds.push(
                         embed(
                             "I recommend against banning yourself :yeahokayyy:",
@@ -168,7 +169,7 @@ export default {
                     continue;
                 }
 
-                if (user._id == client.user!._id) {
+                if (user.id == client.user!.id) {
                     embeds.push(
                         embed(
                             "I'm not going to ban myself :flushee:",
@@ -194,21 +195,21 @@ export default {
             }
         }
 
-        if (message.reply_ids?.length && targetUsers.length) {
+        if (message.replyIds?.length && targetUsers.length) {
             let res = await yesNoMessage(
                 message.channel!,
-                message.author_id,
+                message.authorId!,
                 `This will ban the author${targetUsers.length > 1 ? 's' : ''} `
-                    + `of the message${message.reply_ids.length > 1 ? 's' : ''} you replied to.\n`
+                    + `of the message${message.replyIds.length > 1 ? 's' : ''} you replied to.\n`
                     + `The following user${targetUsers.length > 1 ? 's' : ''} will be affected: `
-                    + `${targetUsers.map(u => `<@${u._id}>`).join(', ')}.\n`
+                    + `${targetUsers.map(u => `<@${u.id}>`).join(', ')}.\n`
                     + `Are you sure?`,
                 'Confirm action'
             );
             if (!res) return;
         }
 
-        const members = getMembers(message.serverContext._id);
+        const members = getMembers(message.serverContext.id);
 
         for (const user of targetUsers) {
             try {
@@ -216,18 +217,18 @@ export default {
                     const infId = ulid();
                     const infraction: Infraction = {
                         _id: infId,
-                        createdBy: message.author_id,
+                        createdBy: message.authorId!,
                         date: Date.now(),
                         reason: reason || "No reason provided",
-                        server: message.serverContext._id,
+                        server: message.serverContext.id,
                         type: InfractionType.Manual,
-                        user: user._id,
+                        user: user.id,
                         actionType: "ban",
                         expires: Infinity,
                     };
                     const { userWarnCount } = await storeInfraction(infraction);
 
-                    const member = members.find((m) => m._id.user == user._id);
+                    const member = members.find((m) => m.id.user == user.id);
 
                     if (
                         member &&
@@ -244,11 +245,11 @@ export default {
                         continue;
                     }
 
-                    if (member && !member.bannable) {
+                    if (member && !memberRanking(member).bannable) {
                         embeds.push(
                             embed(
                                 `I don't have permission to ban \`${
-                                    member?.user?.username || user._id
+                                    member?.user?.username || user.id
                                 }\`.`,
                                 null,
                                 EmbedColor.SoftError
@@ -281,11 +282,11 @@ export default {
                         }
                     }
 
-                    await message.serverContext.banUser(user._id, {
+                    await message.serverContext.banUser(user.id, {
                         reason:
                             reason +
-                            ` (by ${await fetchUsername(message.author_id)} ${
-                                message.author_id
+                            ` (by ${await fetchUsername(message.authorId!)} ${
+                                message.authorId
                             })`,
                     });
 
@@ -293,7 +294,7 @@ export default {
                         "ban",
                         message.serverContext,
                         message.member!,
-                        user._id,
+                        user.id,
                         reason,
                         infraction._id,
                         `Ban duration: **Permanent**`
@@ -305,7 +306,7 @@ export default {
                         }`,
                         icon_url:
                             user instanceof User
-                                ? user.generateAvatarURL()
+                                ? user.avatarURL
                                 : undefined,
                         colour: EmbedColor.Success,
                         description:
@@ -314,8 +315,8 @@ export default {
                                     ? "**the first infraction**"
                                     : `infraction number **${userWarnCount}**`
                             }` +
-                            ` for ${await fetchUsername(user._id)}.\n` +
-                            `**User ID:** \`${user._id}\`\n` +
+                            ` for ${await fetchUsername(user.id)}.\n` +
+                            `**User ID:** \`${user.id}\`\n` +
                             `**Infraction ID:** \`${infraction._id}\`\n` +
                             `**Reason:** \`${infraction.reason}\``,
                     });
@@ -325,14 +326,14 @@ export default {
                     const infId = ulid();
                     const infraction: Infraction = {
                         _id: infId,
-                        createdBy: message.author_id,
+                        createdBy: message.authorId!,
                         date: Date.now(),
                         reason:
                             (reason || "No reason provided") +
                             ` (${durationStr})`,
-                        server: message.serverContext._id,
+                        server: message.serverContext.id,
                         type: InfractionType.Manual,
-                        user: user._id,
+                        user: user.id,
                         actionType: "ban",
                         expires: banUntil,
                     };
@@ -362,26 +363,26 @@ export default {
                         }
                     }
 
-                    await message.serverContext.banUser(user._id, {
+                    await message.serverContext.banUser(user.id, {
                         reason:
                             reason +
-                            ` (by ${await fetchUsername(message.author_id)} ${
-                                message.author_id
+                            ` (by ${await fetchUsername(message.authorId!)} ${
+                                message.authorId
                             }) (${durationStr})`,
                     });
 
                     await Promise.all([
                         storeTempBan({
                             id: infId,
-                            bannedUser: user._id,
-                            server: message.serverContext._id,
+                            bannedUser: user.id,
+                            server: message.serverContext.id,
                             until: banUntil,
                         }),
                         logModAction(
                             "ban",
                             message.serverContext,
                             message.member!,
-                            user._id,
+                            user.id,
                             reason,
                             infraction._id,
                             `Ban duration: **${banDurationFancy}**`
@@ -392,7 +393,7 @@ export default {
                         title: `User temporarily banned`,
                         icon_url:
                             user instanceof User
-                                ? user.generateAvatarURL()
+                                ? user.avatarURL
                                 : undefined,
                         colour: EmbedColor.Success,
                         description:
@@ -401,9 +402,9 @@ export default {
                                     ? "**the first infraction**"
                                     : `infraction number **${userWarnCount}**`
                             }` +
-                            ` for ${await fetchUsername(user._id)}.\n` +
+                            ` for ${await fetchUsername(user.id)}.\n` +
                             `**Ban duration:** ${banDurationFancy}\n` +
-                            `**User ID:** \`${user._id}\`\n` +
+                            `**User ID:** \`${user.id}\`\n` +
                             `**Infraction ID:** \`${infraction._id}\`\n` +
                             `**Reason:** \`${infraction.reason}\``,
                     });
@@ -413,8 +414,8 @@ export default {
                 embeds.push(
                     embed(
                         `Failed to ban target \`${await fetchUsername(
-                            user._id,
-                            user._id
+                            user.id,
+                            user.id
                         )}\`: ${e}`,
                         "Failed to ban: An error has occurred",
                         EmbedColor.Error

@@ -14,8 +14,8 @@ export default {
             ?.catch(console.error)
             .then(msg => {
                 if (msg) msg.edit({ content:  `## Ping Pong!\n`
-                                    + `WS: \`${client.websocket.ping ?? '--'}ms\`\n`
-                                    + `Msg: \`${Math.round(Date.now() - now) / 2}ms\`` });
+                                    + `WS: \`${client.events.ping() ?? '--'}ms\`\n`
+                                    + `Msg: \`${Math.round(Date.now() - now)}ms\`` });
         });
     }
 } as SimpleCommand;

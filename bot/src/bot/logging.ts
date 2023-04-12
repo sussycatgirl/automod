@@ -29,7 +29,7 @@ async function adminBotLog(data: { message: string, type: 'INFO'|'WARN'|'ERROR' 
         await client?.send({
             embeds: [ embed ],
             username: bot.user?.username,
-            avatarURL: bot.user?.generateAvatarURL({ size: 128 })
+            avatarURL: bot.user?.avatarURL,
         });
     } catch(e) {
         logger.error(`Failed to log: ${e}`);

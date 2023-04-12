@@ -1,4 +1,4 @@
-import { Message } from "@janderedev/revolt.js";
+import { Message } from "revolt.js";
 import { ulid } from "ulid";
 import { SendableEmbed } from "revolt-api";
 import { CONFIG_KEYS } from "automod/dist/misc/bridge_config_keys";
@@ -30,20 +30,20 @@ export default {
                     return message.reply(NO_MANAGER_MSG);
 
                 const count = await dbs.BRIDGE_CONFIG.count({
-                    revolt: message.channel_id,
+                    revolt: message.channelId,
                 });
                 if (count)
                     return message.reply(`This channel is already bridged.`);
 
                 // Invalidate previous bridge request
                 await dbs.BRIDGE_REQUESTS.remove({
-                    revolt: message.channel_id,
+                    revolt: message.channelId,
                 });
 
                 const reqId = ulid();
                 await dbs.BRIDGE_REQUESTS.insert({
                     id: reqId,
-                    revolt: message.channel_id,
+                    revolt: message.channelId,
                     expires: Date.now() + 1000 * 60 * 15,
                 });
 
@@ -74,7 +74,7 @@ export default {
                     return message.reply(NO_MANAGER_MSG);
 
                 const res = await dbs.BRIDGE_CONFIG.remove({
-                    revolt: message.channel_id,
+                    revolt: message.channelId,
                 });
                 if (res.deletedCount) await message.reply(`Channel unlinked!`);
                 else
@@ -86,7 +86,7 @@ export default {
                     return message.reply(NO_MANAGER_MSG);
 
                 const query = {
-                    revolt: { $in: message.channel?.server?.channel_ids || [] },
+                    revolt: { $in: Array.from(message.channel?.server?.channelIds.values() ?? []) },
                 };
                 if (args[1] == "CONFIRM") {
                     const res = await dbs.BRIDGE_CONFIG.remove(query);
@@ -119,7 +119,7 @@ export default {
                     return message.reply(NO_MANAGER_MSG);
 
                 const links = await dbs.BRIDGE_CONFIG.find({
-                    revolt: { $in: message.channel?.server?.channel_ids || [] },
+                    revolt: { $in: Array.from(message.channel?.server?.channelIds.values() ?? []) },
                 });
 
                 await message.reply({
@@ -142,14 +142,14 @@ export default {
             }
             case "info": {
                 try {
-                    if (!message.reply_ids) {
+                    if (!message.replyIds) {
                         return await message.reply(
                             "Please run this command again while replying to a message."
                         );
                     }
 
                     if (
-                        message.reply_ids.length > 1 &&
+                        message.replyIds.length > 1 &&
                         !(await isModerator(message, false))
                     ) {
                         return await message.reply(
@@ -159,7 +159,7 @@ export default {
 
                     const messages = (
                         await Promise.allSettled(
-                            message.reply_ids?.map((m) =>
+                            message.replyIds.map((m) =>
                                 message.channel!.fetchMessage(m)
                             ) || []
                         )
@@ -179,7 +179,7 @@ export default {
                         messages.map(async (msg) => {
                             const bridgeData =
                                 await dbs.BRIDGED_MESSAGES.findOne({
-                                    "revolt.messageId": msg._id,
+                                    "revolt.messageId": msg.id,
                                 });
 
                             const embed: SendableEmbed = bridgeData
@@ -237,7 +237,7 @@ export default {
             }
             case "status": {
                 const link = await dbs.BRIDGE_CONFIG.findOne({
-                    revolt: message.channel_id,
+                    revolt: message.channelId,
                 });
 
                 if (!link)
@@ -291,7 +291,7 @@ export default {
 
                 if (!newVal) {
                     const bridgeConfig = await dbs.BRIDGE_CONFIG.findOne({
-                        revolt: message.channel_id,
+                        revolt: message.channelId,
                     });
                     return await message.reply({
                         embeds: [
@@ -316,10 +316,10 @@ export default {
                 }
 
                 await dbs.BRIDGE_CONFIG.update(
-                    { revolt: message.channel_id },
+                    { revolt: message.channelId },
                     {
                         $set: { [`config.${configKey}`]: newVal == "true" },
-                        $setOnInsert: { revolt: message.channel_id },
+                        $setOnInsert: { revolt: message.channelId },
                     },
                     { upsert: true }
                 );

@@ -1,5 +1,5 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
+import { Message } from "revolt.js";
 import { decodeTime } from 'ulid';
 import { isModerator, parseUserOrId } from "../../util";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
@@ -31,7 +31,7 @@ export default {
 
                 messages = await message.channel!.fetchMessages({
                     limit: amount,
-                    before: message._id,
+                    before: message.id,
                 });
             }
             // delete messages between [id] and [id]
@@ -49,7 +49,7 @@ export default {
                 ]);
 
                 // Make sure the msg1 and msg2 are in the correct order
-                if (decodeTime(msg1._id) < decodeTime(msg2._id)) {
+                if (decodeTime(msg1.id) < decodeTime(msg2.id)) {
                     [msg1, msg2] = [msg2, msg1];
                 }
 
@@ -60,17 +60,17 @@ export default {
                     sort: "Latest",
                 });
 
-                if (!messages.find((m) => m._id == msg1._id))
+                if (!messages.find((m) => m.id == msg1.id))
                     messages = [msg1, ...messages];
-                if (!messages.find((m) => m._id == msg2._id))
+                if (!messages.find((m) => m.id == msg2.id))
                     messages = [...messages, msg2];
 
                 // Discard messages that are not in the selected range,
                 // because Revolt returns more messages than expected for some reason
                 messages = messages.filter(
                     (m) =>
-                        decodeTime(m._id) <= decodeTime(id2) &&
-                        decodeTime(m._id) >= decodeTime(id1)
+                        decodeTime(m.id) <= decodeTime(id2) &&
+                        decodeTime(m.id) >= decodeTime(id1)
                 );
             }
             // allow single messages too, because why not?
@@ -92,11 +92,11 @@ export default {
                     );
 
                 messages = messages.filter((m) =>
-                    users.find((u) => u?._id == m.author_id)
+                    users.find((u) => u?.id == m.authorId)
                 );
             }
 
-            await message.channel?.deleteMessages(messages.map((m) => m._id));
+            await message.channel?.deleteMessages(messages.map((m) => m.id));
 
             const replyMsg = await message.channel
                 ?.sendMessage({
@@ -107,8 +107,8 @@ export default {
             setTimeout(async () => {
                 try {
                     await message.channel?.deleteMessages([
-                        replyMsg!._id,
-                        message._id,
+                        replyMsg!.id,
+                        message.id,
                     ]);
                 } catch (e) {
                     console.error(e);

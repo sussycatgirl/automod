@@ -45,13 +45,13 @@ export default {
 
             const duration = parseTimeInput(args[1] ?? '');
             if (!duration) {
-                await client.api.patch(`/servers/${message.serverContext._id}/members/${target._id}` as '/servers/{server}/members/{target}', {
+                await client.api.patch(`/servers/${message.serverContext.id}/members/${target.id}` as '/servers/{server}/members/{target}', {
                     timeout: new Date(0).toISOString()
                 } as any);
                 await message.reply(`Timeout cleared on @${target.username}`);
             }
             else {
-                await client.api.patch(`/servers/${message.serverContext._id}/members/${target._id}` as '/servers/{server}/members/{target}', {
+                await client.api.patch(`/servers/${message.serverContext.id}/members/${target.id}` as '/servers/{server}/members/{target}', {
                     timeout: new Date(Date.now() + duration).toISOString()
                 } as any);
                 await message.reply(`Successfully timed out @${target.username}`);

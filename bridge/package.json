@@ -14,7 +14,6 @@
   "license": "ISC",
   "dependencies": {
     "@discordjs/rest": "^0.4.1",
-    "@janderedev/revolt.js": "latest",
     "automod": "^0.1.0",
     "axios": "^0.26.1",
     "discord-api-types": "^0.31.2",
@@ -25,7 +24,8 @@
     "log75": "^2.2.0",
     "monk": "^7.3.4",
     "prom-client": "^14.0.1",
-    "revolt-api": "^0.5.3-rc.8",
+    "revolt-api": "latest",
+    "revolt.js": "^7.0.0",
     "smart-replace": "^1.0.2",
     "ulid": "^2.3.0"
   },
@@ -34,6 +34,7 @@
     "typescript": "^4.7.4"
   },
   "resolutions": {
-    "automod": "portal:../lib"
+    "automod": "portal:../lib",
+    "revolt.js": "portal:../revolt.js"
   }
 }

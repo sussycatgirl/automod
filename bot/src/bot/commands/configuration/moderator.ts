@@ -1,7 +1,7 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import { isBotManager, NO_MANAGER_MSG, parseUser } from "../../util";
 import { client, dbs } from "../../..";
-import { User } from "@janderedev/revolt.js/dist/maps/Users";
+import { User } from "revolt.js";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 
@@ -18,7 +18,7 @@ export default {
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isBotManager(message)) return message.reply(NO_MANAGER_MSG);
 
-        let config = await dbs.SERVERS.findOne({ id: message.serverContext._id });
+        let config = await dbs.SERVERS.findOne({ id: message.serverContext.id });
         let mods = config?.moderators ?? [];
         let user: User|null;
 
@@ -29,12 +29,12 @@ export default {
                 user = await parseUser(args[1]);
                 if (!user) return message.reply('I can\'t find that user.');
 
-                if (mods.indexOf(user._id) > -1) return message.reply('This user is already added as moderator.');
+                if (mods.indexOf(user.id) > -1) return message.reply('This user is already added as moderator.');
 
-                mods.push(user._id);
-                await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { moderators: mods } });
+                mods.push(user.id);
+                await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { moderators: mods } });
 
-                message.reply(`✅ Added [@${user.username}](/@${user._id}) to moderators.`);
+                message.reply(`✅ Added [@${user.username}](/@${user.id}) to moderators.`);
             break;
             case 'remove':
             case 'delete':
@@ -44,12 +44,12 @@ export default {
                 user = await parseUser(args[1]);
                 if (!user) return message.reply('I can\'t find that user.');
 
-                if (mods.indexOf(user._id) == -1) return message.reply('This user is not added as moderator.');
+                if (mods.indexOf(user.id) == -1) return message.reply('This user is not added as moderator.');
 
-                mods = mods.filter(a => a != user?._id);
-                await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { moderators: mods } });
+                mods = mods.filter(a => a != user?.id);
+                await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { moderators: mods } });
 
-                message.reply(`✅ Removed [@${user.username}](/@${user._id}) from moderators.`);
+                message.reply(`✅ Removed [@${user.username}](/@${user.id}) from moderators.`);
             break;
             case 'list':
             case 'ls':

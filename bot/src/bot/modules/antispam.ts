@@ -1,4 +1,4 @@
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
+import { Message } from "revolt.js";
 import { ulid } from "ulid";
 import { client, dbs } from "../..";
 import AntispamRule from "automod/dist/types/antispam/AntispamRule";
@@ -23,7 +23,7 @@ const SENT_FILTER_MESSAGE: string[] = [];
  */
 async function antispam(message: Message): Promise<boolean> {
     try {
-        let serverRules = await dbs.SERVERS.findOne({ id: message.channel!.server_id! });
+        let serverRules = await dbs.SERVERS.findOne({ id: message.channel!.serverId! });
         if (!serverRules?.automodSettings) return true;
 
         let ruleTriggered = false;
@@ -34,14 +34,14 @@ async function antispam(message: Message): Promise<boolean> {
             }
 
             if (message.author?.bot != null) break;
-            if (serverRules.whitelist?.users?.includes(message.author_id)) break;
+            if (serverRules.whitelist?.users?.includes(message.authorId!)) break;
             if (message.member?.roles?.filter(r => serverRules!.whitelist?.roles?.includes(r)).length) break;
             if (serverRules.whitelist?.managers !== false && await isModerator(message, false)) break;
-            if (rule.channels?.length && rule.channels.indexOf(message.channel_id) == -1) break;
+            if (rule.channels?.length && rule.channels.indexOf(message.channelId) == -1) break;
 
             let store = msgCountStore.get(rule.id)!;
-            if (!store.users[message.channel_id]) store.users[message.channel_id] = {}
-            let userStore = store.users[message.channel_id];
+            if (!store.users[message.channelId]) store.users[message.channelId] = {}
+            let userStore = store.users[message.channelId];
 
             if (!userStore.count) userStore.count = 1;
             else userStore.count++;
@@ -75,9 +75,9 @@ async function antispam(message: Message): Promise<boolean> {
                                 createdBy: null,
                                 date: Date.now(),
                                 reason: `Automatic moderation rule triggered: More than ${rule.max_msg} messages per ${rule.timeframe} seconds.`,
-                                server: message.channel?.server_id,
+                                server: message.channel?.serverId,
                                 type: InfractionType.Automatic,
-                                user: message.author_id,
+                                user: message.authorId,
                             } as Infraction;
 
                             message.channel?.sendMessage('## User has been warned.\n\u200b\n' + getWarnMsg(rule, message))
@@ -107,8 +107,8 @@ async function antispam(message: Message): Promise<boolean> {
 function getWarnMsg(rule: AntispamRule, message: Message) {
     if (rule.message != null) {
         return rule.message
-            .replace(new RegExp('{{userid}}', 'gi'), message.author_id);
-    } else return `<@${message.author_id}>, please stop spamming.`;
+            .replace(new RegExp('{{userid}}', 'gi'), message.authorId!);
+    } else return `<@${message.authorId}>, please stop spamming.`;
 }
 
 /**
@@ -133,9 +133,9 @@ async function wordFilterCheck(message: Message, config: ServerConfig) {
                         createdBy: null,
                         date: Date.now(),
                         reason: 'Word filter triggered',
-                        server: message.channel!.server_id!,
+                        server: message.channel!.serverId!,
                         type: InfractionType.Automatic,
-                        user: message.author_id,
+                        user: message.authorId!,
                     }
 
                     await storeInfraction(infraction);
@@ -155,14 +155,14 @@ async function wordFilterCheck(message: Message, config: ServerConfig) {
             }
             case 'DELETE': {
                 if (message.channel?.havePermission('ManageMessages')) {
-                    const key = `${message.author_id}:${message.channel_id}`;
+                    const key = `${message.authorId}:${message.channelId}`;
                     await message.delete();
 
                     if (!SENT_FILTER_MESSAGE.includes(key)) {
                         SENT_FILTER_MESSAGE.push(key);
                         setTimeout(() => SENT_FILTER_MESSAGE.splice(SENT_FILTER_MESSAGE.indexOf(key), 1), 30000);
                         await message.channel.sendMessage((config.wordlistAction.message || WORDLIST_DEFAULT_MESSAGE)
-                            .replaceAll('{{user_id}}', message.author_id));
+                            .replaceAll('{{user_id}}', message.authorId!));
                     }
                 }
             }
@@ -171,7 +171,7 @@ async function wordFilterCheck(message: Message, config: ServerConfig) {
                 if (!config.logs?.modAction) break;
                 await sendLogMessage(config.logs.modAction, {
                     title: 'Message triggered word filter',
-                    description: `**Author:** @${message.author?.username} (${message.author_id})\n` +
+                    description: `**Author:** @${message.author?.username} (${message.authorId})\n` +
                         `**Action:** ${config.wordlistAction?.action || 'LOG'}\n` +
                         `#### Content\n` +
                         `>${sanitizeMessageContent(message.content.substring(0, 1000)).trim().replace(/\n/g, '\n>')}`,
@@ -259,7 +259,7 @@ const notifyPublicServers = async () => {
         .filter(server => server.discoverable);
 
     const res = await dbs.SERVERS.find({
-        id: { $in: servers.map(s => s._id) },
+        id: { $in: servers.map(s => s.id) },
         discoverAutospamNotify: { $in: [ undefined, false ] },
     });
 
@@ -273,7 +273,7 @@ const notifyPublicServers = async () => {
             );
 
             const server = client.servers.get(serverConfig.id);
-            const channel = await getDmChannel(server!.owner);
+            const channel = await getDmChannel(server!.ownerId);
             await channel.sendMessage(`Hi there,
 
 It looks like your server, **${sanitizeMessageContent(server!.name).trim()}**, has been added to server discovery. Congratulations!

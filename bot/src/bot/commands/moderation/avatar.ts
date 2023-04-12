@@ -1,9 +1,11 @@
-import { Member } from "@janderedev/revolt.js/dist/maps/Members";
+import { ServerMember } from "revolt.js";
 import axios from "axios";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { hasPerm, isModerator, NO_MANAGER_MSG, parseUser } from "../../util";
+import { isModerator, NO_MANAGER_MSG, parseUser } from "../../util";
+import AutomodClient from "../../../struct/AutomodClient";
+import { client } from "../../..";
 
 export default {
     name: 'avatar',
@@ -23,13 +25,13 @@ export default {
              || args[0]?.toLowerCase() == 'clear') {
                 // Clear server avatar
                 if (!message.member) return;
-                if (!hasPerm(message.member, 'RemoveAvatars')
+                if (!message.member.hasPermission(message.member.server!, 'RemoveAvatars')
                  && !await isModerator(message)) return message.reply(NO_MANAGER_MSG);
 
                 if (!target.avatar) {
                     await message.reply(`\`@${targetUser.username}\` does not currently have an avatar set for this server.`);
                 } else {
-                    await clearAvatar(target);
+                    await target.edit({ remove: ['Avatar'] });
                     await message.reply(`\`@${targetUser.username}\`'s server avatar has been cleared.`);
                 }
             } else {
@@ -37,9 +39,9 @@ export default {
 
                 await message.reply(
                     `### \`@${targetUser.username}\`'s avatar\n` +
-                    (targetUser.avatar ? `[\\[Global\\]](<${targetUser.generateAvatarURL()}>)` : '[No global avatar]') +
+                    (targetUser.avatar ? `[\\[Global\\]](<${targetUser.avatarURL}>)` : '[No global avatar]') +
                     ' | ' +
-                    (target.avatar ? `[\\[Server\\]](<${target.generateAvatarURL()}>)` : '[No server avatar]')
+                    (target.avatar ? `[\\[Server\\]](<${target.avatarURL}>)` : '[No server avatar]')
                 );
             }
         } catch(e) {
@@ -48,17 +50,3 @@ export default {
         }
     }
 } as SimpleCommand;
-
-async function clearAvatar(member: Member) {
-    await axios.patch(
-        `${member.client.apiURL}/servers/${member.server!._id}/members/${member._id.user}`,
-        {
-            remove: [ "Avatar" ],
-        },
-        {
-            headers: {
-                'x-bot-token': process.env['BOT_TOKEN']!
-            }
-        }
-    );
-}

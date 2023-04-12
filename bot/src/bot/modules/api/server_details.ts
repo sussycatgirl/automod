@@ -1,5 +1,5 @@
-import { Member } from "@janderedev/revolt.js/dist/maps/Members";
-import { User } from "@janderedev/revolt.js/dist/maps/Users";
+import { ServerMember } from "revolt.js";
+import { User } from "revolt.js";
 import { client, dbs } from "../../..";
 import ServerConfig from "automod/dist/types/ServerConfig";
 import { getPermissionLevel } from "../../util";
@@ -37,7 +37,7 @@ wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSRespo
             return;
         }
 
-        let member: Member;
+        let member: ServerMember;
         try {
             member = await server.fetchMember(user);
         } catch(e) {
@@ -45,7 +45,7 @@ wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSRespo
             return;
         }
 
-        const serverConfig = await dbs.SERVERS.findOne({ id: server._id });
+        const serverConfig = await dbs.SERVERS.findOne({ id: server.id });
 
         // todo: remove unwanted keys from server config
 
@@ -60,28 +60,28 @@ wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSRespo
         const users = await Promise.allSettled([
             ...(serverConfig?.botManagers?.map(u => fetchUser(u)) ?? []),
             ...(serverConfig?.moderators?.map(u => fetchUser(u)) ?? []),
-            fetchUser(user._id),
+            fetchUser(user.id),
         ]);
 
         const response: ServerDetails = {
-            id: server._id,
+            id: server.id,
             name: server.name,
             perms: await getPermissionLevel(member, server),
             description: server.description ?? undefined,
-            bannerURL: server.generateBannerURL(),
-            iconURL: server.generateIconURL(),
+            bannerURL: server.bannerURL,
+            iconURL: server.iconURL,
             serverConfig: (serverConfig as ServerConfig|undefined),
             users: users.map(
                 u => u.status == 'fulfilled'
-                    ? { id: u.value._id, avatarURL: u.value.generateAvatarURL(), username: u.value.username }
+                    ? { id: u.value.id, avatarURL: u.value.avatarURL, username: u.value.username }
                     : { id: u.reason }
             ),
             channels: server.channels.filter(c => c != undefined).map(c => ({
-                id: c!._id,
+                id: c!.id,
                 name: c!.name ?? '',
-                nsfw: c!.nsfw ?? false,
-                type: c!.channel_type == 'VoiceChannel' ? 'VOICE' : 'TEXT',
-                icon: c!.generateIconURL(),
+                nsfw:  false, // todo?
+                type: c!.type == 'VoiceChannel' ? 'VOICE' : 'TEXT',
+                icon: c!.iconURL,
             })),
             dmOnKick: serverConfig?.dmOnKick,
             dmOnWarn: serverConfig?.dmOnWarn,

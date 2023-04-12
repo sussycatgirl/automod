@@ -303,7 +303,7 @@ client.on("interactionCreate", async (interaction) => {
                             embed.addField(
                                 "Adding AutoMod to your server",
                                 `You can add the Revolt bot to your server ` +
-                                    `[here](https://app.revolt.chat/bot/${revoltClient.user?._id} "Open Revolt"). To add the Discord counterpart, ` +
+                                    `[here](https://app.revolt.chat/bot/${revoltClient.user?.id} "Open Revolt"). To add the Discord counterpart, ` +
                                     `click [here](${INVITE_URL} "Add Discord bot").`
                             );
 
@@ -480,11 +480,11 @@ client.on("interactionCreate", async (interaction) => {
 
                                 if (revoltMsg) {
                                     const author = await revoltFetchUser(
-                                        revoltMsg.author_id
+                                        revoltMsg.authorId
                                     );
                                     embed.addField(
                                         "Message Author",
-                                        `**@${author?.username}** (${revoltMsg.author_id})`
+                                        `**@${author?.username}** (${revoltMsg.authorId})`
                                     );
                                 }
                             }

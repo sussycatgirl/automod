@@ -6,7 +6,7 @@ import InfractionType from "automod/dist/types/antispam/InfractionType";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import { SendableEmbed } from "revolt-api";
-import { User } from "@janderedev/revolt.js";
+import { User } from "revolt.js";
 import logger from "../../logger";
 
 export default {
@@ -19,7 +19,7 @@ export default {
         if (!await isModerator(message)) return message.reply(NO_MANAGER_MSG);
 
         const userInput = args.shift() || '';
-        if (!userInput && !message.reply_ids?.length) return message.reply({ embeds: [
+        if (!userInput && !message.replyIds?.length) return message.reply({ embeds: [
             embed(
                 `Please specify one or more users by replying to their message while running this command or ` +
                   `by specifying a comma-separated list of usernames.`,
@@ -38,12 +38,12 @@ export default {
 
         const embeds: SendableEmbed[] = [];
         const handledUsers: string[] = [];
-        const targetUsers: User|{ _id: string }[] = [];
+        const targetUsers: User|{ id: string }[] = [];
 
         const targetInput = dedupeArray(
             // Replied messages
             (await Promise.allSettled(
-                (message.reply_ids ?? []).map(msg => message.channel?.fetchMessage(msg))
+                (message.replyIds ?? []).map(msg => message.channel?.fetchMessage(msg))
             ))
             .filter(m => m.status == 'fulfilled').map(m => (m as any).value.author_id),
             // Provided users
@@ -54,7 +54,7 @@ export default {
             try {
                 let user = await parseUserOrId(userStr);
                 if (!user) {
-                    if (message.reply_ids?.length && userStr == userInput) {
+                    if (message.replyIds?.length && userStr == userInput) {
                         reason = reason ? `${userInput} ${reason}` : userInput;
                     }
                     else {
@@ -64,8 +64,8 @@ export default {
                 }
 
                 // Silently ignore duplicates
-                if (handledUsers.includes(user._id)) continue;
-                handledUsers.push(user._id);
+                if (handledUsers.includes(user.id)) continue;
+                handledUsers.push(user.id);
 
                 if ((user as any)?.bot != null) return await message.reply({ embeds: [
                     embed('You cannot warn bots.', null, EmbedColor.SoftError)
@@ -85,10 +85,10 @@ export default {
         for (const user of targetUsers) {
             let infraction = {
                 _id: ulid(),
-                createdBy: message.author_id,
-                user: user._id,
+                createdBy: message.authorId,
+                user: user.id,
                 reason: reason || 'No reason provided',
-                server: message.serverContext._id,
+                server: message.serverContext.id,
                 type: InfractionType.Manual,
                 date: Date.now(),
             } as Infraction;
@@ -99,7 +99,7 @@ export default {
                     'warn',
                     message.serverContext,
                     message.member!,
-                    user._id,
+                    user.id,
                     reason || 'No reason provided',
                     infraction._id,
                     `This is warn number ${userWarnCount} for this user.`
@@ -123,10 +123,10 @@ export default {
 
             embeds.push({
                 title: `User warned`,
-                icon_url: user instanceof User ? user.generateAvatarURL() : undefined,
+                icon_url: user instanceof User ? user.avatarURL : undefined,
                 colour: EmbedColor.Success,
                 description: `This is ${userWarnCount == 1 ? '**the first warn**' : `warn number **${userWarnCount}**`}` +
-                    ` for ${await fetchUsername(user._id)}.\n` +
+                    ` for ${await fetchUsername(user.id)}.\n` +
                     `**Infraction ID:** \`${infraction._id}\`\n` +
                     `**Reason:** \`${infraction.reason}\``
             });

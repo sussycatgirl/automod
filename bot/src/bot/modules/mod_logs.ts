@@ -1,146 +1,161 @@
-import { Member } from "@janderedev/revolt.js/dist/maps/Members";
-import { Server } from "@janderedev/revolt.js/dist/maps/Servers";
+import { Server, ServerMember } from "revolt.js";
 import { client, dbs } from "../..";
 import LogMessage from "automod/dist/types/LogMessage";
+import Xlsx from 'xlsx';
 import logger from "../logger";
-import { getAutumnURL, sanitizeMessageContent, sendLogMessage } from "../util";
+import { sanitizeMessageContent, sendLogMessage } from "../util";
 
 // the `packet` event is emitted before the client's cache
 // is updated, which allows us to get the old message content
 // if it was cached before
-client.on('packet', async (packet) => {
-    if (packet.type == 'MessageUpdate') {
-        try {
-            if (!packet.data.content) return;
+client.on('messageUpdate', async (message, oldMessage) => {
+    try {
+        if (!message.content) return;
 
-            let m = client.messages.get(packet.id);
+        if (message.authorId == client.user?.id) return;
 
-            if (m?.author_id == client.user?._id) return;
+        let oldMsgRaw = String(oldMessage.content ?? '(Unknown)');
+        let newMsgRaw = String(message.content);
+        let oldMsg = sanitizeMessageContent(oldMsgRaw) || '(Empty)';
+        let newMsg = sanitizeMessageContent(newMsgRaw) || '(Empty)';
 
-            let oldMsgRaw = String(m?.content ?? '(Unknown)');
-            let newMsgRaw = String(packet.data.content);
-            let oldMsg = sanitizeMessageContent(oldMsgRaw) || '(Empty)';
-            let newMsg = sanitizeMessageContent(newMsgRaw) || '(Empty)';
+        let channel = message.channel;
+        let server = channel?.server;
+        if (!server || !channel) return logger.warn('Received message update in unknown channel or server');
 
-            let channel = client.channels.get(packet.channel);
-            let server = channel?.server;
-            if (!server || !channel) return logger.warn('Received message update in unknown channel or server');
-
-            let config = await dbs.SERVERS.findOne({ id: server._id });
-            if (config?.logs?.messageUpdate) {
-                const attachFullMessage = oldMsg.length > 800 || newMsg.length > 800;
-                let embed: LogMessage = {
-                    title: `Message edited in ${server.name}`,
-                    description:
-                        `[#${channel.name}](/server/${server._id}/channel/${channel._id}) | ` +
-                        `[@${sanitizeMessageContent(
-                            m?.author?.username ?? "Unknown User"
-                        )}](/@${m?.author_id}) | ` +
-                        `[Jump to message](/server/${server._id}/channel/${channel._id}/${packet.id})`,
-                    fields: [],
-                    color: "#829dff",
-                    overrides: {
-                        discord: {
-                            description: `Author: @${
-                                m?.author?.username || m?.author_id || "Unknown"
-                            } | Channel: ${channel?.name || channel?._id}`,
-                        },
+        let config = await dbs.SERVERS.findOne({ id: server.id });
+        if (config?.logs?.messageUpdate) {
+            const attachFullMessage = oldMsg.length > 800 || newMsg.length > 800;
+            let embed: LogMessage = {
+                title: `Message edited in ${server.name}`,
+                description:
+                    `[#${channel.name}](/server/${server.id}/channel/${channel.id}) | ` +
+                    `@${sanitizeMessageContent(
+                        message.author?.username ?? "Unknown User"
+                    )} (${message.authorId}) | ` +
+                    `[Jump to message](/server/${server.id}/channel/${channel.id}/${message.id})`,
+                fields: [],
+                color: "#829dff",
+                overrides: {
+                    discord: {
+                        description: `Author: @${
+                            message.author?.username || message.authorId || "Unknown"
+                        } | Channel: ${channel.name || channel.id}`,
                     },
-                };
+                },
+            };
 
-                if (attachFullMessage) {
-                    embed.attachments = [
-                        { name: 'old_message.txt', content: Buffer.from(oldMsgRaw) },
-                        { name: 'new_message.txt', content: Buffer.from(newMsgRaw) },
-                    ];
-                } else {
-                    embed.fields!.push({ title: 'Old content', content: oldMsg });
-                    embed.fields!.push({ title: 'New content', content: newMsg });
-                }
-
-                await sendLogMessage(config.logs.messageUpdate, embed);
+            if (attachFullMessage) {
+                embed.attachments = [
+                    { name: 'old_message.txt', content: Buffer.from(oldMsgRaw) },
+                    { name: 'new_message.txt', content: Buffer.from(newMsgRaw) },
+                ];
+            } else {
+                embed.fields!.push({ title: 'Old content', content: oldMsg });
+                embed.fields!.push({ title: 'New content', content: newMsg });
             }
-        } catch(e) {
-            console.error(e);
+
+            await sendLogMessage(config.logs.messageUpdate, embed);
         }
+    } catch(e) {
+        console.error(e);
     }
-
-    if (packet.type == 'MessageDelete') {
-        try {
-            let channel = client.channels.get(packet.channel);
-            if (!channel) return;
-            let message = client.messages.get(packet.id);
-            if (!message) return;
-
-            let msgRaw = String(message.content ?? '(Unknown)');
-            let msg = sanitizeMessageContent(msgRaw);
-
-            let config = await dbs.SERVERS.findOne({ id: message.channel?.server?._id });
-            if (config?.logs?.messageUpdate) {
-                let embed: LogMessage = {
-                    title: `Message deleted in ${message.channel?.server?.name}`,
-                    description: `[\\[#${channel.name}\\]](/server/${channel.server_id}/channel/${channel._id}) | `
-                               + `[\\[Author\\]](/@${message.author_id}) | `
-                               + `[\\[Jump to context\\]](/server/${channel.server_id}/channel/${channel._id}/${packet.id})`,
-                    fields: [],
-                    color: '#ff6b6b',
-                    overrides: {
-                        discord: {
-                            description: `Author: @${message.author?.username || message.author_id} | Channel: ${message.channel?.name || message.channel_id}`
-                        },
-                    }
-                }
-
-                if (msg.length > 1000) {
-                    embed.attachments?.push({ name: 'message.txt', content: Buffer.from(msgRaw) });
-                } else {
-                    embed.fields!.push({ title: 'Content', content: msg || "(Empty)" });
-                }
-
-                if (message.attachments?.length) {
-                    let autumnURL = await getAutumnURL();
-                    embed.fields!.push({ title: 'Attachments', content: message.attachments.map(a => 
-                        `[\\[${a.filename}\\]](<${autumnURL}/${a.tag}/${a._id}/${a.filename}>)`).join(' | ') })
-                }
-
-                await sendLogMessage(config.logs.messageUpdate, embed);
-            }
-        } catch(e) {
-            console.error(e);
-        }
-    }
-
-    if (packet.type == 'BulkMessageDelete') {
-        const channel = client.channels.get(packet.channel);
+});
+client.on('messageDelete', async (message) => {
+    try {
+        let channel = client.channels.get(message.channelId);
+        let author = message.authorId ? client.users.get(message.authorId) : null;
         if (!channel) return;
 
-        try {
-            let config = await dbs.SERVERS.findOne({ id: channel.server?._id });
-            if (config?.logs?.messageUpdate) {
-                let embed: LogMessage = {
-                    title: `Bulk delete in ${channel.server?.name}`,
-                    description: `${packet.ids.length} messages deleted in ` + 
-                        `[#${channel.name}](/server/${channel.server_id}/channel/${channel._id})`,
-                    fields: [],
-                    color: '#ff392b',
-                    overrides: {
-                        discord: {
-                            description: `${packet.ids.length} messages deleted in #${channel.name}`,
-                        }
-                    }
-                }
+        let msgRaw = String(message.content ?? '(Unknown)');
+        let msg = sanitizeMessageContent(msgRaw);
 
-                await sendLogMessage(config.logs.messageUpdate, embed);
+        let config = await dbs.SERVERS.findOne({ id: channel?.server?.id });
+        if (config?.logs?.messageUpdate) {
+            let embed: LogMessage = {
+                title: `Message deleted in ${channel?.server?.name}`,
+                description: `[#${channel.name}](/server/${channel.serverId}/channel/${channel.id}) | `
+                            + `@${sanitizeMessageContent(
+                                author?.username ?? "Unknown User"
+                              )} (${message.authorId}) | `
+                            + `[\\[Jump to context\\]](/server/${channel.serverId}/channel/${channel.id}/${message.id})`,
+                fields: [],
+                color: '#ff6b6b',
+                overrides: {
+                    discord: {
+                        description: `Author: @${author?.username || message.authorId} | Channel: ${channel?.name || message.channelId}`
+                    },
+                }
             }
-        } catch(e) {
-            console.error(e);
+
+            if (msg.length > 1000) {
+                embed.attachments?.push({ name: 'message.txt', content: Buffer.from(msgRaw) });
+            } else {
+                embed.fields!.push({ title: 'Content', content: msg || "(Empty)" });
+            }
+
+            if (message.attachments?.length) {
+                let autumnURL = client.configuration?.features.autumn.url;
+                embed.fields!.push({ title: 'Attachments', content: message.attachments.map(a => 
+                    `[\\[${a.filename}\\]](<${autumnURL}/${a.tag}/${a.id}/${a.filename}>)`).join(' | ') })
+            }
+
+            await sendLogMessage(config.logs.messageUpdate, embed);
         }
+    } catch(e) {
+        console.error(e);
     }
 });
 
-async function logModAction(type: 'warn'|'kick'|'ban'|'votekick', server: Server, mod: Member, target: string, reason: string|null, infractionID: string, extraText?: string): Promise<void> {
+client.on('messageDeleteBulk', async (messages) => {
+    const channel = client.channels.get(messages[0].channelId);
+    if (!channel) return;
+
     try {
-        let config = await dbs.SERVERS.findOne({ id: server._id });
+        let config = await dbs.SERVERS.findOne({ id: channel.serverId });
+        if (config?.logs?.messageUpdate) {
+            const data: String[][] = [
+                ['Message ID', 'Author ID', 'Author Name', 'Content', 'Attachment URLs'],
+                [],
+            ];
+
+            for (const message of messages) {
+                data.push([
+                    message.id,
+                    message.authorId ?? '',
+                    message.authorId ? client.users.get(message.authorId)?.username ?? '' : '',
+                    message.content ?? '',
+                    message.attachments?.map(a => a.id).join(', ') ?? '',
+                ]);
+            }
+
+            const sheet = Xlsx.utils.aoa_to_sheet(data);
+            const csv = Xlsx.utils.sheet_to_csv(data);
+
+            let embed: LogMessage = {
+                title: `Bulk delete in ${channel.server?.name}`,
+                description: `${messages.length} messages deleted in ` + 
+                    `[#${channel.name}](/server/${channel.serverId}/channel/${channel.id})`,
+                fields: [],
+                attachments: [{ name: 'messages.csv', content: Buffer.from(csv) }],
+                color: '#ff392b',
+                overrides: {
+                    discord: {
+                        description: `${messages.length} messages deleted in #${channel.name}`,
+                    }
+                }
+            }
+
+            await sendLogMessage(config.logs.messageUpdate, embed);
+        }
+    } catch(e) {
+        console.error(e);
+    }
+});
+
+async function logModAction(type: 'warn'|'kick'|'ban'|'votekick', server: Server, mod: ServerMember, target: string, reason: string|null, infractionID: string, extraText?: string): Promise<void> {
+    try {
+        let config = await dbs.SERVERS.findOne({ id: server.id });
 
         if (config?.logs?.modAction) {
             let aType = type == 'ban' ? 'banned' : type + 'ed';

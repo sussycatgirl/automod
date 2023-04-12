@@ -1,4 +1,4 @@
-import { User } from '@janderedev/revolt.js/dist/maps/Users';
+import { User } from 'revolt.js';
 import { client } from '../../..';
 import { getMutualServers, getPermissionLevel } from '../../util';
 import { wsEvents, WSResponse } from '../api_communication';
@@ -27,11 +27,11 @@ wsEvents.on('req:getUserServers', async (data: ReqData, cb: (data: WSResponse) =
                     if (!server) return reject('Server not found');
                     const perms = await getPermissionLevel(user, server);
                     resolve({
-                        id: server._id,
+                        id: server.id,
                         perms,
                         name: server.name,
-                        bannerURL: server.generateBannerURL(),
-                        iconURL: server.generateIconURL({}),
+                        bannerURL: server.bannerURL,
+                        iconURL: server.iconURL,
                     });
                 } catch(e) {
                     console.error(e);

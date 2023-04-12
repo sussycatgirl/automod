@@ -1,4 +1,4 @@
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
+import { Message } from "revolt.js";
 import { client } from "../../../..";
 import CustomRuleAction from "automod/dist/types/antispam/CustomRuleAction";
 
@@ -8,7 +8,7 @@ async function execute(message: Message, action: CustomRuleAction) {
         text = text.slice(0, 1996) + ' ...';
     }
 
-    if (!message.channel) await client.channels.fetch(message.channel_id);
+    if (!message.channel) await client.channels.fetch(message.channelId);
     let msg = await message.channel!.sendMessage(text);
 
     if (action.duration) {

@@ -1,7 +1,7 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import { hasPerm, parseUser } from "../../util";
+import { parseUser } from "../../util";
 import { client, dbs } from "../../..";
-import { User } from "@janderedev/revolt.js/dist/maps/Users";
+import { User } from "revolt.js";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 
@@ -14,10 +14,10 @@ export default {
     syntax: SYNTAX,
     category: CommandCategory.Config,
     run: async (message: MessageCommandContext, args: string[]) => {
-        if (!hasPerm(message.member!, 'ManageServer'))
+        if (!message.member?.hasPermission(message.member.server!, 'ManageServer'))
             return message.reply('You need **ManageServer** permission to use this command.');
 
-        let config = await dbs.SERVERS.findOne({ id: message.serverContext._id });
+        let config = await dbs.SERVERS.findOne({ id: message.serverContext.id });
         let admins = config?.botManagers ?? [];
         let user: User|null;
 
@@ -28,12 +28,12 @@ export default {
                 user = await parseUser(args[1]);
                 if (!user) return message.reply('I can\'t find that user.');
 
-                if (admins.indexOf(user._id) > -1) return message.reply('This user is already added as bot admin.');
+                if (admins.indexOf(user.id) > -1) return message.reply('This user is already added as bot admin.');
 
-                admins.push(user._id);
-                await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { botManagers: admins } });
+                admins.push(user.id);
+                await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { botManagers: admins } });
 
-                message.reply(`✅ Added [@${user.username}](/@${user._id}) to bot admins.`);
+                message.reply(`✅ Added [@${user.username}](/@${user.id}) to bot admins.`);
             break;
             case 'remove':
             case 'delete':
@@ -43,12 +43,12 @@ export default {
                 user = await parseUser(args[1]);
                 if (!user) return message.reply('I can\'t find that user.');
 
-                if (admins.indexOf(user._id) == -1) return message.reply('This user is not added as bot admin.');
+                if (admins.indexOf(user.id) == -1) return message.reply('This user is not added as bot admin.');
 
-                admins = admins.filter(a => a != user?._id);
-                await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { botManagers: admins } });
+                admins = admins.filter(a => a != user?.id);
+                await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { botManagers: admins } });
 
-                message.reply(`✅ Removed [@${user.username}](/@${user._id}) from bot admins.`);
+                message.reply(`✅ Removed [@${user.username}](/@${user.id}) from bot admins.`);
             break;
             case 'list':
             case 'ls':

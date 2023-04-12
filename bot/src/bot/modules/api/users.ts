@@ -1,4 +1,4 @@
-import { User } from "@janderedev/revolt.js/dist/maps/Users";
+import { User } from "revolt.js";
 import { client } from "../../..";
 import { getPermissionLevel, parseUser } from "../../util";
 import { wsEvents, WSResponse } from "../api_communication";
@@ -30,7 +30,7 @@ wsEvents.on('req:getUser', async (data: { user: string }, cb: (data: WSResponse)
         if (!user)
             cb({ success: false, statusCode: 404, error: 'User could not be found' });
         else
-            cb({ success: true, user: { id: user._id, username: user.username, avatarURL: user.generateAvatarURL() } as APIUser });
+            cb({ success: true, user: { id: user.id, username: user.username, avatarURL: user.avatarURL } as APIUser });
     } catch(e) {
         console.error(e);
         cb({ success: false, error: `${e}` });

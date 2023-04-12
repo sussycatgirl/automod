@@ -7,7 +7,7 @@ import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { checkMessageForFilteredWords } from "../../modules/antispam";
 import { DEFAULT_PREFIX } from "../../modules/command_handler";
-import { embed, EmbedColor, getAutumnURL, getDmChannel, isBotManager, NO_MANAGER_MSG, sanitizeMessageContent } from "../../util";
+import { embed, EmbedColor, getDmChannel, isBotManager, NO_MANAGER_MSG, sanitizeMessageContent } from "../../util";
 
 const WORDLIST_DEFAULT_MESSAGE = '<@{{user_id}}>, the message you sent contained a blocked word.';
 
@@ -28,10 +28,10 @@ export default {
                         return message.reply('Your server is currently listed in server discovery. As part of Revolt\'s [Discover Guidelines](<https://support.revolt.chat/kb/safety/discover-guidelines>), all servers on Discover are enrolled to AutoMod\'s antispam features.');
                     }
 
-                    await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { allowBlacklistedUsers: true } });
+                    await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { allowBlacklistedUsers: true } });
                     await message.reply('Globally blacklisted users will no longer get banned in this server. Previously banned users will need to be unbanned manually.');
                 } else if (args[0] == 'no') {
-                    await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { allowBlacklistedUsers: false } });
+                    await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { allowBlacklistedUsers: false } });
                     await message.reply('Globally blacklisted users will now get banned in this server.');
                 } else {
                     await message.reply(`Please specify either 'yes' or 'no' to toggle this setting.`);
@@ -41,7 +41,7 @@ export default {
                 
             case 'spam_detection': {
                 if (args[0] == 'on') {
-                    await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { antispamEnabled: true } });
+                    await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { antispamEnabled: true } });
                     await message.reply('Spam detection is now enabled in this server.\nIf a user is wrongfully kicked '
                         + 'or banned, please report it here: https://rvlt.gg/jan\n\n'
                         + 'Please make sure to grant AutoMod permission to **Kick**, **Ban** and **Manage Messages**!');
@@ -50,11 +50,11 @@ export default {
                         return message.reply('Your server is currently listed in server discovery. As part of Revolt\'s [Discover Guidelines](<https://support.revolt.chat/kb/safety/discover-guidelines>), all servers on Discover are enrolled to AutoMod\'s antispam features.');
                     }
 
-                    await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { antispamEnabled: false } });
+                    await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { antispamEnabled: false } });
                     await message.reply('Spam detection is now disabled in this server.');
 
                 } else {
-                    const cfg = await dbs.SERVERS.findOne({ id: message.serverContext._id });
+                    const cfg = await dbs.SERVERS.findOne({ id: message.serverContext.id });
                     await message.reply(`Spam detection is currently **${cfg?.antispamEnabled ? 'enabled' : 'disabled'}**. `
                         + `Please specify either 'on' or 'off' to toggle this setting.`);
                 }
@@ -80,48 +80,48 @@ export default {
 
                 const channel = client.channels.get(channelInput);
                 if (!channel) return message.reply('I can\'t find that channel.');
-                if (channel.server_id != message.channel?.server_id) return message.reply('That channel is not part of this server!');
+                if (channel.serverId != message.channel?.serverId) return message.reply('That channel is not part of this server!');
                 if (!channel.havePermission('SendMessage')) return message.reply('I don\'t have permission to **send messages** in that channel.');
                 if (!channel.havePermission('SendEmbeds')) return message.reply('I don\'t have permission to **send embeds** in that channel.');
 
                 switch(args[0]?.toLowerCase()) {
                     case 'messageupdate': {
                         await dbs.SERVERS.update(
-                            { id: message.channel!.server_id! },
+                            { id: message.channel!.serverId! },
                             {
                                 $set: {
                                     'logs.messageUpdate.revolt': {
-                                        channel: channel._id,
+                                        channel: channel.id,
                                         type: 'EMBED',
                                     },
                                 },
                                 $setOnInsert: {
-                                    id: message.channel!.server_id!,
+                                    id: message.channel!.serverId!,
                                 }
                             },
                             { upsert: true },
                         );
-                        await message.reply(`Bound message update logs to <#${channel._id}>!`);
+                        await message.reply(`Bound message update logs to <#${channel.id}>!`);
                         break;
                     }
 
                     case 'modaction': {
                         await dbs.SERVERS.update(
-                            { id: message.channel!.server_id! },
+                            { id: message.channel!.serverId! },
                             {
                                 $set: {
                                     'logs.modAction.revolt': {
-                                        channel: channel._id,
+                                        channel: channel.id,
                                         type: 'EMBED',
                                     },
                                 },
                                 $setOnInsert: {
-                                    id: message.channel!.server_id!,
+                                    id: message.channel!.serverId!,
                                 }
                             },
                             { upsert: true },
                         );
-                        await message.reply(`Bound moderation logs to <#${channel._id}>!`);
+                        await message.reply(`Bound moderation logs to <#${channel.id}>!`);
                         break;
                     }
 
@@ -133,11 +133,11 @@ export default {
             }
 
             case 'filter': {
-                const config = await dbs.SERVERS.findOne({ id: message.channel!.server_id! });
+                const config = await dbs.SERVERS.findOne({ id: message.channel!.serverId! });
                 switch(args.shift()?.toLowerCase()) {
                     case 'enable': {
                         await dbs.SERVERS.update(
-                            { id: message.channel!.server_id! },
+                            { id: message.channel!.serverId! },
                             { $set: { wordlistEnabled: true } },
                             { upsert: true },
                         );
@@ -152,7 +152,7 @@ export default {
                     }
                     case 'disable': {
                         await dbs.SERVERS.update(
-                            { id: message.channel!.server_id! },
+                            { id: message.channel!.serverId! },
                             { $set: { wordlistEnabled: false } },
                             { upsert: true },
                         );
@@ -172,7 +172,7 @@ export default {
                         if (config?.wordlist?.find(w => w.word == word)) return await message.reply('That word is already on the list!');
 
                         await dbs.SERVERS.update(
-                            { id: message.channel!.server_id! },
+                            { id: message.channel!.serverId! },
                             { $push: { wordlist: { strictness, word } } },
                             { upsert: true },
                         );
@@ -187,7 +187,7 @@ export default {
 
                         if (!config?.wordlist?.find(w => w.word == word)) return await message.reply('That word is not on the list.');
                         await dbs.SERVERS.update(
-                            { id: message.channel!.server_id! },
+                            { id: message.channel!.serverId! },
                             { $pull: { wordlist: { word } } },
                             { upsert: true },
                         );
@@ -199,15 +199,15 @@ export default {
                     case 'show': {
                         const formData = new FormData();
                         formData.append(
-                            `wordlist_${message.channel?.server_id}`,
+                            `wordlist_${message.channel?.serverId}`,
                             config?.wordlist?.map(w => `${w.strictness}\t${w.word}`).join('\n') ?? '',
-                            `wordlist_${message.channel?.server_id}.txt`
+                            `wordlist_${message.channel?.serverId}.txt`
                         );
 
                         try {
-                            const channel = await getDmChannel(message.author_id);
+                            const channel = await getDmChannel(message.authorId!);
                             const res = await axios.post(
-                                `${await getAutumnURL()}/attachments`,
+                                `${client.configuration?.features.autumn.url}/attachments`,
                                 formData,
                                 { headers: formData.getHeaders(), responseType: 'json' }
                             );
@@ -244,7 +244,7 @@ export default {
                         }
 
                         await dbs.SERVERS.update(
-                            { id: message.channel!.server_id! },
+                            { id: message.channel!.serverId! },
                             { $set: { wordlistAction: { action: config?.wordlistAction?.action ?? 'LOG', message: msg } } },
                             { upsert: true },
                         );
@@ -281,7 +281,7 @@ export default {
                         }
 
                         await dbs.SERVERS.update(
-                            { id: message.channel!.server_id! },
+                            { id: message.channel!.serverId! },
                             { $set: { wordlistAction: {
                                 action: action as any,
                                 message: config?.wordlistAction?.message ?? WORDLIST_DEFAULT_MESSAGE

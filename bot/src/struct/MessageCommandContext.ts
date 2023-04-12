@@ -1,14 +1,9 @@
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
-import { Server } from "@janderedev/revolt.js/dist/maps/Servers";
-import logger from "../bot/logger";
+import { Message } from "revolt.js";
+import { Server } from "revolt.js";
 
 class MessageCommandContext extends Message {
     // The server to which the command should be applied.
     serverContext: Server;
-
-    /* Override types */
-
-    declare content: string;
 }
 
 export default MessageCommandContext;

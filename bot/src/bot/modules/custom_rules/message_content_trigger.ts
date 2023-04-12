@@ -1,4 +1,4 @@
-import { Message } from "@janderedev/revolt.js/dist/maps/Messages";
+import { Message } from "revolt.js";
 import { client } from "../../..";
 import CustomRuleTrigger from "automod/dist/types/antispam/CustomRuleTrigger";
 import VM from 'vm';
@@ -12,8 +12,8 @@ async function messageContentTrigger(message: Message, trigger: CustomRuleTrigge
     let matched = false;
     if (trigger.matcher) {
         if (trigger.channelFilter) {
-            if (trigger.channelFilter.mode == 'WHITELIST' && !trigger.channelFilter.channels.includes(message.channel_id)) return false;
-            if (trigger.channelFilter.mode == 'BLACKLIST' &&  trigger.channelFilter.channels.includes(message.channel_id)) return false;
+            if (trigger.channelFilter.mode == 'WHITELIST' && !trigger.channelFilter.channels.includes(message.channelId)) return false;
+            if (trigger.channelFilter.mode == 'BLACKLIST' &&  trigger.channelFilter.channels.includes(message.channelId)) return false;
         }
 
         if (trigger.matcher instanceof RegExp) {
@@ -55,8 +55,8 @@ async function messageContentTrigger(message: Message, trigger: CustomRuleTrigge
 
     let timeoutKeys = {
         global:  trigger._id,
-        channel: trigger._id + '/channel/' + message.channel_id,
-        user:    trigger._id + '/user/' + message.author_id,
+        channel: trigger._id + '/channel/' + message.channelId,
+        user:    trigger._id + '/user/' + message.authorId,
     }
     let timeoutPass = true;
 
@@ -87,7 +87,7 @@ async function messageContentTrigger(message: Message, trigger: CustomRuleTrigge
     /* User/bot filter comes last because we want to avoid fetching users if possible */
 
     if (trigger.userFilter && trigger.userFilter != 'any') {
-        let user = message.author || await client.users.fetch(message.author_id);
+        let user = message.author || await client.users.fetch(message.authorId!);
         if (trigger.userFilter == 'bot' && !user.bot) return false;
         if (trigger.userFilter == 'user' && user.bot) return false;
     }

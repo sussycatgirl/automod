@@ -1,4 +1,4 @@
-import { User } from "@janderedev/revolt.js/dist/maps/Users";
+import { User } from "revolt.js";
 import { client, dbs } from "../../..";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
@@ -15,8 +15,8 @@ export default {
     syntax: SYNTAX,
     category: CommandCategory.Config,
     run: async (message: MessageCommandContext, args: string[]) => {
-        let config: ServerConfig|null = await dbs.SERVERS.findOne({ id: message.serverContext._id })
-        if (!config) config = { id: message.channel!.server_id! };
+        let config: ServerConfig|null = await dbs.SERVERS.findOne({ id: message.serverContext.id })
+        if (!config) config = { id: message.channel!.serverId! };
         if (!config.whitelist) config.whitelist = { users: [], roles: [], managers: true }
 
         if (!isBotManager(message)) return message.reply(NO_MANAGER_MSG);
@@ -37,18 +37,18 @@ export default {
                         return message.reply('That role is already whitelisted.');
 
                     config.whitelist!.roles = [role, ...(config.whitelist!.roles ?? [])];
-                    await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
+                    await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
                     return message.reply(`Added role to whitelist!`);
                 }
 
                 user = await parseUser(args[1])
                 if (user == null) return message.reply('I can\'t find that user or role.');
                 if (user.bot != null) return message.reply('Bots cannot be whitelisted.');
-                if (config.whitelist!.users?.includes(user._id))
+                if (config.whitelist!.users?.includes(user.id))
                     return message.reply('That user is already whitelisted.');
 
-                config.whitelist!.users = [user._id, ...(config.whitelist!.users ?? [])];
-                await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
+                config.whitelist!.users = [user.id, ...(config.whitelist!.users ?? [])];
+                await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
                 return message.reply('Added user to whitelist!');
             break;
             case 'rm':
@@ -67,17 +67,17 @@ export default {
                         return message.reply('That role is not whitelisted.');
 
                     config.whitelist!.roles = config.whitelist!.roles.filter(r => r != role);
-                    await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
+                    await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
                     return message.reply(`Removed role from whitelist!`);
                 }
 
                 user = await parseUser(args[1])
                 if (user == null) return message.reply('I can\'t find that user or role.');
-                if (!config.whitelist!.users?.includes(user._id))
+                if (!config.whitelist!.users?.includes(user.id))
                     return message.reply('That user is not whitelisted.');
 
-                config.whitelist!.users = config.whitelist!.users.filter(u => u != user?._id);
-                await dbs.SERVERS.update({ id: message.serverContext._id }, { $set: { whitelist: config.whitelist } });
+                config.whitelist!.users = config.whitelist!.users.filter(u => u != user?.id);
+                await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
                 return message.reply('Removed user from whitelist!');
             break;
             case 'l':
@@ -98,7 +98,7 @@ export default {
 
                 if (config.whitelist.roles?.length) {
                     config.whitelist.roles
-                        ?.map(r => message.serverContext.roles?.[r]?.name || `Unknown role (${r})`)
+                        ?.map(r => message.serverContext.roles.get(r)?.name || `Unknown role (${r})`)
                         .forEach((r, index) => {
                         if (index < 15) str += `* ${r}\n`;
                         if (index == 15) str += `**${config!.whitelist!.roles!.length - 15} more role${config?.whitelist?.roles?.length == 16 ? '' : 's'}**\n`;

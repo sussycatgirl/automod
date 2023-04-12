@@ -1,12 +1,13 @@
-import * as Revolt from "@janderedev/revolt.js";
+import * as Revolt from "revolt.js";
 import { IMonkManager } from 'monk';
 import logger from '../bot/logger';
 import { adminBotLog } from "../bot/logging";
+import { ClientOptions } from "revolt.js/src/Client";
 
 class AutomodClient extends Revolt.Client {
     db: IMonkManager;
 
-    constructor(options: Partial<Revolt.ClientOptions> | undefined, monk: IMonkManager) {
+    constructor(options: Partial<ClientOptions> | undefined, monk: IMonkManager) {
         super(options);
 
         this.db = monk;
@@ -28,13 +29,6 @@ let login = (client: Revolt.Client): Promise<void> => new Promise((resolve, reje
         logger.done(`Bot logged in as ${client.user?.username}!`);
         adminBotLog({ message: 'Bot logged in', type: 'INFO' });
         resolve();
-    });
-
-    client.on('packet', packet => {
-        if (packet.type == 'InvalidSession' as any) {
-            logger.error('Authentication failed: ' + JSON.stringify(packet));
-            process.exit(99);
-        }
     });
 });
 

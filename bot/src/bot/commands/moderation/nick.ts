@@ -1,9 +1,10 @@
-import { Member } from "@janderedev/revolt.js/dist/maps/Members";
+import { ServerMember } from "revolt.js";
 import axios from "axios";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { hasPerm, isModerator, NO_MANAGER_MSG, parseUser } from "../../util";
+import { isModerator, NO_MANAGER_MSG, parseUser } from "../../util";
+import { client } from "../../..";
 
 export default {
     name: 'nick',
@@ -13,7 +14,7 @@ export default {
     run: async (message: MessageCommandContext, args: string[]) => {
         try {
             if (!message.member) return;
-            if (!hasPerm(message.member, 'ManageNicknames')
+            if (!message.member.hasPermission(message.member.server!, 'ManageNicknames')
              && !await isModerator(message)) return message.reply(NO_MANAGER_MSG);
 
             const targetStr = args.shift();
@@ -42,9 +43,9 @@ export default {
     }
 } as SimpleCommand;
 
-async function setNick(member: Member, newName: string|null) {
+async function setNick(member: ServerMember, newName: string|null) {
     await axios.patch(
-        `${member.client.apiURL}/servers/${member.server!._id}/members/${member._id.user}`,
+        `${client.options.baseURL}/servers/${member.server!.id}/members/${member.id.user}`,
         {
             nickname: newName || undefined,
             remove: !newName ? [ "Nickname" ] : undefined,

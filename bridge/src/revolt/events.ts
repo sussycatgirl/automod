@@ -26,7 +26,7 @@ fetchEmojiList()
     )
     .catch((e) => console.error(e));
 
-client.on("message/delete", async (id) => {
+client.on("messageDelete", async (id) => {
     try {
         logger.debug(`[D] Revolt: ${id}`);
 
@@ -83,15 +83,15 @@ client.on("message/delete", async (id) => {
     }
 });
 
-client.on("message/update", async (message) => {
+client.on("messageUpdate", async (message) => {
     if (!message.content || typeof message.content != "string") return;
-    if (message.author_id == client.user?._id) return;
+    if (message.authorId == client.user?.id) return;
 
     try {
         logger.debug(`[E] Revolt: ${message.content}`);
 
         const [bridgeCfg, bridgedMsg] = await Promise.all([
-            BRIDGE_CONFIG.findOne({ revolt: message.channel_id }),
+            BRIDGE_CONFIG.findOne({ revolt: message.channelId }),
             BRIDGED_MESSAGES.findOne({ "revolt.nonce": message.nonce }),
         ]);
 
@@ -127,18 +127,18 @@ client.on("message/update", async (message) => {
     }
 });
 
-client.on("message", async (message) => {
+client.on("messageCreate", async (message) => {
     try {
-        logger.debug(`[M] Revolt: ${message._id} ${message.content}`);
+        logger.debug(`[M] Revolt: ${message.id} ${message.content}`);
 
         const [bridgeCfg, bridgedMsg, ...repliedMessages] = await Promise.all([
-            BRIDGE_CONFIG.findOne({ revolt: message.channel_id }),
+            BRIDGE_CONFIG.findOne({ revolt: message.channelId }),
             BRIDGED_MESSAGES.findOne(
                 message.nonce
                     ? { "revolt.nonce": message.nonce }
-                    : { "revolt.messageId": message._id }
+                    : { "revolt.messageId": message.id }
             ),
-            ...(message.reply_ids?.map((id) =>
+            ...(message.replyIds?.map((id) =>
                 BRIDGED_MESSAGES.findOne({ "revolt.messageId": id })
             ) ?? []),
         ]);
@@ -147,7 +147,7 @@ client.on("message", async (message) => {
             return logger.debug(
                 `Revolt: Message has already been bridged; ignoring`
             );
-        if (message.system && bridgeCfg?.config?.disable_system_messages)
+        if (message.systemMessage && bridgeCfg?.config?.disable_system_messages)
             return logger.debug(
                 `Revolt: System message bridging disabled; ignoring`
             );
@@ -182,7 +182,7 @@ client.on("message", async (message) => {
                     token: hook.token || "",
                 };
                 await BRIDGE_CONFIG.update(
-                    { revolt: message.channel_id },
+                    { revolt: message.channelId },
                     {
                         $set: {
                             discordWebhook: bridgeCfg.discordWebhook,
@@ -193,7 +193,7 @@ client.on("message", async (message) => {
                 logger.warn(
                     `Unable to create new webhook for channel ${bridgeCfg.discord}; Deleting link\n${e}`
                 );
-                await BRIDGE_CONFIG.remove({ revolt: message.channel_id });
+                await BRIDGE_CONFIG.remove({ revolt: message.channelId });
                 await message.channel
                     ?.sendMessage(
                         ":warning: I was unable to create a webhook in the bridged Discord channel. " +
@@ -206,15 +206,15 @@ client.on("message", async (message) => {
         }
 
         await BRIDGED_MESSAGES.update(
-            { "revolt.messageId": message._id },
+            { "revolt.messageId": message.id },
             {
                 $set: {
                     revolt: {
-                        messageId: message._id,
+                        messageId: message.id,
                         nonce: message.nonce,
                     },
                     channels: {
-                        revolt: message.channel_id,
+                        revolt: message.channelId,
                         discord: bridgeCfg.discord,
                     },
                 },
@@ -238,23 +238,23 @@ client.on("message", async (message) => {
             content:
                 message.content
                     ? await renderMessageBody(message.content)
-                    : message.system
-                    ? await renderSystemMessage(message.system)
+                    : message.systemMessage
+                    ? await renderSystemMessage(message.systemMessage)
                     : undefined,
-            username: message.system
+            username: message.systemMessage
                 ? "Revolt"
                 : (bridgeCfg.config?.bridge_nicknames
                       ? message.masquerade?.name ??
                         message.member?.nickname ??
                         message.author?.username
                       : message.author?.username) ?? "Unknown user",
-            avatarURL: message.system
+            avatarURL: message.systemMessage
                 ? "https://app.revolt.chat/assets/logo_round.png"
                 : bridgeCfg.config?.bridge_nicknames
                 ? message.masquerade?.avatar ??
-                  message.member?.generateAvatarURL({ max_side: 128 }) ??
-                  message.author?.generateAvatarURL({ max_side: 128 })
-                : message.author?.generateAvatarURL({ max_side: 128 }),
+                  message.member?.avatarURL ??
+                  message.author?.avatarURL
+                : message.author?.avatarURL,
             embeds: message.embeds?.length
                 ? message.embeds
                       .filter((e) => e.type == "Text")
@@ -293,15 +293,15 @@ client.on("message", async (message) => {
                         );
                 } else {
                     const msg = await revoltFetchMessage(
-                        message.reply_ids?.[0],
+                        message.replyIds?.[0],
                         message.channel
                     );
                     const brMsg = repliedMessages.find(
-                        (m) => m?.revolt.messageId == msg?._id
+                        (m) => m?.revolt.messageId == msg?.id
                     );
                     embed.setAuthor({
                         name: `@${msg?.author?.username ?? "Unknown"}`,
-                        iconURL: msg?.author?.generateAvatarURL({ size: 64 }),
+                        iconURL: msg?.author?.avatarURL,
                         url: brMsg
                             ? `https://discord.com/channels/${
                                   channel.guildId
@@ -338,7 +338,7 @@ client.on("message", async (message) => {
                         msgUrl = msg.url;
                     } else {
                         const brMsg = repliedMessages.find(
-                            (m) => m?.revolt.messageId == msg?._id
+                            (m) => m?.revolt.messageId == msg?.id
                         );
                         if (brMsg)
                             msgUrl = `https://discord.com/channels/${
@@ -367,7 +367,7 @@ client.on("message", async (message) => {
 
             for (const attachment of message.attachments) {
                 payload.files.push({
-                    attachment: `${AUTUMN_URL}/attachments/${attachment._id}/${attachment.filename}`,
+                    attachment: `${AUTUMN_URL}/attachments/${attachment.id}/${attachment.filename}`,
                     name: attachment.filename,
                 });
             }
@@ -378,7 +378,7 @@ client.on("message", async (message) => {
             .then(async (res) => {
                 await BRIDGED_MESSAGES.update(
                     {
-                        "revolt.messageId": message._id,
+                        "revolt.messageId": message.id,
                     },
                     {
                         $set: {
@@ -400,7 +400,7 @@ client.on("message", async (message) => {
                             "Revolt: Got Unknown Webhook error, deleting webhook config"
                         );
                         await BRIDGE_CONFIG.update(
-                            { revolt: message.channel_id },
+                            { revolt: message.channelId },
                             { $set: { discordWebhook: undefined } }
                         );
                     } catch (e) {
@@ -436,7 +436,7 @@ async function renderMessageBody(message: string): Promise<string> {
             const channel = client.channels.get(id);
 
             const bridgeCfg = channel
-                ? await BRIDGE_CONFIG.findOne({ revolt: channel._id })
+                ? await BRIDGE_CONFIG.findOne({ revolt: channel.id })
                 : undefined;
             const discordChannel = bridgeCfg?.discord
                 ? discordClient.channels.cache.get(bridgeCfg.discord)
