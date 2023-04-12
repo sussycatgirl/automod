@@ -90,6 +90,8 @@ client.on("messageUpdate", async (message) => {
     try {
         logger.debug(`[E] Revolt: ${message.content}`);
 
+        if (!message.author) await client.users.fetch(message.authorId!);
+
         const [bridgeCfg, bridgedMsg] = await Promise.all([
             BRIDGE_CONFIG.findOne({ revolt: message.channelId }),
             BRIDGED_MESSAGES.findOne({ "revolt.nonce": message.nonce }),
@@ -111,15 +113,15 @@ client.on("messageUpdate", async (message) => {
         if (!targetMsg)
             return logger.debug(`Revolt: Could not fetch message from Discord`);
 
-        const client = new WebhookClient({
+        const webhookClient = new WebhookClient({
             id: bridgeCfg.discordWebhook.id,
             token: bridgeCfg.discordWebhook.token,
         });
-        await client.editMessage(targetMsg, {
+        await webhookClient.editMessage(targetMsg, {
             content: await renderMessageBody(message.content),
             allowedMentions: { parse: [] },
         });
-        client.destroy();
+        webhookClient.destroy();
 
         metrics.messages.inc({ source: "revolt", type: "edit" });
     } catch (e) {
@@ -130,6 +132,8 @@ client.on("messageUpdate", async (message) => {
 client.on("messageCreate", async (message) => {
     try {
         logger.debug(`[M] Revolt: ${message.id} ${message.content}`);
+
+        if (!message.author) await client.users.fetch(message.authorId!);
 
         const [bridgeCfg, bridgedMsg, ...repliedMessages] = await Promise.all([
             BRIDGE_CONFIG.findOne({ revolt: message.channelId }),
@@ -229,7 +233,7 @@ client.on("messageCreate", async (message) => {
         const channel = (await discordClient.channels.fetch(
             bridgeCfg.discord
         )) as TextChannel;
-        const client = new WebhookClient({
+        const webhookClient = new WebhookClient({
             id: bridgeCfg.discordWebhook!.id,
             token: bridgeCfg.discordWebhook!.token,
         });
@@ -373,7 +377,7 @@ client.on("messageCreate", async (message) => {
             }
         }
 
-        client
+        webhookClient
             .send(payload)
             .then(async (res) => {
                 await BRIDGED_MESSAGES.update(
