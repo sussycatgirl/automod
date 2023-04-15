@@ -22,6 +22,7 @@ client.on('messageUpdate', async (message, oldMessage) => {
         let channel = message.channel;
         let server = channel?.server;
         if (!server || !channel) return logger.warn('Received message update in unknown channel or server');
+        if (oldMsg == newMsg) return logger.info('Ignoring message update without edited text');
 
         let config = await dbs.SERVERS.findOne({ id: server.id });
         if (config?.logs?.messageUpdate) {
@@ -30,9 +31,7 @@ client.on('messageUpdate', async (message, oldMessage) => {
                 title: `Message edited in ${server.name}`,
                 description:
                     `[#${channel.name}](/server/${server.id}/channel/${channel.id}) | ` +
-                    `@${sanitizeMessageContent(
-                        message.author?.username ?? "Unknown User"
-                    )} (${message.authorId}) | ` +
+                    `<@${message.authorId}> | ` +
                     `[Jump to message](/server/${server.id}/channel/${channel.id}/${message.id})`,
                 fields: [],
                 color: "#829dff",
@@ -75,9 +74,7 @@ client.on('messageDelete', async (message) => {
             let embed: LogMessage = {
                 title: `Message deleted in ${channel?.server?.name}`,
                 description: `[#${channel.name}](/server/${channel.serverId}/channel/${channel.id}) | `
-                            + `@${sanitizeMessageContent(
-                                author?.username ?? "Unknown User"
-                              )} (${message.authorId}) | `
+                            + `<@${message.authorId}> | `
                             + `[\\[Jump to context\\]](/server/${channel.serverId}/channel/${channel.id}/${message.id})`,
                 fields: [],
                 color: '#ff6b6b',
