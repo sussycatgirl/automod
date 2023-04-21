@@ -139,3 +139,22 @@ client.on('serverMemberJoin', (member) => {
         embeds: [embed],
     }).catch(e => logger.debug('Cannot send hello message: ' + e));
 });
+
+client.on('disconnected', () => logger.warn('Client disconnected!'));
+
+client.events.on('state', (state) => {
+    switch(state) {
+        case 2:
+            logger.info('Connection state: Connected');
+            break;
+        case 1:
+            logger.info('Connection state: Connecting');
+            break;
+        case 3:
+            logger.info('Connection state: Disconnected');
+            break;
+        case 0:
+            logger.info('Connection state: Idle');
+            break;
+    }
+});
