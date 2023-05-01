@@ -43,6 +43,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mxssfd/typedoc-theme@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@mxssfd/typedoc-theme@npm:1.1.1"
+  peerDependencies:
+    typedoc: ^0.24.1
+  checksum: 6f42f8f6b778f4c2c5be144c690a838028ae5f380479046030cb968882a762970696e10d5a712c2d70a3338081628ae4918f5f3d5802ffbc4f2218ee626c23cb
+  languageName: node
+  linkType: hard
+
 "@sapphire/async-queue@npm:^1.5.0":
   version: 1.5.0
   resolution: "@sapphire/async-queue@npm:1.5.0"
@@ -182,6 +191,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ansi-sequence-parser@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "ansi-sequence-parser@npm:1.1.0"
+  checksum: 75f4d3a4c555655a698aec05b5763cbddcd16ccccdbfd178fb0aa471ab74fdf98e031b875ef26e64be6a95cf970c89238744b26de6e34af97f316d5186b1df53
+  languageName: node
+  linkType: hard
+
 "argparse@npm:^2.0.1":
   version: 2.0.1
   resolution: "argparse@npm:2.0.1"
@@ -220,6 +236,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"balanced-match@npm:^1.0.0":
+  version: 1.0.2
+  resolution: "balanced-match@npm:1.0.2"
+  checksum: 9706c088a283058a8a99e0bf91b0a2f75497f185980d9ffa8b304de1d9e58ebda7c72c07ebf01dadedaac5b2907b2c6f566f660d62bd336c3468e960403b9d65
+  languageName: node
+  linkType: hard
+
 "bintrees@npm:1.0.2":
   version: 1.0.2
   resolution: "bintrees@npm:1.0.2"
@@ -234,6 +257,15 @@ __metadata:
     readable-stream: ^2.3.5
     safe-buffer: ^5.1.1
   checksum: 4f5d9b258919646a8d02f1731379e53b6f6309e34596ae02afbc3aeb183910bd2d0b70681f889b7c620ca48f65dc1cd0992ee1266c90d6d7c3be60688d141233
+  languageName: node
+  linkType: hard
+
+"brace-expansion@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "brace-expansion@npm:2.0.1"
+  dependencies:
+    balanced-match: ^1.0.0
+  checksum: a61e7cd2e8a8505e9f0036b3b6108ba5e926b4b55089eeb5550cd04a471fe216c96d4fe7e4c7f995c728c554ae20ddfc4244cad10aef255e72b62930afd233d1
   languageName: node
   linkType: hard
 
@@ -481,6 +513,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jsonc-parser@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "jsonc-parser@npm:3.2.0"
+  checksum: 946dd9a5f326b745aa326d48a7257e3f4a4b62c5e98ec8e49fa2bdd8d96cef7e6febf1399f5c7016114fd1f68a1c62c6138826d5d90bc650448e3cf0951c53c7
+  languageName: node
+  linkType: hard
+
 "lodash.defaultsdeep@npm:^4.6.1":
   version: 4.6.1
   resolution: "lodash.defaultsdeep@npm:4.6.1"
@@ -508,6 +547,22 @@ __metadata:
   version: 5.2.1
   resolution: "long@npm:5.2.1"
   checksum: 9264da12d1b7df67e5aa6da4498144293caf1ad12e7f092efe4e9a2d32c53f0bbf7334f7cef997080a2a3af061142558ab366efa71698d98b1cdb883477445a7
+  languageName: node
+  linkType: hard
+
+"lunr@npm:^2.3.9":
+  version: 2.3.9
+  resolution: "lunr@npm:2.3.9"
+  checksum: 176719e24fcce7d3cf1baccce9dd5633cd8bdc1f41ebe6a180112e5ee99d80373fe2454f5d4624d437e5a8319698ca6837b9950566e15d2cae5f2a543a3db4b8
+  languageName: node
+  linkType: hard
+
+"marked@npm:^4.3.0":
+  version: 4.3.0
+  resolution: "marked@npm:4.3.0"
+  bin:
+    marked: bin/marked.js
+  checksum: 0db6817893952c3ec710eb9ceafb8468bf5ae38cb0f92b7b083baa13d70b19774674be04db5b817681fa7c5c6a088f61300815e4dd75a59696f4716ad69f6260
   languageName: node
   linkType: hard
 
@@ -540,6 +595,15 @@ __metadata:
   bin:
     mime: cli.js
   checksum: f43f9b7bfa64534e6b05bd6062961681aeb406a5b53673b53b683f27fcc4e739989941836a355eef831f4478923651ecc739f4a5f6e20a76487b432bfd4db928
+  languageName: node
+  linkType: hard
+
+"minimatch@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "minimatch@npm:9.0.0"
+  dependencies:
+    brace-expansion: ^2.0.1
+  checksum: 7bd57899edd1d1b0560f50b5b2d1ea4ad2a366c5a2c8e0a943372cf2f200b64c256bae45a87a80915adbce27fa36526264296ace0da57b600481fe5ea3e372e5
   languageName: node
   linkType: hard
 
@@ -742,14 +806,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"revolt-api@npm:^0.5.17, revolt-api@npm:latest":
-  version: 0.5.17
-  resolution: "revolt-api@npm:0.5.17"
+"revolt-api@npm:0.5.19, revolt-api@npm:^0.5.19":
+  version: 0.5.19
+  resolution: "revolt-api@npm:0.5.19"
   dependencies:
     "@insertish/oapi": 0.1.18
     axios: ^0.26.1
     lodash.defaultsdeep: ^4.6.1
-  checksum: aa722f4739c09bea46f738a1b9aef61af126e06aa924a61fcf33caa53561c5de4e7e2ddde26b496cdd0546e113cf324821fead0035973e2ebdb2633df482091b
+  checksum: 063a06fe73cb9650779ed367e9d850e690e1c8dda644050859f6b00b0de01f8c4486521a407ce49e4b6ed699b6e69d17151c4ff4c55dbd2fff034fa30f1462ea
   languageName: node
   linkType: hard
 
@@ -767,7 +831,7 @@ __metadata:
     log75: ^2.2.0
     monk: ^7.3.4
     prom-client: ^14.0.1
-    revolt-api: latest
+    revolt-api: 0.5.19
     revolt.js: ^7.0.0
     typescript: ^4.4.3
     ulid: ^2.3.0
@@ -779,13 +843,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "revolt.js@portal:../revolt.js::locator=revolt-automod%40workspace%3A."
   dependencies:
+    "@mxssfd/typedoc-theme": ^1.1.1
     "@solid-primitives/map": ^0.4.3
     "@solid-primitives/set": ^0.4.3
     eventemitter3: ^5.0.0
     isomorphic-ws: ^5.0.0
     long: ^5.2.1
-    revolt-api: ^0.5.17
-    solid-js: ^1.7.2
+    revolt-api: ^0.5.19
+    solid-js: ^1.7.3
+    typedoc: ^0.24.1
     ulid: ^2.3.0
     ws: ^8.13.0
   languageName: node
@@ -821,7 +887,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"solid-js@npm:^1.7.2":
+"shiki@npm:^0.14.1":
+  version: 0.14.2
+  resolution: "shiki@npm:0.14.2"
+  dependencies:
+    ansi-sequence-parser: ^1.1.0
+    jsonc-parser: ^3.2.0
+    vscode-oniguruma: ^1.7.0
+    vscode-textmate: ^8.0.0
+  checksum: f2a14302b1803617e3ff1b751a5c87b4af4ad15214dc00e9215402e42940a84a0b956cf55d628f25dbf1296b18e277b8529571cd9359b971ac599a0ab11303e7
+  languageName: node
+  linkType: hard
+
+"solid-js@npm:^1.7.3":
   version: 1.7.3
   resolution: "solid-js@npm:1.7.3"
   dependencies:
@@ -905,6 +983,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"typedoc@npm:^0.24.1":
+  version: 0.24.6
+  resolution: "typedoc@npm:0.24.6"
+  dependencies:
+    lunr: ^2.3.9
+    marked: ^4.3.0
+    minimatch: ^9.0.0
+    shiki: ^0.14.1
+  peerDependencies:
+    typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x
+  bin:
+    typedoc: bin/typedoc
+  checksum: 3911ef6a7736ce6655a4b22fabc5be6df8812412e209d730fd168bfa7797847897f05fed797bc16558f11ce647b20746453748ff8afe85b1375c3efe2d7b57df
+  languageName: node
+  linkType: hard
+
 "typescript@npm:^4.4.3, typescript@npm:^4.6.2":
   version: 4.9.5
   resolution: "typescript@npm:4.9.5"
@@ -947,6 +1041,20 @@ __metadata:
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
   checksum: 474acf1146cb2701fe3b074892217553dfcf9a031280919ba1b8d651a068c9b15d863b7303cb15bd00a862b498e6cf4ad7b4a08fb134edd5a6f7641681cb54a2
+  languageName: node
+  linkType: hard
+
+"vscode-oniguruma@npm:^1.7.0":
+  version: 1.7.0
+  resolution: "vscode-oniguruma@npm:1.7.0"
+  checksum: 53519d91d90593e6fb080260892e87d447e9b200c4964d766772b5053f5699066539d92100f77f1302c91e8fc5d9c772fbe40fe4c90f3d411a96d5a9b1e63f42
+  languageName: node
+  linkType: hard
+
+"vscode-textmate@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "vscode-textmate@npm:8.0.0"
+  checksum: 127780dfea89559d70b8326df6ec344cfd701312dd7f3f591a718693812b7852c30b6715e3cfc8b3200a4e2515b4c96f0843c0eacc0a3020969b5de262c2a4bb
   languageName: node
   linkType: hard
 

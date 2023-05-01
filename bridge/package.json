@@ -24,7 +24,7 @@
     "log75": "^2.2.0",
     "monk": "^7.3.4",
     "prom-client": "^14.0.1",
-    "revolt-api": "latest",
+    "revolt-api": "0.5.19",
     "revolt.js": "^7.0.0",
     "smart-replace": "^1.0.2",
     "ulid": "^2.3.0"
