@@ -1,9 +1,9 @@
 import { BRIDGED_EMOJIS, BRIDGED_MESSAGES, BRIDGE_CONFIG, logger } from "..";
 import { AUTUMN_URL, client } from "./client";
 import { client as discordClient } from "../discord/client";
-import { Channel as DiscordChannel, Message as DiscordMessage, MessageEmbed, MessagePayload, TextChannel, WebhookClient, WebhookMessageOptions } from "discord.js";
+import { Message as DiscordMessage, MessageEmbed, MessagePayload, TextChannel, WebhookClient, WebhookMessageOptions } from "discord.js";
 import GenericEmbed from "../types/GenericEmbed";
-import { SendableEmbed, SystemMessage } from "revolt-api";
+import { SendableEmbed } from "revolt-api";
 import {
     clipText,
     discordFetchMessage,
@@ -13,6 +13,7 @@ import {
 import { smartReplace } from "smart-replace";
 import { metrics } from "../metrics";
 import { fetchEmojiList } from "../discord/bridgeEmojis";
+import { ChannelRenamedSystemMessage, SystemMessage, TextSystemMessage, UserSystemMessage } from "revolt.js";
 
 const RE_MENTION_USER = /<@[0-9A-HJ-KM-NP-TV-Z]{26}>/g;
 const RE_MENTION_CHANNEL = /<#[0-9A-HJ-KM-NP-TV-Z]{26}>/g;
@@ -507,35 +508,35 @@ async function renderSystemMessage(message: SystemMessage): Promise<string> {
         case "user_joined":
         case "user_added":
             return `<:joined:1042831832888127509> ${await getUsername(
-                message.id
+                (message as UserSystemMessage).userId
             )} joined`;
         case "user_left":
         case "user_remove":
             return `<:left:1042831834259652628> ${await getUsername(
-                message.id
+                (message as UserSystemMessage).userId
             )} left`;
         case "user_kicked":
             return `<:kicked:1042831835421483050> ${await getUsername(
-                message.id
+                (message as UserSystemMessage).userId
             )} was kicked`;
         case "user_banned":
             return `<:banned:1042831836675588146> ${await getUsername(
-                message.id
+                (message as UserSystemMessage).userId
             )} was banned`;
         case "channel_renamed":
             return `<:channel_renamed:1042831837912891392> ${await getUsername(
-                message.by
-            )} renamed the channel to **${message.name}**`;
+                (message as ChannelRenamedSystemMessage).byId
+            )} renamed the channel to **${(message as ChannelRenamedSystemMessage).name}**`;
         case "channel_icon_changed":
             return `<:channel_icon:1042831840538542222> ${await getUsername(
-                message.by
+                (message as ChannelRenamedSystemMessage).byId
             )} changed the channel icon`;
         case "channel_description_changed":
             return `<:channel_description:1042831839217328228> ${await getUsername(
-                message.by
+                (message as ChannelRenamedSystemMessage).byId
             )} changed the channel description`;
         case "text":
-            return message.content;
+            return (message as TextSystemMessage).content;
         default:
             return Object.entries(message)
                 .map((e) => `${e[0]}: ${e[1]}`)

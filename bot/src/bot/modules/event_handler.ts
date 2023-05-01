@@ -8,27 +8,29 @@ import logger from "../logger";
 import { storeInfraction } from "../util";
 import { DEFAULT_PREFIX } from "./command_handler";
 import { SendableEmbed } from "revolt-api";
+import { UserSystemMessage } from "revolt.js";
 
 const DM_SESSION_LIFETIME = 1000 * 60 * 60 * 24 * 30;
 
 // Listen to system messages
 client.on('messageCreate', async message => {
 
-    let sysMsg = message.systemMessage;
+    let systemMessage = message.systemMessage;
 
-    if (sysMsg) switch(sysMsg.type) {
+    if (systemMessage) switch(systemMessage.type) {
         case 'user_kicked':
         case 'user_banned':
             try {
+                let sysMsg = systemMessage as UserSystemMessage;
                 let recentEvents = await dbs.INFRACTIONS.findOne({
                     date: { $gt: Date.now() - 30000 },
-                    user: sysMsg.id,
+                    user: sysMsg.userId,
                     server: message.channel!.serverId!,
                     actionType: sysMsg.type == 'user_kicked' ? 'kick' : 'ban',
                 });
 
                 if (!message.channel ||
-                    !sysMsg.id ||
+                    !sysMsg.userId ||
                     recentEvents) return;
 
                 storeInfraction({
@@ -38,28 +40,30 @@ client.on('messageCreate', async message => {
                     date: message.createdAt.getTime(),
                     server: message.channel!.serverId,
                     type: InfractionType.Manual,
-                    user: sysMsg.id,
+                    user: sysMsg.userId,
                     actionType: sysMsg.type == 'user_kicked' ? 'kick' : 'ban',
                 } as Infraction).catch(console.warn);
             } catch(e) { console.error(e) }
         break;
         case 'user_joined': {
             try {
+                let sysMsg = systemMessage as UserSystemMessage;
+
                 const [ serverConfig, userConfig ] = await Promise.all([
                     dbs.SERVERS.findOne({ id: message.channel!.serverId }),
-                    dbs.USERS.findOne({ id: sysMsg.id }),
+                    dbs.USERS.findOne({ id: sysMsg.userId }),
                 ]);
 
                 if (userConfig?.globalBlacklist && !serverConfig?.allowBlacklistedUsers) {
                     const server = message.channel?.server;
                     if (server && server.havePermission('BanMembers')) {
-                        await server.banUser(sysMsg.id, { reason: BLACKLIST_BAN_REASON });
+                        await server.banUser(sysMsg.userId, { reason: BLACKLIST_BAN_REASON });
 
                         if (server.systemMessages?.user_banned) {
                             const channel = server.channels.find(c => c?.id == server.systemMessages?.user_banned);
                             if (channel && channel.havePermission('SendMessage')) {
-                                const user = client.users.get(sysMsg.id);
-                                await channel.sendMessage(BLACKLIST_MESSAGE(user?.username ?? sysMsg.id));
+                                const user = sysMsg.user;
+                                await channel.sendMessage(BLACKLIST_MESSAGE(user?.username ?? sysMsg.userId));
                             }
                         }
                     }
