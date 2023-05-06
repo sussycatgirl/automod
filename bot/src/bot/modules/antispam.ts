@@ -267,6 +267,11 @@ const notifyPublicServers = async () => {
         try {
             logger.info(`Sending notification to owner of server ${serverConfig.id}`);
 
+            if (serverConfig.discoverAutospamNotify) {
+                logger.warn('This server already received the message');
+                continue;
+            }
+
             await dbs.SERVERS.update(
                 { id: serverConfig.id },
                 { $set: { discoverAutospamNotify: true, antispamEnabled: true, allowBlacklistedUsers: false } },
