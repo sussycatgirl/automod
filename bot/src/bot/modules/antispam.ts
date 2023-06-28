@@ -263,7 +263,7 @@ const notifyPublicServers = async () => {
         discoverAutospamNotify: { $in: [ undefined, false ] },
     });
 
-    res.forEach(async (serverConfig) => {
+    for (const serverConfig of res) {
         try {
             logger.info(`Sending notification to owner of server ${serverConfig.id}`);
 
@@ -293,7 +293,7 @@ Thanks for being part of Revolt!`);
         } catch(e) {
             console.error(e);
         }
-    });
+    }
 }
 
 awaitClient().then(() => notifyPublicServers());

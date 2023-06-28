@@ -270,7 +270,7 @@ __metadata:
     log75: ^2.2.0
     monk: ^7.3.4
     prom-client: ^14.0.1
-    revolt-api: 0.5.19
+    revolt-api: 0.6.3
     revolt.js: ^7.0.0
     smart-replace: ^1.0.2
     typescript: ^4.7.4
@@ -782,14 +782,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"revolt-api@npm:0.5.19, revolt-api@npm:^0.5.19":
-  version: 0.5.19
-  resolution: "revolt-api@npm:0.5.19"
+"revolt-api@npm:0.6.3":
+  version: 0.6.3
+  resolution: "revolt-api@npm:0.6.3"
   dependencies:
     "@insertish/oapi": 0.1.18
     axios: ^0.26.1
     lodash.defaultsdeep: ^4.6.1
-  checksum: 063a06fe73cb9650779ed367e9d850e690e1c8dda644050859f6b00b0de01f8c4486521a407ce49e4b6ed699b6e69d17151c4ff4c55dbd2fff034fa30f1462ea
+  checksum: b568df2a05e2a4a9a5eb2ccb88a032d1f5e2e390471852e6f2ba366c6c2fb1c78f38af16f1f57768c4743f07b9d165eda3658c664c025d27f32ef00ecf33942b
   languageName: node
   linkType: hard
 
@@ -803,7 +803,7 @@ __metadata:
     eventemitter3: ^5.0.0
     isomorphic-ws: ^5.0.0
     long: ^5.2.1
-    revolt-api: ^0.5.19
+    revolt-api: 0.6.3
     solid-js: ^1.7.3
     typedoc: ^0.24.1
     ulid: ^2.3.0
