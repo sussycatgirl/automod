@@ -22,7 +22,7 @@ const Home: FunctionComponent = () => {
                 <br />
                 You can also view usage stats and metrics for the bot <a href="https://grafana.janderedev.xyz/d/lC_-g_-nz/automod" target='_blank'>
                     here
-                </a>, or check out <a href="https://github.com/janderedev/automod" target='_blank'>
+                </a>, or check out <a href="https://github.com/sussycatgirl/automod" target='_blank'>
                     its GitHub repository.
                 </a>
             </span>

@@ -319,7 +319,7 @@ export default {
                                 `- **${DEFAULT_PREFIX}botctl filter message [message]** - Set the message sent when a message is matched.\n` +
                                 `- **${DEFAULT_PREFIX}botctl filter action [log|delete|warn]** - Configure the action taken on filtered messages.\n` +
                                 `- **${DEFAULT_PREFIX}botctl filter test [phrase]** - Test whether a phrase matches your word list.\n` +
-                                `More documentation can be found [here](https://github.com/janderedev/automod/wiki/Word-Filter).`,
+                                `More documentation can be found [here](https://github.com/sussycatgirl/automod/wiki/Word-Filter).`,
                                 'Word filter',
                             ),
                             embed(

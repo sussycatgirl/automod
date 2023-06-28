@@ -10,7 +10,7 @@ import { client as revoltClient } from "../revolt/client";
 import { CONFIG_KEYS } from "automod/dist/misc/bridge_config_keys";
 
 const PRIVACY_POLICY_URL =
-    "https://github.com/janderedev/automod/wiki/Privacy-Policy";
+    "https://github.com/sussycatgirl/automod/wiki/Privacy-Policy";
 
 const COMMANDS: any[] = [
     {
@@ -312,7 +312,7 @@ client.on("interactionCreate", async (interaction) => {
                                 `If you have any questions regarding this bot or the Revolt counterpart, feel free to join ` +
                                     `[this](https://discord.gg/4pZgvqgYJ8) Discord server or [this](https://rvlt.gg/jan) Revolt server.\n` +
                                     `If you want to report a bug, suggest a feature or browse the source code, ` +
-                                    `feel free to do so [on GitHub](https://github.com/janderedev/automod).\n` +
+                                    `feel free to do so [on GitHub](https://github.com/sussycatgirl/automod).\n` +
                                     `For other inquiries, please contact \`contact@automod.me\`.\n\n` +
                                     `Before using this bot, please read the [Privacy Policy](${PRIVACY_POLICY_URL})!`
                             );

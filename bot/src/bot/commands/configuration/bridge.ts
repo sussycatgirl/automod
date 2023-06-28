@@ -254,7 +254,7 @@ export default {
                     return await message.reply({
                         embeds: [
                             embed(
-                                "This channel is bridged to Discord. Please refer to the [Privacy Policy](<https://github.com/janderedev/automod/wiki/Privacy-Policy>) for more info.",
+                                "This channel is bridged to Discord. Please refer to the [Privacy Policy](<https://github.com/sussycatgirl/automod/wiki/Privacy-Policy>) for more info.",
                                 "Bridge Status",
                                 EmbedColor.Success
                             ),

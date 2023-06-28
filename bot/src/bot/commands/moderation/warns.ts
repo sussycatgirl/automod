@@ -12,7 +12,7 @@ import CommandCategory from "../../../struct/commands/CommandCategory";
 
 Day.extend(RelativeTime);
 
-const GLOBAL_BLACKLIST_TEXT = (reason?: string) => `> :warning: This user has been flagged and is globally blacklisted. [Learn more.](https://github.com/janderedev/automod/wiki/Global-Blacklist)`
+const GLOBAL_BLACKLIST_TEXT = (reason?: string) => `> :warning: This user has been flagged and is globally blacklisted. [Learn more.](https://github.com/sussycatgirl/automod/wiki/Global-Blacklist)`
     + `${reason ? `\nReason: "${reason}"` : ''}\n\n`;
 
 export default {

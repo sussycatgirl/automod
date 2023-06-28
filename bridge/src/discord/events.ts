@@ -393,7 +393,7 @@ client.on("guildCreate", async (server) => {
             "Thanks for adding AutoMod to this server! Please note that despite its name, this bot only provides " +
             "bridge integration with the AutoMod bot on Revolt (<https://revolt.chat>) and does not offer any moderation " +
             "features on Discord. To get started, run the `/bridge help` command!\n\n" +
-            "Before using AutoMod, please make sure you have read the privacy policy: <https://github.com/janderedev/automod/wiki/Privacy-Policy>\n\n" +
+            "Before using AutoMod, please make sure you have read the privacy policy: <https://github.com/sussycatgirl/automod/wiki/Privacy-Policy>\n\n" +
             "A note to this server's administrators: When using the bridge, please make sure to also provide your members " +
             "with a link to AutoMod's privacy policy in an accessible place like your rules channel.";
 
@@ -426,7 +426,7 @@ async function renderMessageBody(message: string): Promise<string> {
             const res = await axios.get(message, {
                 headers: {
                     "User-Agent":
-                        "AutoMod/1.0; https://github.com/janderedev/automod",
+                        "AutoMod/1.0; https://github.com/sussycatgirl/automod",
                 },
             });
 
