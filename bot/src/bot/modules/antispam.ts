@@ -296,6 +296,6 @@ Thanks for being part of Revolt!`);
     }
 }
 
-awaitClient().then(() => notifyPublicServers());
+// awaitClient().then(() => notifyPublicServers());
 
 export { antispam, wordFilterCheck, checkMessageForFilteredWords }
