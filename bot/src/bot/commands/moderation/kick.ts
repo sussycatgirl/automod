@@ -163,17 +163,8 @@ export default {
 
         for (const user of targetUsers) {
             try {
-                const member = members.find((m) => m.id.user == user.id);
-                if (!member) {
-                    embeds.push(
-                        embed(
-                            `\`${await fetchUsername(
-                                user.id
-                            )}\` is not a member of this server.`
-                        )
-                    );
-                    continue;
-                }
+                const member = members.find((m) => m.id.user == user.id)
+                    || await message.serverContext.fetchMember(user.id);
 
                 let infId = ulid();
                 let infraction: Infraction = {
