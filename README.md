@@ -1,3 +1,6 @@
+### Development is now at [DeclanChidlow/AutoMod](https://github.com/DeclanChidlow/AutoMod)!
+---
+
 # AutoMod
 
 The best moderation bot for Revolt! \
